@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+cd "$(dirname "$0")"
+. ".common.sh"
+cd ../..
+
+tester="./support/tools/test"
+
+test_handler()
+{
+        "$tester" || true
+
+        while read -d '' e; do
+                clear
+                "$tester" || true
+        done
+}
+
+watch "specs/" "source/" | dsstore_filter | test_handler

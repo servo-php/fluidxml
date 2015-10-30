@@ -1,0 +1,12 @@
+{
+        "name": "servo/fluidxml",
+        "description": "Servo FluidXML library",
+        "config": {
+                "vendor-dir": "./composer"
+        },
+        "require": {
+                "php": ">=7",
+                "peridot-php/peridot": "1.*",
+                "peridot-php/peridot-code-coverage-reporters": "1.*"
+        }
+}
