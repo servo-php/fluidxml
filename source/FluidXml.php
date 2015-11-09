@@ -1,8 +1,5 @@
 <?php
 
-namespace Servo;
-
-
 ////////////////////////////////////////////////////////////////////////////////
 function fluidxml(...$arguments)
 {
@@ -15,10 +12,32 @@ function fluidxml(...$arguments)
 interface FluidInterface
 {
         public function query($xpath);
-        // public function add($child, ...$optionals);
         public function appendChild($child, ...$optionals);
-        // public function attr(...$arguments);
+        // public function prependSibling(sibling, ...$optionals);
+        // public function appendSibling(sibling, ...$optionals);
+        // public function appendElement($element, ...$optionals);
+        // public function appendText($text);
+        // public function appendCdata($text);
+        // public function setText($text);
         public function setAttribute(...$arguments);
+        // public function remove($xpath);
+        // Aliases:
+        // public function add($child, ...$optionals);
+        // public function prepend(sibling, ...$optionals);
+        // public function append(sibling, ...$optionals);
+        // public function insertSiblingBefore(sibling, ...$optionals);
+        // public function insertSiblingAfter(sibling, ...$optionals);
+        // public function attr(...$arguments);
+        // public function text($text);
+
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+class FluidNamespace
+{
+
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -107,15 +126,35 @@ class FluidContext implements FluidInterface, \ArrayAccess
                         //         $nodesList[] = $nodes->item($i);
                         // }
                         foreach ($xpath as $x) {
-                                $r = $domxp->query($x, $n);
+                                // Returns a DOMNodeList.
+                                $res = $domxp->query($x, $n);
 
-                                foreach ($r as $n) {
-                                        $results[] = $n;
+                                foreach ($res as $r) {
+                                        $results[] = $r;
                                 }
                         }
                 }
 
-                return $this->newContext($results);
+                // Performing over multiple sibling nodes a query that ascends
+                // the xpath, relative (../..) or absolute (//), returns identical
+                // matching results that must be collapsed in an unique result
+                // (otherwise a subsequent operation is performed multiple times).
+                $unique_results = [];
+                foreach ($results as $r) {
+                        $found = false;
+
+                        foreach ($unique_results as $u) {
+                                if ($r === $u) {
+                                        $found = true;
+                                }
+                        }
+
+                        if (! $found) {
+                                $unique_results[] = $r;
+                        }
+                }
+
+                return $this->newContext($unique_results);
         }
 
         // Arguments can be in the form of:

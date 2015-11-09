@@ -2,13 +2,9 @@
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".common.php";
 
-require_once 'Servo/FluidXml.php';
+require_once 'FluidXml.php';
 
-use \Servo\FluidXml;
-use \Servo\FluidContext;
-use \Servo\FluidXmlNs as Name;
-use function \Servo\fluidxml;
-
+use FluidNamespace as Name;
 
 function assert_is_context($actual)
 {
@@ -51,6 +47,106 @@ describe('FluidXml', function() {
 
                 $expected = "<document/>";
                 assert_equal_xml($xml, $expected);
+        });
+
+        describe('.query', function() {
+                it('should return the root nodes of the document:', function() {
+                        // XPATH: /*
+                        $xml = new FluidXml();
+                        $cx = $xml->query('/*');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'doc';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $xml->appendRoot('meta');
+                        $cx = $xml->query('/*');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'doc';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[1]->nodeName;
+                        $expected = 'meta';
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support chained relative queries', function() {
+                        // XPATH: //child subchild
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('html', true);
+                        $cx->appendChild(['head','body']);
+                        $cx = $cx->query('body');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'body';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $xml = new FluidXml();
+                        $xml->appendChild('html', true)->appendChild(['head','body']);
+                        $cx = $xml->query('//html')->query('head');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'head';
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should query the root of the document from a sub query', function() {
+                        // XPATH: //child/subchild //child
+                        $xml = new FluidXml();
+                        $xml->appendChild('html', true)
+                            ->appendChild(['head','body']);
+                        $cx = $xml->query('//html/body')
+                                  ->appendChild('h1')
+                                  ->query('//head');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'head';
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should perform relative queries ascending the DOM tree', function() {
+                        // XPATH: //child/subchild ../..
+                        $xml = new FluidXml();
+                        $xml->appendChild('html', true)
+                            ->appendChild(['head','body'], true)
+                            ->query('../body')
+                            ->appendChild('h1')
+                            ->query('../..')
+                            ->appendChild('extra');
+
+                        $expected = "<doc>\n"       .
+                                    "  <html>\n"    .
+                                    "    <head/>\n" .
+                                    "    <body>\n"  .
+                                    "      <h1/>\n" .
+                                    "    </body>\n" .
+                                    "  </html>\n"   .
+                                    "  <extra/>\n"  .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+        });
+
+        describe('.appendRoot', function() {
+                it('should add more than one root nodes to the document', function() {
+                        $xml = new FluidXml();
+                        $xml->appendRoot('meta');
+                        $xml->appendRoot('extra');
+                        $cx = $xml->query('/*');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'doc';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[1]->nodeName;
+                        $expected = 'meta';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[2]->nodeName;
+                        $expected = 'extra';
+                        assert($actual === $expected, __($actual, $expected));
+                });
         });
 
         describe('.appendChild', function() {
@@ -129,29 +225,15 @@ describe('FluidXml', function() {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should add to the document one child and switch context', function() {
+                it('should switch context', function() {
                         $xml = new FluidXml();
                         $cx = $xml->appendChild('child', true);
 
                         assert_is_context($cx);
 
-                        $expected = "<doc>\n"           .
-                                    "  <child/>\n"      .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add to the document two children and switch context', function() {
-                        $xml = new FluidXml();
                         $cx = $xml->appendChild(['child1', 'child2'], true);
 
                         assert_is_context($cx);
-
-                        $expected = "<doc>\n"           .
-                                    "  <child1/>\n"     .
-                                    "  <child2/>\n"     .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
                 });
         });
 
@@ -240,9 +322,118 @@ describe('FluidXml', function() {
                         assert_equal_xml($xml, $expected);
                 });
         });
+
+        describe('.setAttribute', function() {
+                it('should set the attributes of the root node', function() {
+                        $xml = new FluidXml();
+                        $xml->setAttribute('attr1', 'Attr1 Value')
+                            ->setAttribute('attr2', 'Attr2 Value');
+
+                        $expected = "<doc attr1=\"Attr1 Value\" attr2=\"Attr2 Value\"/>";
+                        assert_equal_xml($xml, $expected);
+
+                        $xml = new FluidXml();
+                        $xml->setAttribute(['attr1' => 'Attr1 Value',
+                                            'attr2' => 'Attr2 Value']);
+
+                        $expected = "<doc attr1=\"Attr1 Value\" attr2=\"Attr2 Value\"/>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should change the attributes of the root node', function() {
+                        $xml = new FluidXml();
+                        $xml->setAttribute('attr1', 'Attr1 Value')
+                            ->setAttribute('attr2', 'Attr2 Value');
+
+                        $xml->setAttribute('attr2', 'New Attr2 Value');
+
+                        $expected = "<doc attr1=\"Attr1 Value\" attr2=\"New Attr2 Value\"/>";
+                        assert_equal_xml($xml, $expected);
+
+                        $xml->setAttribute('attr1', 'New Attr1 Value');
+
+                        $expected = "<doc attr2=\"New Attr2 Value\" attr1=\"New Attr1 Value\"/>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should set the attributes of any node', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('child', true)
+                            ->setAttribute('attr1', 'Attr1 Value')
+                            ->setAttribute('attr2', 'Attr2 Value');
+
+                        $expected = "<doc>\n"   .
+                                    "  <child attr1=\"Attr1 Value\" attr2=\"Attr2 Value\"/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+
+                        $xml = new FluidXml();
+                        $xml->appendChild('child', true)
+                            ->setAttribute(['attr1' => 'Attr1 Value',
+                                            'attr2' => 'Attr2 Value']);
+
+                        $expected = "<doc>\n"   .
+                                    "  <child attr1=\"Attr1 Value\" attr2=\"Attr2 Value\"/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should change the attributes of any node', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('child', true)
+                            ->setAttribute('attr1', 'Attr1 Value')
+                            ->setAttribute('attr2', 'Attr2 Value')
+                            ->setAttribute('attr2', 'New Attr2 Value');
+
+                        $expected = "<doc>\n"   .
+                                    "  <child attr1=\"Attr1 Value\" attr2=\"New Attr2 Value\"/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+
+                        $xml = new FluidXml();
+                        $xml->appendChild('child', true)
+                            ->setAttribute(['attr1' => 'Attr1 Value',
+                                            'attr2' => 'Attr2 Value'])
+                            ->setAttribute('attr1', 'New Attr1 Value');
+
+                        $expected = "<doc>\n"   .
+                                    "  <child attr2=\"Attr2 Value\" attr1=\"New Attr1 Value\"/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+        });
 });
 
 describe('FluidContext', function() {
+        describe('[]', function() {
+                it('should access the nodes inside the context', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild(['head', 'body'], true);
+
+                        $actual = $cx[0];
+                        assert($actual instanceof \DOMElement, __(
+                                \get_class($actual),
+                                \DOMElement::class
+                        ));
+                });
+        });
+
+        describe('.asArray', function() {
+                it('should return an array of nodes inside the context', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild(['head', 'body'], true);
+
+                        $a = $cx->asArray();
+
+                        $actual = $a;
+                        assert(\is_array($actual));
+
+                        $actual   = \count($a);
+                        $expected = 2;
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
         describe('.length', function() {
                 it('should return the number of nodes inside the context', function() {
                         $xml = new FluidXml();
@@ -288,17 +479,6 @@ describe('FluidContext', function() {
                                     "  </child2>\n"             .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);
-                });
-        });
-
-        describe('.query', function() {
-                it('should return the root node', function() {
-                        $xml = new FluidXml();
-                        $r = $xml->query('/*');
-
-                        $actual   = $r[0]->tagName;
-                        $expected = 'doc';
-                        assert($actual === $expected, __($actual, $expected));
                 });
         });
 });
