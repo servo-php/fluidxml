@@ -22,11 +22,11 @@ interface FluidInterface
         public function setAttribute(...$arguments);
         public function remove($xpath);
         // Aliases:
-        // public function add($child, ...$optionals);
-        // public function prepend($sibling, ...$optionals);
-        // public function append($sibling, ...$optionals);
-        // public function insertSiblingBefore($sibling, ...$optionals);
-        // public function insertSiblingAfter($sibling, ...$optionals);
+        public function add($child, ...$optionals);
+        public function prepend($sibling, ...$optionals);
+        public function insertSiblingBefore($sibling, ...$optionals);
+        public function append($sibling, ...$optionals);
+        public function insertSiblingAfter($sibling, ...$optionals);
         // public function attr(...$arguments);
         // public function text($text);
 
@@ -206,6 +206,12 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->insertNode($fn, $child, ...$optionals);
         }
 
+        // Alias of appendChild.
+        public function add($child, ...$optionals)
+        {
+                return $this->appendChild($child, ...$optionals);
+        }
+
         public function prependSibling($sibling, ...$optionals)
         {
                 $fn = function($node, $newElement) {
@@ -213,6 +219,18 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 };
 
                 return $this->insertNode($fn, $sibling, ...$optionals);
+        }
+
+        // Alias of prependSibling.
+        public function prepend($sibling, ...$optionals)
+        {
+                return $this->prependSibling($sibling, ...$optionals);
+        }
+
+        // Alias of prependSibling.
+        public function insertSiblingBefore($sibling, ...$optionals)
+        {
+                return $this->prependSibling($sibling, ...$optionals);
         }
 
         public function appendSibling($sibling, ...$optionals)
@@ -223,6 +241,18 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 };
 
                 return $this->insertNode($fn, $sibling, ...$optionals);
+        }
+
+        // Alias of appendSibling.
+        public function append($sibling, ...$optionals)
+        {
+                return $this->appendSibling($sibling, ...$optionals);
+        }
+
+        // Alias of appendSibling.
+        public function insertSiblingAfter($sibling, ...$optionals)
+        {
+                return $this->appendSibling($sibling, ...$optionals);
         }
 
         public function appendXml($xml)
@@ -446,12 +476,18 @@ class FluidXml implements FluidInterface
 
         public function appendRoot($child, ...$optionals)
         {
-                return $this->append($this->newContext($this->dom), $child, ...$optionals);
+                return $this->appendNode($this->newContext($this->dom), $child, ...$optionals);
         }
 
         public function appendChild($child, ...$optionals)
         {
-                return $this->append($this->newContext(), $child, ...$optionals);
+                return $this->appendNode($this->newContext(), $child, ...$optionals);
+        }
+
+        // Alias of appendChild.
+        public function add($child, ...$optionals)
+        {
+                return $this->appendChild($child, ...$optionals);
         }
 
         public function prependSibling($sibling, ...$optionals)
@@ -459,9 +495,33 @@ class FluidXml implements FluidInterface
                 throw new \Exception('Not yet implemented.');
         }
 
+        // Alias of prependSibling.
+        public function prepend($sibling, ...$optionals)
+        {
+                return $this->prependSibling($sibling, ...$optionals);
+        }
+
+        // Alias of prependSibling.
+        public function insertSiblingBefore($sibling, ...$optionals)
+        {
+                return $this->prependSibling($sibling, ...$optionals);
+        }
+
         public function appendSibling($sibling, ...$optionals)
         {
                 throw new \Exception('Not yet implemented.');
+        }
+
+        // Alias of appendSibling.
+        public function append($sibling, ...$optionals)
+        {
+                return $this->appendSibling($sibling, ...$optionals);
+        }
+
+        // Alias of appendSibling.
+        public function insertSiblingAfter($sibling, ...$optionals)
+        {
+                return $this->appendSibling($sibling, ...$optionals);
         }
 
         public function appendXml($xml, $asRoot = false)
@@ -512,7 +572,7 @@ class FluidXml implements FluidInterface
                 return $this;
         }
 
-        protected function append($context, $child, ...$optionals)
+        protected function appendNode($context, $child, ...$optionals)
         {
                 $newContext = $context->appendChild($child, ...$optionals);
 

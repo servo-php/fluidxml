@@ -774,6 +774,86 @@ describe('FluidXml', function() {
                         assert_equal_xml($xml, $expected);
                 });
         });
+
+        describe('.add', function() {
+                it('should behave like .appendChild', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                            ->appendChild(['child1', 'child2'], ['class'=>'child']);
+
+                        $alias = new FluidXml();
+                        $alias->appendChild('parent', true)
+                              ->appendChild(['child1', 'child2'], ['class'=>'child']);
+
+                        $actual   = $xml->xml();
+                        $expected = $alias->xml();
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.prepend', function() {
+                it('should behave like .prependSibling', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                            ->prependSibling(['child1', 'child2'], ['class'=>'child']);
+
+                        $alias = new FluidXml();
+                        $alias->appendChild('parent', true)
+                              ->prepend(['child1', 'child2'], ['class'=>'child']);
+
+                        $actual   = $xml->xml();
+                        $expected = $alias->xml();
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.insertSiblingBefore', function() {
+                it('should behave like .prependSibling', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                            ->prependSibling(['child1', 'child2'], ['class'=>'child']);
+
+                        $alias = new FluidXml();
+                        $alias->appendChild('parent', true)
+                              ->insertSiblingBefore(['child1', 'child2'], ['class'=>'child']);
+
+                        $actual   = $xml->xml();
+                        $expected = $alias->xml();
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.append', function() {
+                it('should behave like .appendSibling', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                            ->appendSibling(['child1', 'child2'], ['class'=>'child']);
+
+                        $alias = new FluidXml();
+                        $alias->appendChild('parent', true)
+                              ->append(['child1', 'child2'], ['class'=>'child']);
+
+                        $actual   = $xml->xml();
+                        $expected = $alias->xml();
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.insertSiblingAfter', function() {
+                it('should behave like .appendSibling', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                            ->appendSibling(['child1', 'child2'], ['class'=>'child']);
+
+                        $alias = new FluidXml();
+                        $alias->appendChild('parent', true)
+                              ->insertSiblingAfter(['child1', 'child2'], ['class'=>'child']);
+
+                        $actual   = $xml->xml();
+                        $expected = $alias->xml();
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
 });
 
 describe('FluidContext', function() {
