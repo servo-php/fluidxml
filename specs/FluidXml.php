@@ -19,7 +19,7 @@ function assert_equal_xml($actual, $expected)
         $xml_header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
         $actual   = \trim($actual->xml());
-        $expected = $xml_header . $expected;
+        $expected = \trim($xml_header . $expected);
         assert($actual === $expected, __($actual, $expected));
 }
 
@@ -46,6 +46,13 @@ describe('FluidXml', function() {
                 $xml = new FluidXml(['root' => 'document']);
 
                 $expected = "<document/>";
+                assert_equal_xml($xml, $expected);
+        });
+
+        it('should be an UTF-8 XML-1.0 document with no root element', function() {
+                $xml = new FluidXml(['root' => null]);
+
+                $expected = "";
                 assert_equal_xml($xml, $expected);
         });
 
@@ -323,6 +330,74 @@ describe('FluidXml', function() {
                 });
         });
 
+        describe('.insertBefore', function() {
+                it('should insert a sibling node before a node', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                            ->prependSibling('sibling1')
+                            ->prependSibling('sibling2');
+
+                        $expected = "<doc>\n"      .
+                                    "  <sibling1/>\n" .
+                                    "  <sibling2/>\n" .
+                                    "  <parent/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+        });
+
+        describe('.insertAfter', function() {
+                it('should insert a sibling node before a node', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                            ->appendSibling('sibling1')
+                            ->appendSibling('sibling2');
+
+                        $expected = "<doc>\n"      .
+                                    "  <parent/>\n" .
+                                    "  <sibling2/>\n" .
+                                    "  <sibling1/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+        });
+
+        describe('.appendXml', function() {
+                it('should populate the document with an xml document', function() {
+                        $xml = new FluidXml(['root'=>null]);
+                        $xml->appendXml('<root1/><root2/>', true);
+
+                        $expected = "<root1/>\n" .
+                                    "<root2/>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add to the document an xml document', function() {
+                        $xml = new FluidXml();
+                        $xml->appendXml('<child1/><child2/>');
+
+                        $expected = "<doc>\n"      .
+                                    "  <child1/>\n" .
+                                    "  <child2/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add to a node an xml document', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                            ->appendXml('<child1/><child2/>');
+
+                        $expected = "<doc>\n"         .
+                                    "  <parent>\n"    .
+                                    "    <child1/>\n" .
+                                    "    <child2/>\n" .
+                                    "  </parent>\n"   .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+        });
+
         describe('.setAttribute', function() {
                 it('should set the attributes of the root node', function() {
                         $xml = new FluidXml();
@@ -356,7 +431,7 @@ describe('FluidXml', function() {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should set the attributes of any node', function() {
+                it('should set the attributes of a node', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('child', true)
                             ->setAttribute('attr1', 'Attr1 Value')
@@ -378,7 +453,7 @@ describe('FluidXml', function() {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should change the attributes of any node', function() {
+                it('should change the attributes of a node', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('child', true)
                             ->setAttribute('attr1', 'Attr1 Value')
@@ -402,9 +477,336 @@ describe('FluidXml', function() {
                         assert_equal_xml($xml, $expected);
                 });
         });
+
+        describe('.appendText', function() {
+                it('should add text to the root node', function() {
+                        $xml = new FluidXml();
+                        $xml->appendText('Document Text First Line');
+
+                        $expected = "<doc>Document Text First Line</doc>";
+                        assert_equal_xml($xml, $expected);
+
+                        $xml->appendText('Document Text Second Line');
+
+                        $expected = "<doc>Document Text First LineDocument Text Second Line</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add text to a node', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('p', true);
+                        $cx->appendText('Document Text First Line');
+
+                        $expected = "<doc>\n" .
+                                    "  <p>Document Text First Line</p>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+
+                        $cx->appendText('Document Text Second Line');
+
+                        $expected = "<doc>\n" .
+                                    "  <p>Document Text First LineDocument Text Second Line</p>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+        });
+
+        describe('.setText', function() {
+                it('should set the text of the root node', function() {
+                        $xml = new FluidXml();
+                        $xml->setText('Document Text');
+
+                        $expected = "<doc>Document Text</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should change the text of the root node', function() {
+                        $xml = new FluidXml();
+                        $xml->setText('Document Text');
+
+                        $expected = "<doc>Document Text</doc>";
+                        assert_equal_xml($xml, $expected);
+
+                        $xml->setText('Document New Text');
+
+                        $expected = "<doc>Document New Text</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should set the text of a node', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('p', true);
+                        $cx->setText('Document Text');
+
+                        $expected = "<doc>\n" .
+                                    "  <p>Document Text</p>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should change the text of a node', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('p', true);
+                        $cx->setText('Document Text');
+
+                        $expected = "<doc>\n" .
+                                    "  <p>Document Text</p>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+
+                        $cx->setText('Document New Text');
+
+                        $expected = "<doc>\n" .
+                                    "  <p>Document New Text</p>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+        });
+
+        describe('.appendCdata', function() {
+                it('should add CDATA to the root node', function() {
+                        $xml = new FluidXml();
+                        $xml->appendCdata('// <, > and & are characters that should be escaped in a XML context.');
+
+                        $expected = "<doc>" .
+                                    "<![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+
+                        $xml->appendCdata('// <second &cdata section>');
+
+                        $expected = "<doc>" .
+                                    "<![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>" .
+                                    "<![CDATA[// <second &cdata section>]]>" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add CDATA to a node', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('pre', true);
+                        $cx->appendCdata('// <, > and & are characters that should be escaped in a XML context.');
+
+                        $expected = "<doc>\n" .
+                                    "  <pre><![CDATA[// <, > and & are characters that should be escaped in a XML context.]]></pre>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+
+                        $cx->appendCdata('// <second &cdata section>');
+
+                        $expected = "<doc>\n" .
+                                    "  <pre><![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>" .
+                                       "<![CDATA[// <second &cdata section>]]>" .
+                                       "</pre>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+        });
+
+        describe('.remove', function() {
+                it('should remove a descending node from the root node using xpath', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                            ->appendChild('child');
+
+                        $xml->remove('//parent/child');
+
+                        $expected = "<doc>\n" .
+                                    "  <parent/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove a descending node from the root node using a context', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('parent', true)
+                                  ->appendChild('child', true);
+
+                        $xml->remove($cx);
+
+                        $expected = "<doc>\n" .
+                                    "  <parent/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove multiple descending nodes from the root node using xpath', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                            ->appendChild(['child1', 'child2'], ['class'=>'removable']);
+
+                        $xml->remove('//parent/*[@class="removable"]');
+
+                        $expected = "<doc>\n" .
+                                    "  <parent/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove multiple descending nodes from the root node using a context', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('parent', true)
+                                  ->appendChild(['child1', 'child2'], ['class'=>'removable'], true);
+
+                        $xml->remove($cx);
+
+                        $expected = "<doc>\n" .
+                                    "  <parent/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove a child node from a parent node using xpath', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('parent', true);
+                        $cx->appendChild('child');
+
+                        $cx->remove('child');
+
+                        $expected = "<doc>\n" .
+                                    "  <parent/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove a child node from a parent node using a context', function() {
+                        $xml = new FluidXml();
+                        $parent = $xml->appendChild('parent', true);
+                        $cx     = $parent->appendChild('child', true);
+
+                        $parent->remove($cx);
+
+                        $expected = "<doc>\n" .
+                                    "  <parent/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove a descending node from an ancestor node using xpath', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('parent', true);
+                        $cx->appendChild('child', true)
+                           ->appendChild('subchild');
+
+                        $cx->remove('child/subchild');
+
+                        $expected = "<doc>\n" .
+                                    "  <parent>\n" .
+                                    "    <child/>\n" .
+                                    "  </parent>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove a descending node from an ancestor node using a context', function() {
+                        $xml = new FluidXml();
+                        $parent = $xml->appendChild('parent', true);
+                        $cx = $parent->appendChild('child', true)
+                                     ->appendChild('subchild', true);
+
+                        $cx->remove($cx);
+
+                        $expected = "<doc>\n" .
+                                    "  <parent>\n" .
+                                    "    <child/>\n" .
+                                    "  </parent>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove multiple children nodes from a parent node using xpath', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('parent', true);
+                        $cx->appendChild(['child1', 'child2'], ['class'=>'removable']);
+
+                        $cx->remove('*[@class="removable"]');
+
+                        $expected = "<doc>\n" .
+                                    "  <parent/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove multiple children nodes from a parent node using a context', function() {
+                        $xml = new FluidXml();
+                        $parent = $xml->appendChild('parent', true);
+                        $cx     = $parent->appendChild(['child1', 'child2'], ['class'=>'removable'], true);
+
+                        $cx->remove($cx);
+
+                        $expected = "<doc>\n" .
+                                    "  <parent/>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove multiple descending nodes from an ancestor node using xpath', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('parent', true);
+                        $cx->appendChild('child', true)
+                           ->appendChild(['subchild1', 'subchild2'], ['class'=>'removable']);
+
+                        $cx->remove('child/*[@class="removable"]');
+
+                        $expected = "<doc>\n" .
+                                    "  <parent>\n" .
+                                    "    <child/>\n" .
+                                    "  </parent>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove multiple descending nodes from an ancestor node using a context', function() {
+                        $xml = new FluidXml();
+                        $parent = $xml->appendChild('parent', true);
+                        $cx = $parent->appendChild('child', true)
+                                     ->appendChild(['subchild1', 'subchild2'],
+                                                   ['class'=>'removable'],
+                                                   true);
+
+                        $parent->remove($cx);
+
+                        $expected = "<doc>\n" .
+                                    "  <parent>\n" .
+                                    "    <child/>\n" .
+                                    "  </parent>\n" .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+        });
 });
 
 describe('FluidContext', function() {
+        it('should be iterable returning the represented DOMNode objects', function() {
+                $xml = new FluidXml();
+                $cx = $xml->appendChild(['head', 'body'], true);
+
+                $actual = $cx;
+                assert($actual instanceof \Iterator, __(
+                        \get_class($actual),
+                        \Iterator::class
+                ));
+
+                $representation = [];
+                foreach ($cx as $k => $v) {
+                        $actual = \is_int($k);
+                        $expected = true;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual = $v;
+                        assert($actual instanceof \DOMNode, __(
+                                \get_class($actual),
+                                \DOMNode::class
+                        ));
+
+                        $representation[$k] = $v->nodeName;
+                }
+
+                $actual = $representation;
+                $expected = [0 => 'head', 1 => 'body'];
+                assert($actual === $expected, __($actual, $expected));
+        });
+
         describe('[]', function() {
                 it('should access the nodes inside the context', function() {
                         $xml = new FluidXml();
