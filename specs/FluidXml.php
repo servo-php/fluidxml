@@ -23,7 +23,7 @@ function assert_equal_xml($actual, $expected)
         assert($actual === $expected, __($actual, $expected));
 }
 
-function assert_equal_instance($actual, $expected)
+function assert_is_a($actual, $expected)
 {
         assert(\is_a($actual, $expected) === true, __(\get_class($actual), $expected));
 }
@@ -33,7 +33,7 @@ describe('fluidxml', function() {
                 $xml = fluidxml();
 
                 $actual = $xml;
-                assert_equal_instance($actual, FluidXml::class);
+                assert_is_a($actual, FluidXml::class);
         });
 });
 
@@ -71,7 +71,7 @@ describe('FluidXml', function() {
                         $xml = new FluidXml();
 
                         $actual = $xml->dom();
-                        assert_equal_instance($actual, \DOMDocument::class);
+                        assert_is_a($actual, \DOMDocument::class);
                 });
         });
 
@@ -928,7 +928,7 @@ describe('FluidContext', function() {
                 $cx = $xml->appendChild(['head', 'body'], true);
 
                 $actual = $cx;
-                assert_equal_instance($actual, \Iterator::class);
+                assert_is_a($actual, \Iterator::class);
 
                 $representation = [];
                 foreach ($cx as $k => $v) {
@@ -937,7 +937,7 @@ describe('FluidContext', function() {
                         assert($actual === $expected, __($actual, $expected));
 
                         $actual = $v;
-                        assert_equal_instance($actual, \DOMNode::class);
+                        assert_is_a($actual, \DOMNode::class);
 
                         $representation[$k] = $v->nodeName;
                 }
@@ -981,10 +981,10 @@ describe('FluidContext', function() {
                         $cx = $xml->appendChild(['head', 'body'], true);
 
                         $actual = $cx[0];
-                        assert_equal_instance($actual, \DOMElement::class);
+                        assert_is_a($actual, \DOMElement::class);
 
                         $actual = $cx[1];
-                        assert_equal_instance($actual, \DOMElement::class);
+                        assert_is_a($actual, \DOMElement::class);
                 });
 
                 it('should behave like an array', function() {
@@ -1008,14 +1008,14 @@ describe('FluidContext', function() {
                         } catch (\Exception $e) {
                                 $actual   = $e;
                         }
-                        assert_equal_instance($actual, \Exception::class);
+                        assert_is_a($actual, \Exception::class);
 
                         try {
                                 unset($cx[0]);
                         } catch (\Exception $e) {
                                 $actual   = $e;
                         }
-                        assert_equal_instance($actual, \Exception::class);
+                        assert_is_a($actual, \Exception::class);
                 });
         });
 
