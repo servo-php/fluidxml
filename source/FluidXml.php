@@ -196,9 +196,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->newContext($unique_results);
         }
 
-        // Arguments can be in the form of:
-        // appendChild($child, $switchContext = false, array $attributes = [])
-        // appendChild($child, array $attributes = [], $switchContext = false)
+        // appendChild($child, $value?, $attributes? = [], $switchContext? = false)
         public function appendChild($child, ...$optionals)
         {
                 $fn = function($node, $newElement) {
@@ -378,6 +376,9 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                                 $attributes = $opt;
                         } else if (\is_bool($opt)){
                                 $switchContext = $opt;
+                        } else if (\is_string($opt)) {
+                                $n = \array_pop($node);
+                                $node[$n] = $opt;
                         } else {
                                 throw new \Exception('Optional argument "'.$opt.'" not recognized.');
                         }
@@ -604,7 +605,7 @@ class FluidXml implements FluidInterface
                 return $this;
         }
 
-        protected function newContext($context)
+        protected function newContext($context = null)
         {
                 if (! $context) {
                         $context = $this->dom->documentElement;

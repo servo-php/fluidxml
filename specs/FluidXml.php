@@ -4,15 +4,9 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".common.php";
 
 require_once 'FluidXml.php';
 
+
 use FluidNamespace as Name;
 
-function assert_is_context($actual)
-{
-        assert($actual instanceof FluidContext, __(
-                \get_class($actual),
-                FluidContext::class
-        ));
-}
 
 function assert_equal_xml($actual, $expected)
 {
@@ -27,6 +21,7 @@ function assert_is_a($actual, $expected)
 {
         assert(\is_a($actual, $expected) === true, __(\get_class($actual), $expected));
 }
+
 
 describe('fluidxml', function() {
         it('should return a new FluidXml instance', function() {
@@ -155,176 +150,130 @@ describe('FluidXml', function() {
         });
 
         describe('.appendChild', function() {
-                it('should add to the document one child', function() {
+                it('should add a child', function() {
                         $xml = new FluidXml();
-                        $xml->appendChild('child');
-
-                        $expected = "<doc>\n"      .
-                                    "  <child/>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add to the document two children', function() {
-                        $xml = new FluidXml();
-                        $xml->appendChild(['child1', 'child2']);
+                        $xml->appendChild('child1')
+                            ->appendChild('child2')
+                            ->appendChild('parent', true)
+                            ->appendChild('child3')
+                            ->appendChild('child4');
 
                         $expected = "<doc>\n"           .
                                     "  <child1/>\n"     .
                                     "  <child2/>\n"     .
+                                    "  <parent>\n"      .
+                                    "    <child3/>\n"   .
+                                    "    <child4/>\n"   .
+                                    "  </parent>\n"     .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should add to the document two children fluently', function() {
+                it('should add many children', function() {
                         $xml = new FluidXml();
-                        $xml->appendChild('child1')
-                            ->appendChild('child2');
-
-                            $expected = "<doc>\n"           .
-                                        "  <child1/>\n"     .
-                                        "  <child2/>\n"     .
-                                        "</doc>";
-                            assert_equal_xml($xml, $expected);
-                });
-
-                it('should add to the document one child with a value', function() {
-                        $xml = new FluidXml();
-                        $xml->appendChild(['child' => 'value']);
+                        $xml->appendChild(['child1', 'child2'])
+                            ->appendChild('parent', true)
+                            ->appendChild(['child3', 'child4']);
 
                         $expected = "<doc>\n"           .
-                                    "  <child>value</child>\n"     .
+                                    "  <child1/>\n"     .
+                                    "  <child2/>\n"     .
+                                    "  <parent>\n"      .
+                                    "    <child3/>\n"   .
+                                    "    <child4/>\n"   .
+                                    "  </parent>\n"     .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should add to the document two children with a value', function() {
+                it('should add a child with a value', function() {
                         $xml = new FluidXml();
-                        $xml->appendChild(['child1' => 'value1', 'child2' => 'value2']);
+                        $xml->appendChild(['child1' => 'value1'])
+                            ->appendChild('child2', 'value2')
+                            ->appendChild('parent', true)
+                            ->appendChild(['child3' => 'value3'])
+                            ->appendChild('child4', 'value4');
 
-                        $expected = "<doc>\n"                           .
-                                    "  <child1>value1</child1>\n"       .
-                                    "  <child2>value2</child2>\n"       .
+                        $expected = "<doc>\n"           .
+                                    "  <child1>value1</child1>\n"     .
+                                    "  <child2>value2</child2>\n"     .
+                                    "  <parent>\n"      .
+                                    "    <child3>value3</child3>\n"   .
+                                    "    <child4>value4</child4>\n"   .
+                                    "  </parent>\n"     .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should add to the document one child with two attributes', function() {
+                it('should add many children with a value', function() {
                         $xml = new FluidXml();
-                        $xml->appendChild('child', ['class' => 'Class attr', 'id' => 'Id attr']);
+                        $xml->appendChild(['child1' => 'value1', 'child2' => 'value2'])
+                             ->appendChild('parent', true)
+                             ->appendChild(['child3' => 'value3', 'child4' => 'value4']);
+
+                        $expected = "<doc>\n"           .
+                                    "  <child1>value1</child1>\n"     .
+                                    "  <child2>value2</child2>\n"     .
+                                    "  <parent>\n"      .
+                                    "    <child3>value3</child3>\n"   .
+                                    "    <child4>value4</child4>\n"   .
+                                    "  </parent>\n"     .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a child with some attributes', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('child1', ['class' => 'Class attr', 'id' => 'Id attr1'])
+                            ->appendChild('parent', true)
+                            ->appendChild('child2', ['class' => 'Class attr', 'id' => 'Id attr2']);
 
                         $expected = "<doc>\n"   .
-                                    "  <child class=\"Class attr\" id=\"Id attr\"/>\n"  .
+                                    "  <child1 class=\"Class attr\" id=\"Id attr1\"/>\n"        .
+                                    "  <parent>\n"      .
+                                    "    <child2 class=\"Class attr\" id=\"Id attr2\"/>\n"      .
+                                    "  </parent>\n"     .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should add to the document two children with two attributes both', function() {
+                it('should add many children with some attributes both', function() {
                         $xml = new FluidXml();
-                        $xml->appendChild(['child1', 'child2'], ['class' => 'Class Value', 'id' => 'Id Value']);
+                        $xml->appendChild(['child1', 'child2'], ['class' => 'Class attr', 'id' => 'Id attr1'])
+                            ->appendChild('parent', true)
+                            ->appendChild(['child3', 'child4'], ['class' => 'Class attr', 'id' => 'Id attr2']);
 
                         $expected = "<doc>\n"   .
-                                    "  <child1 class=\"Class Value\" id=\"Id Value\"/>\n"       .
-                                    "  <child2 class=\"Class Value\" id=\"Id Value\"/>\n"       .
+                                    "  <child1 class=\"Class attr\" id=\"Id attr1\"/>\n"       .
+                                    "  <child2 class=\"Class attr\" id=\"Id attr1\"/>\n"       .
+                                    "  <parent>\n"      .
+                                    "    <child3 class=\"Class attr\" id=\"Id attr2\"/>\n"      .
+                                    "    <child4 class=\"Class attr\" id=\"Id attr2\"/>\n"      .
+                                    "  </parent>\n"     .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
                 it('should switch context', function() {
                         $xml = new FluidXml();
-                        $cx = $xml->appendChild('child', true);
 
-                        assert_is_context($cx);
+                        $actual = $xml->appendChild('child', true);
+                        assert_is_a($actual, FluidContext::class);
 
-                        $cx = $xml->appendChild(['child1', 'child2'], true);
+                        $actual = $xml->appendChild('child', 'value', true);
+                        assert_is_a($actual, FluidContext::class);
 
-                        assert_is_context($cx);
-                });
-        });
+                        $actual = $xml->appendChild(['child1', 'child2'], true);
+                        assert_is_a($actual, FluidContext::class);
 
-        describe('.appendChild switching context', function() {
-                it('should add to the document one child and one subchild', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('child', true)
-                                  ->appendChild('subchild');
+                        $actual = $xml->appendChild(['child1' => 'value1', 'child2' => 'value2'], true);
+                        assert_is_a($actual, FluidContext::class);
 
-                        assert_is_context($cx);
+                        $actual = $xml->appendChild('child', ['attr' => 'value'], true);
+                        assert_is_a($actual, FluidContext::class);
 
-                        $expected = "<doc>\n"           .
-                                    "  <child>\n"       .
-                                    "    <subchild/>\n" .
-                                    "  </child>\n"      .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add to the document one child and two subchildren', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('child', true)
-                                  ->appendChild(['subchild1', 'subchild2']);
-
-                        assert_is_context($cx);
-
-                        $expected = "<doc>\n"                   .
-                                    "  <child>\n"               .
-                                    "    <subchild1/>\n"        .
-                                    "    <subchild2/>\n"        .
-                                    "  </child>\n"              .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add to the document one child and two subchildren fluently', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('child', true)
-                                  ->appendChild('subchild1')
-                                  ->appendChild('subchild2');
-
-                        assert_is_context($cx);
-
-                        $expected = "<doc>\n"                   .
-                                    "  <child>\n"               .
-                                    "    <subchild1/>\n"        .
-                                    "    <subchild2/>\n"        .
-                                    "  </child>\n"              .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add to the document one child, one subchild and one subsubchild', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('child', true)
-                                  ->appendChild('subchild', true)
-                                  ->appendChild('subsubchild');
-
-                        assert_is_context($cx);
-
-                        $expected = "<doc>\n"                   .
-                                    "  <child>\n"               .
-                                    "    <subchild>\n"          .
-                                    "      <subsubchild/>\n"    .
-                                    "    </subchild>\n"         .
-                                    "  </child>\n"              .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add to the document one child, one subchild and one subsubchild with one attribute', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('child', true)
-                                  ->appendChild('subchild', true)
-                                  ->appendChild('subsubchild', ['attr' => 'Attr Value']);
-
-                        assert_is_context($cx);
-
-                        $expected = "<doc>\n"           .
-                                    "  <child>\n"       .
-                                    "    <subchild>\n"  .
-                                    "      <subsubchild attr=\"Attr Value\"/>\n"        .
-                                    "    </subchild>\n" .
-                                    "  </child>\n"      .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
+                        $actual = $xml->appendChild(['child1', 'child2'], ['attr' => 'value'], true);
+                        assert_is_a($actual, FluidContext::class);
                 });
         });
 
