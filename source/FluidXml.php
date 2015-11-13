@@ -82,11 +82,12 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         // \ArrayAccess interface.
         public function offsetSet($offset, $value)
         {
-                if (\is_null($offset)) {
-                        $this->nodes[] = $value;
-                } else {
-                        $this->nodes[$offset] = $value;
-                }
+                // if (\is_null($offset)) {
+                //         $this->nodes[] = $value;
+                // } else {
+                //         $this->nodes[$offset] = $value;
+                // }
+                throw new \Exception('Setting a context element is not allowed.');
         }
 
         // \ArrayAccess interface.
@@ -98,7 +99,8 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         // \ArrayAccess interface.
         public function offsetUnset($offset)
         {
-                unset($this->nodes[$offset]);
+                // unset($this->nodes[$offset]);
+                throw new \Exception('Unsetting a context element is not allowed.');
         }
 
         // \ArrayAccess interface.
@@ -456,11 +458,16 @@ class FluidXml implements FluidInterface
 
 
                 if ($opts['root']) {
-                        $this->appendRoot($opts['root']);
+                        $this->appendSibling($opts['root']);
                 }
 
-                if ($stylesheet) {
-                        $this->dom->insertStylesheet($stylesheet, $opts['encoding']);
+                if ($opts['stylesheet']) {
+                        $stylesheet = new \DOMProcessingInstruction('xml-stylesheet',
+                                                                    'type="text/xsl"'
+                                                                    ." encoding=\"{$opts['encoding']}\""
+                                                                    ." indent=\"yes\""
+                                                                    ." href=\"{$opts['stylesheet']}\"");
+                        $this->dom->insertBefore($stylesheet, $this->query('/*')[0]);
                 }
         }
 
@@ -469,19 +476,22 @@ class FluidXml implements FluidInterface
                 return $this->dom->saveXML();
         }
 
-        public function query($xpath)
+        public function dom()
         {
-                return $this->newContext()->query($xpath);
+                return $this->dom;
         }
 
-        public function appendRoot($child, ...$optionals)
+        public function query($xpath)
         {
-                return $this->appendNode($this->newContext($this->dom), $child, ...$optionals);
+                return $this->newContext($this->dom)->query($xpath);
         }
 
         public function appendChild($child, ...$optionals)
         {
-                return $this->appendNode($this->newContext(), $child, ...$optionals);
+                $context    = $this->newContext();
+                $newContext = $context->appendChild($child, ...$optionals);
+
+                return $this->chooseContext($context, $newContext);
         }
 
         // Alias of appendChild.
@@ -492,7 +502,18 @@ class FluidXml implements FluidInterface
 
         public function prependSibling($sibling, ...$optionals)
         {
-                throw new \Exception('Not yet implemented.');
+                if ($this->query('/*')->length() === 0) {
+                        // If the document doesn't have at least one root node,
+                        // the sibling creation fails. In this case we replace
+                        // the sibling creation with the creation of a generic node.
+                        $context    = $this->newContext($this->dom);
+                        $newContext = $context->appendChild($sibling, ...$optionals);
+                } else {
+                        $context    = $this->newContext();
+                        $newContext = $context->prependSibling($sibling, ...$optionals);
+                }
+
+                return $this->chooseContext($context, $newContext);
         }
 
         // Alias of prependSibling.
@@ -509,7 +530,18 @@ class FluidXml implements FluidInterface
 
         public function appendSibling($sibling, ...$optionals)
         {
-                throw new \Exception('Not yet implemented.');
+                if ($this->query('/*')->length() === 0) {
+                        // If the document doesn't have at least one root node,
+                        // the sibling creation fails. In this case we replace
+                        // the sibling creation with the creation of a generic node.
+                        $context    = $this->newContext($this->dom);
+                        $newContext = $context->appendChild($sibling, ...$optionals);
+                } else {
+                        $context    = $this->newContext();
+                        $newContext = $context->appendSibling($sibling, ...$optionals);
+                }
+
+                return $this->chooseContext($context, $newContext);
         }
 
         // Alias of appendSibling.
@@ -572,26 +604,24 @@ class FluidXml implements FluidInterface
                 return $this;
         }
 
-        protected function appendNode($context, $child, ...$optionals)
-        {
-                $newContext = $context->appendChild($child, ...$optionals);
-
-                // If the two contextes are diffent, the user has requested
-                // a switch of the context and we have to return it.
-                if ($context !== $newContext) {
-                        return $newContext;
-                }
-
-                return $this;
-        }
-
         protected function newContext($context)
         {
-                if (\is_null($context)) {
+                if (! $context) {
                         $context = $this->dom->documentElement;
                 }
 
                 return new FluidContext($this->dom, $context, $this->namespace);
+        }
+
+        protected function chooseContext($helpContext, $newContext)
+        {
+                // If the two contextes are diffent, the user has requested
+                // a switch of the context and we have to return it.
+                if ($helpContext !== $newContext) {
+                        return $newContext;
+                }
+
+                return $this;
         }
 }
 ////////////////////////////////////////////////////////////////////////////////

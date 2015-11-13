@@ -23,14 +23,17 @@ function assert_equal_xml($actual, $expected)
         assert($actual === $expected, __($actual, $expected));
 }
 
+function assert_equal_instance($actual, $expected)
+{
+        assert(\is_a($actual, $expected) === true, __(\get_class($actual), $expected));
+}
+
 describe('fluidxml', function() {
         it('should return a new FluidXml instance', function() {
                 $xml = fluidxml();
 
-                assert($xml instanceof FluidXml, __(
-                        \get_class($xml),
-                        FluidXml::class
-                ));
+                $actual = $xml;
+                assert_equal_instance($actual, FluidXml::class);
         });
 });
 
@@ -56,8 +59,24 @@ describe('FluidXml', function() {
                 assert_equal_xml($xml, $expected);
         });
 
+        it('should be an UTF-8 XML-1.0 document with a stylesheet', function() {
+                $xml = new FluidXml(['stylesheet' => 'http://servo-php.org/fluidxml']);
+
+                $expected = "<?xml-stylesheet type=\"text/xsl\" encoding=\"UTF-8\" indent=\"yes\" href=\"http://servo-php.org/fluidxml\"?>\n<doc/>";
+                assert_equal_xml($xml, $expected);
+        });
+
+        describe('.dom', function() {
+                it('should return the DOMDocument of the document', function() {
+                        $xml = new FluidXml();
+
+                        $actual = $xml->dom();
+                        assert_equal_instance($actual, \DOMDocument::class);
+                });
+        });
+
         describe('.query', function() {
-                it('should return the root nodes of the document:', function() {
+                it('should return the root nodes of the document', function() {
                         // XPATH: /*
                         $xml = new FluidXml();
                         $cx = $xml->query('/*');
@@ -66,7 +85,7 @@ describe('FluidXml', function() {
                         $expected = 'doc';
                         assert($actual === $expected, __($actual, $expected));
 
-                        $xml->appendRoot('meta');
+                        $xml->appendSibling('meta');
                         $cx = $xml->query('/*');
 
                         $actual   = $cx[0]->nodeName;
@@ -132,27 +151,6 @@ describe('FluidXml', function() {
                                     "  <extra/>\n"  .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);
-                });
-        });
-
-        describe('.appendRoot', function() {
-                it('should add more than one root nodes to the document', function() {
-                        $xml = new FluidXml();
-                        $xml->appendRoot('meta');
-                        $xml->appendRoot('extra');
-                        $cx = $xml->query('/*');
-
-                        $actual   = $cx[0]->nodeName;
-                        $expected = 'doc';
-                        assert($actual === $expected, __($actual, $expected));
-
-                        $actual   = $cx[1]->nodeName;
-                        $expected = 'meta';
-                        assert($actual === $expected, __($actual, $expected));
-
-                        $actual   = $cx[2]->nodeName;
-                        $expected = 'extra';
-                        assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -330,7 +328,41 @@ describe('FluidXml', function() {
                 });
         });
 
-        describe('.insertBefore', function() {
+        describe('.prependSibling', function() {
+                it('should add more than one root node to a document with one root node', function() {
+                        $xml = new FluidXml();
+                        $xml->prependSibling('meta');
+                        $xml->prependSibling('extra');
+                        $cx = $xml->query('/*');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'extra';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[1]->nodeName;
+                        $expected = 'meta';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[2]->nodeName;
+                        $expected = 'doc';
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should add more than one root node to a document with no root node', function() {
+                        $xml = new FluidXml(['root'=>null]);
+                        $xml->prependSibling('meta');
+                        $xml->prependSibling('extra');
+                        $cx = $xml->query('/*');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'extra';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[1]->nodeName;
+                        $expected = 'meta';
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
                 it('should insert a sibling node before a node', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('parent', true)
@@ -346,8 +378,42 @@ describe('FluidXml', function() {
                 });
         });
 
-        describe('.insertAfter', function() {
-                it('should insert a sibling node before a node', function() {
+        describe('.appendSibling', function() {
+                it('should add more than one root node to a document with one root node', function() {
+                        $xml = new FluidXml();
+                        $xml->appendSibling('meta');
+                        $xml->appendSibling('extra');
+                        $cx = $xml->query('/*');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'doc';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[1]->nodeName;
+                        $expected = 'extra';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[2]->nodeName;
+                        $expected = 'meta';
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should add more than one root node to a document with no root node', function() {
+                        $xml = new FluidXml(['root'=>null]);
+                        $xml->appendSibling('meta');
+                        $xml->appendSibling('extra');
+                        $cx = $xml->query('/*');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'meta';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[1]->nodeName;
+                        $expected = 'extra';
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should insert a sibling node after a node', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('parent', true)
                             ->appendSibling('sibling1')
@@ -782,8 +848,8 @@ describe('FluidXml', function() {
                             ->appendChild(['child1', 'child2'], ['class'=>'child']);
 
                         $alias = new FluidXml();
-                        $alias->appendChild('parent', true)
-                              ->appendChild(['child1', 'child2'], ['class'=>'child']);
+                        $alias->add('parent', true)
+                              ->add(['child1', 'child2'], ['class'=>'child']);
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
@@ -794,12 +860,12 @@ describe('FluidXml', function() {
         describe('.prepend', function() {
                 it('should behave like .prependSibling', function() {
                         $xml = new FluidXml();
-                        $xml->appendChild('parent', true)
-                            ->prependSibling(['child1', 'child2'], ['class'=>'child']);
+                        $xml->prependSibling('sibling1', true)
+                            ->prependSibling(['sibling2', 'sibling3'], ['class'=>'sibling']);
 
                         $alias = new FluidXml();
-                        $alias->appendChild('parent', true)
-                              ->prepend(['child1', 'child2'], ['class'=>'child']);
+                        $alias->prepend('sibling1', true)
+                              ->prepend(['sibling2', 'sibling3'], ['class'=>'sibling']);
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
@@ -810,12 +876,12 @@ describe('FluidXml', function() {
         describe('.insertSiblingBefore', function() {
                 it('should behave like .prependSibling', function() {
                         $xml = new FluidXml();
-                        $xml->appendChild('parent', true)
-                            ->prependSibling(['child1', 'child2'], ['class'=>'child']);
+                        $xml->prependSibling('sibling1', true)
+                            ->prependSibling(['sibling2', 'sibling3'], ['class'=>'sibling']);
 
                         $alias = new FluidXml();
-                        $alias->appendChild('parent', true)
-                              ->insertSiblingBefore(['child1', 'child2'], ['class'=>'child']);
+                        $alias->insertSiblingBefore('sibling1', true)
+                              ->insertSiblingBefore(['sibling2', 'sibling3'], ['class'=>'sibling']);
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
@@ -826,12 +892,12 @@ describe('FluidXml', function() {
         describe('.append', function() {
                 it('should behave like .appendSibling', function() {
                         $xml = new FluidXml();
-                        $xml->appendChild('parent', true)
-                            ->appendSibling(['child1', 'child2'], ['class'=>'child']);
+                        $xml->appendSibling('sibling1', true)
+                            ->appendSibling(['sibling2', 'sibling3'], ['class'=>'sibling']);
 
                         $alias = new FluidXml();
-                        $alias->appendChild('parent', true)
-                              ->append(['child1', 'child2'], ['class'=>'child']);
+                        $alias->append('sibling1', true)
+                              ->append(['sibling2', 'sibling3'], ['class'=>'sibling']);
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
@@ -842,12 +908,12 @@ describe('FluidXml', function() {
         describe('.insertSiblingAfter', function() {
                 it('should behave like .appendSibling', function() {
                         $xml = new FluidXml();
-                        $xml->appendChild('parent', true)
-                            ->appendSibling(['child1', 'child2'], ['class'=>'child']);
+                        $xml->appendSibling('sibling1', true)
+                            ->appendSibling(['sibling2', 'sibling3'], ['class'=>'sibling']);
 
                         $alias = new FluidXml();
-                        $alias->appendChild('parent', true)
-                              ->insertSiblingAfter(['child1', 'child2'], ['class'=>'child']);
+                        $alias->insertSiblingAfter('sibling1', true)
+                              ->insertSiblingAfter(['sibling2', 'sibling3'], ['class'=>'sibling']);
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
@@ -862,10 +928,7 @@ describe('FluidContext', function() {
                 $cx = $xml->appendChild(['head', 'body'], true);
 
                 $actual = $cx;
-                assert($actual instanceof \Iterator, __(
-                        \get_class($actual),
-                        \Iterator::class
-                ));
+                assert_equal_instance($actual, \Iterator::class);
 
                 $representation = [];
                 foreach ($cx as $k => $v) {
@@ -874,10 +937,7 @@ describe('FluidContext', function() {
                         assert($actual === $expected, __($actual, $expected));
 
                         $actual = $v;
-                        assert($actual instanceof \DOMNode, __(
-                                \get_class($actual),
-                                \DOMNode::class
-                        ));
+                        assert_equal_instance($actual, \DOMNode::class);
 
                         $representation[$k] = $v->nodeName;
                 }
@@ -887,16 +947,75 @@ describe('FluidContext', function() {
                 assert($actual === $expected, __($actual, $expected));
         });
 
+        describe('()', function() {
+                it('should accept a DOMNodeList', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild(['head', 'body'], true);
+                        $dom = $xml->dom();
+
+                        $domxp = new \DOMXPath($dom);
+                        $nodes = $domxp->query('/doc/*');
+
+                        $newCx = new FluidContext($dom, $nodes);
+
+                        $actual   = $cx->asArray() === $newCx->asArray();
+                        $expected = true;
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should accept a FluidContext', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild(['head', 'body'], true);
+
+                        $newCx = new FluidContext($xml->dom(), $cx);
+
+                        $actual   = $cx->asArray() === $newCx->asArray();
+                        $expected = true;
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
         describe('[]', function() {
                 it('should access the nodes inside the context', function() {
                         $xml = new FluidXml();
                         $cx = $xml->appendChild(['head', 'body'], true);
 
                         $actual = $cx[0];
-                        assert($actual instanceof \DOMElement, __(
-                                \get_class($actual),
-                                \DOMElement::class
-                        ));
+                        assert_equal_instance($actual, \DOMElement::class);
+
+                        $actual = $cx[1];
+                        assert_equal_instance($actual, \DOMElement::class);
+                });
+
+                it('should behave like an array', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild(['head', 'body'], true);
+
+                        $actual   = isset($cx[0]);
+                        $expected = true;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = isset($cx[2]);
+                        $expected = false;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[2];
+                        $expected = null;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        try {
+                                $cx[3] = "value";
+                        } catch (\Exception $e) {
+                                $actual   = $e;
+                        }
+                        assert_equal_instance($actual, \Exception::class);
+
+                        try {
+                                unset($cx[0]);
+                        } catch (\Exception $e) {
+                                $actual   = $e;
+                        }
+                        assert_equal_instance($actual, \Exception::class);
                 });
         });
 
