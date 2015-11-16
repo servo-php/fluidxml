@@ -8,21 +8,6 @@ require_once 'FluidXml.php';
 use FluidNamespace as Name;
 
 
-function assert_equal_xml($actual, $expected)
-{
-        $xml_header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-
-        $actual   = \trim($actual->xml());
-        $expected = \trim($xml_header . $expected);
-        assert($actual === $expected, __($actual, $expected));
-}
-
-function assert_is_a($actual, $expected)
-{
-        assert(\is_a($actual, $expected) === true, __(\get_class($actual), $expected));
-}
-
-
 describe('fluidxml', function() {
         it('should return a new FluidXml instance', function() {
                 $xml = fluidxml();
@@ -58,6 +43,10 @@ describe('FluidXml', function() {
                 $xml = new FluidXml(['stylesheet' => 'http://servo-php.org/fluidxml']);
 
                 $expected = "<?xml-stylesheet type=\"text/xsl\" encoding=\"UTF-8\" indent=\"yes\" href=\"http://servo-php.org/fluidxml\"?>\n<doc/>";
+                assert_equal_xml($xml, $expected);
+
+                $xml = new FluidXml(['root' => null, 'stylesheet' => 'http://servo-php.org/fluidxml']);
+                $expected = "<?xml-stylesheet type=\"text/xsl\" encoding=\"UTF-8\" indent=\"yes\" href=\"http://servo-php.org/fluidxml\"?>";
                 assert_equal_xml($xml, $expected);
         });
 
@@ -105,7 +94,7 @@ describe('FluidXml', function() {
 
                         $xml = new FluidXml();
                         $xml->appendChild('html', true)->appendChild(['head','body']);
-                        $cx = $xml->query('//html')->query('head');
+                        $cx = $xml->query('/doc/html')->query('head');
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'head';
@@ -117,9 +106,9 @@ describe('FluidXml', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('html', true)
                             ->appendChild(['head','body']);
-                        $cx = $xml->query('//html/body')
+                        $cx = $xml->query('/doc/html/body')
                                   ->appendChild('h1')
-                                  ->query('//head');
+                                  ->query('/doc/html/head');
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'head';
@@ -183,6 +172,52 @@ describe('FluidXml', function() {
                                     "    <child4/>\n"   .
                                     "  </parent>\n"     .
                                     "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add many children recursively', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild(['child1'=>['child11'=>['child111', 'child112'=>'value112'], 'child12'=>'value12'],
+                                           'child2'=>['child21', 'child22'=>['child221', 'child222']]])
+                            ->appendChild('parent', true)
+                            ->appendChild(['child3'=>['child31'=>['child311', 'child312'=>'value312'], 'child32'=>'value32'],
+                                           'child4'=>['child41', 'child42'=>['child421', 'child422']]]);
+
+                        $expected = <<<EOF
+<doc>
+  <child1>
+    <child11>
+      <child111/>
+      <child112>value112</child112>
+    </child11>
+    <child12>value12</child12>
+  </child1>
+  <child2>
+    <child21/>
+    <child22>
+      <child221/>
+      <child222/>
+    </child22>
+  </child2>
+  <parent>
+    <child3>
+      <child31>
+        <child311/>
+        <child312>value312</child312>
+      </child31>
+      <child32>value32</child32>
+    </child3>
+    <child4>
+      <child41/>
+      <child42>
+        <child421/>
+        <child422/>
+      </child42>
+    </child4>
+  </parent>
+</doc>
+EOF;
+
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -435,14 +470,14 @@ describe('FluidXml', function() {
                         $xml->setAttribute('attr1', 'Attr1 Value')
                             ->setAttribute('attr2', 'Attr2 Value');
 
-                        $xml->setAttribute('attr2', 'New Attr2 Value');
+                        $xml->setAttribute('attr2', 'Attr2 New Value');
 
-                        $expected = "<doc attr1=\"Attr1 Value\" attr2=\"New Attr2 Value\"/>";
+                        $expected = "<doc attr1=\"Attr1 Value\" attr2=\"Attr2 New Value\"/>";
                         assert_equal_xml($xml, $expected);
 
-                        $xml->setAttribute('attr1', 'New Attr1 Value');
+                        $xml->setAttribute('attr1', 'Attr1 New Value');
 
-                        $expected = "<doc attr2=\"New Attr2 Value\" attr1=\"New Attr1 Value\"/>";
+                        $expected = "<doc attr1=\"Attr1 New Value\" attr2=\"Attr2 New Value\"/>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -473,10 +508,10 @@ describe('FluidXml', function() {
                         $xml->appendChild('child', true)
                             ->setAttribute('attr1', 'Attr1 Value')
                             ->setAttribute('attr2', 'Attr2 Value')
-                            ->setAttribute('attr2', 'New Attr2 Value');
+                            ->setAttribute('attr2', 'Attr2 New Value');
 
                         $expected = "<doc>\n"   .
-                                    "  <child attr1=\"Attr1 Value\" attr2=\"New Attr2 Value\"/>\n" .
+                                    "  <child attr1=\"Attr1 Value\" attr2=\"Attr2 New Value\"/>\n" .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);
 
@@ -484,10 +519,10 @@ describe('FluidXml', function() {
                         $xml->appendChild('child', true)
                             ->setAttribute(['attr1' => 'Attr1 Value',
                                             'attr2' => 'Attr2 Value'])
-                            ->setAttribute('attr1', 'New Attr1 Value');
+                            ->setAttribute('attr1', 'Attr1 New Value');
 
                         $expected = "<doc>\n"   .
-                                    "  <child attr2=\"Attr2 Value\" attr1=\"New Attr1 Value\"/>\n" .
+                                    "  <child attr1=\"Attr1 New Value\" attr2=\"Attr2 Value\"/>\n" .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
@@ -624,7 +659,7 @@ describe('FluidXml', function() {
                         $xml->appendChild('parent', true)
                             ->appendChild('child');
 
-                        $xml->remove('//parent/child');
+                        $xml->remove('/doc/parent/child');
 
                         $expected = "<doc>\n" .
                                     "  <parent/>\n" .
@@ -650,7 +685,7 @@ describe('FluidXml', function() {
                         $xml->appendChild('parent', true)
                             ->appendChild(['child1', 'child2'], ['class'=>'removable']);
 
-                        $xml->remove('//parent/*[@class="removable"]');
+                        $xml->remove('/doc/parent/*[@class="removable"]');
 
                         $expected = "<doc>\n" .
                                     "  <parent/>\n" .
@@ -869,6 +904,42 @@ describe('FluidXml', function() {
                         assert($actual === $expected, __($actual, $expected));
                 });
         });
+
+        describe('.attr', function() {
+                it('should behave like .setAttribute', function() {
+                        $xml = new FluidXml();
+                        $xml->setAttribute('attr1', 'Attr1 Value')
+                            ->appendChild('child', true)
+                            ->setAttribute('attr2', 'Attr2 Value');
+
+                        $alias = new FluidXml();
+                        $alias->attr('attr1', 'Attr1 Value')
+                              ->appendChild('child', true)
+                              ->attr('attr2', 'Attr2 Value');
+
+                        $actual   = $xml->xml();
+                        $expected = $alias->xml();
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.text', function() {
+                it('should behave like .setText', function() {
+                        $xml = new FluidXml();
+                        $xml->setText('Text1')
+                            ->appendChild('child', true)
+                            ->setText('Text2');
+
+                        $alias = new FluidXml();
+                        $alias->text('Text1')
+                              ->appendChild('child', true)
+                              ->text('Text2');
+
+                        $actual   = $xml->xml();
+                        $expected = $alias->xml();
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
 });
 
 describe('FluidContext', function() {
@@ -938,33 +1009,36 @@ describe('FluidContext', function() {
 
                 it('should behave like an array', function() {
                         $xml = new FluidXml();
-                        $cx = $xml->appendChild(['head', 'body'], true);
+                        $cx = $xml->appendChild(['head', 'body', 'extra'], true);
 
                         $actual   = isset($cx[0]);
                         $expected = true;
                         assert($actual === $expected, __($actual, $expected));
 
-                        $actual   = isset($cx[2]);
+                        $actual   = isset($cx[3]);
                         $expected = false;
                         assert($actual === $expected, __($actual, $expected));
 
-                        $actual   = $cx[2];
+                        $actual   = $cx[3];
                         $expected = null;
                         assert($actual === $expected, __($actual, $expected));
 
                         try {
-                                $cx[3] = "value";
+                                $cx[] = "value";
                         } catch (\Exception $e) {
                                 $actual   = $e;
                         }
                         assert_is_a($actual, \Exception::class);
 
-                        try {
-                                unset($cx[0]);
-                        } catch (\Exception $e) {
-                                $actual   = $e;
-                        }
-                        assert_is_a($actual, \Exception::class);
+                        unset($cx[1]);
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'head';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[1]->nodeName;
+                        $expected = 'extra';
+                        assert($actual === $expected, __($actual, $expected));
                 });
         });
 

@@ -6,10 +6,11 @@ cd ../..
 
 PATH="sandbox/composer/bin:$PATH"
 
-if ! chkcmd 'peridot'; then
-        echo ' error: "peridot" command not found.'
+if ! chkcmd 'phpdoc'; then
+        echo ' error: "phpdoc" command not found.'
         echo ' Execute "./bin/init" first.'
         exit 1
 fi
 
-peridot -g "*.php" "specs/"
+
+phpdoc -d "source" -t "documents/api" --template clean

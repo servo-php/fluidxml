@@ -11,9 +11,9 @@ if ! chkcmd 'composer'; then
 fi
 
 
-mkdir -pv sandbox
-mkdir -pv sandbox/composer
+mkdir -pv "sandbox"
+mkdir -pv "sandbox/composer"
 
-cp -f support/composer.json sandbox/
+cp -f "support/composer.json" "sandbox/"
 
-composer install -d sandbox
+composer install -d "sandbox"

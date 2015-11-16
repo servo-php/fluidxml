@@ -1,12 +1,15 @@
 {
         "name": "servo/fluidxml",
-        "description": "Servo FluidXML library",
+        "description": "Concise and fluent XML manipulation library",
         "config": {
                 "vendor-dir": "./composer"
         },
         "require": {
-                "php": ">=7",
+                "php": ">=7"
+        },
+        "require-dev": {
                 "peridot-php/peridot": "1.*",
-                "peridot-php/peridot-code-coverage-reporters": "1.*"
+                "peridot-php/peridot-code-coverage-reporters": "1.*",
+                "phpdocumentor/phpdocumentor": "2.*"
         }
 }

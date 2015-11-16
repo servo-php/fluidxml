@@ -19,3 +19,17 @@ function __($actual, $expected)
         return "expected " . $v['expected'] . ",$sep"
                . "given " . $v['actual'] . ".";
 }
+
+function assert_equal_xml($actual, $expected)
+{
+        $xml_header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+
+        $actual   = \trim($actual->xml());
+        $expected = \trim($xml_header . $expected);
+        assert($actual === $expected, __($actual, $expected));
+}
+
+function assert_is_a($actual, $expected)
+{
+        assert(\is_a($actual, $expected) === true, __(\get_class($actual), $expected));
+}

@@ -17,6 +17,10 @@ if ! chkcmd 'phpdbg'; then
         exit 1
 fi
 
-phpdbg -e "$(which peridot)" -c support/peridot.php -r html-code-coverage -g "*.php" specs/
+phpdbg -e "$(which peridot)" -c "support/peridot.php" -r html-code-coverage -g "*.php" "specs/"
 
-open code-coverage-report/index.html
+## Type:
+## run
+## quit
+
+chkcmd 'open' && open "code-coverage-report/index.html"

@@ -27,9 +27,8 @@ interface FluidInterface
         public function insertSiblingBefore($sibling, ...$optionals);
         public function append($sibling, ...$optionals);
         public function insertSiblingAfter($sibling, ...$optionals);
-        // public function attr(...$arguments);
-        // public function text($text);
-
+        public function attr(...$arguments);
+        public function text($text);
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -100,7 +99,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         public function offsetUnset($offset)
         {
                 // unset($this->nodes[$offset]);
-                throw new \Exception('Unsetting a context element is not allowed.');
+                \array_splice($this->nodes, $offset, 1);
         }
 
         // \ArrayAccess interface.
@@ -159,15 +158,14 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 $domxp = new \DOMXPath($this->dom);
 
                 foreach ($this->nodes as $n) {
-                        // TODO: benchmark of for vs foreach
-                        // $nodes = $domxp->query($x, $node);
-                        // for ($i = 0, $l = $nodes->length; $i < $l; ++$i) {
-                        //         $nodesList[] = $nodes->item($i);
-                        // }
                         foreach ($xpath as $x) {
                                 // Returns a DOMNodeList.
                                 $res = $domxp->query($x, $n);
 
+                                // TODO: benchmark of for vs foreach.
+                                // for ($i = 0, $l = $res->length; $i < $l; ++$i) {
+                                //         $results[] = $res->item($i);
+                                // }
                                 foreach ($res as $r) {
                                         $results[] = $r;
                                 }
@@ -177,7 +175,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // Performing over multiple sibling nodes a query that ascends
                 // the xpath, relative (../..) or absolute (//), returns identical
                 // matching results that must be collapsed in an unique result
-                // (otherwise a subsequent operation is performed multiple times).
+                // otherwise a subsequent operation is performed multiple times.
                 $unique_results = [];
                 foreach ($results as $r) {
                         $found = false;
@@ -258,11 +256,10 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         public function appendXml($xml)
         {
                 $newDom = new \DOMDocument();
-                // A workaround to import strings with multiple root nodes.
+                // A way to import strings with multiple root nodes.
                 $newDom->loadXML("<root>$xml</root>");
 
                 $newDomXp = new \DOMXPath($newDom);
-                // It returns different results from '//*'.
                 $newNodes = $newDomXp->query('/root/*');
 
                 foreach ($this->nodes as $n) {
@@ -293,12 +290,31 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
                 foreach ($this->nodes as $n) {
                         foreach ($attrs as $k => $v) {
-                                // $n->setAttribute($k, $v);
-                                $n->appendChild(new \DOMAttr($k, $v));
+                                // Algorithm 1:
+                                $n->setAttribute($k, $v);
+
+                                // Algorithm 2:
+                                // $n->setAttributeNode(new \DOMAttr($k, $v));
+
+                                // Algorithm 3:
+                                // $n->appendChild(new \DOMAttr($k, $v));
+
+                                // Algorithm 2 and 3 have a different behaviour
+                                // from Algorithm 1.
+                                // The attribute is still created or setted, but
+                                // changing the value of an existing attribute
+                                // changes even the order of that attribute
+                                // in the attribute list.
                         }
                 }
 
                 return $this;
+        }
+
+        // Alias of setAttribute.
+        public function attr(...$arguments)
+        {
+                return $this->setAttribute(...$arguments);
         }
 
         public function appendText($text)
@@ -323,21 +339,27 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         {
                 foreach ($this->nodes as $n) {
                         // Algorithm 1:
+                        $n->nodeValue = $text;
+
+                        // Algorithm 2:
                         // foreach ($n->childNodes as $c) {
                         //         $n->removeChild($c);
                         // }
                         // $n->appendChild(new \DOMText($text));
 
-                        // Algorithm 2:
+                        // Algorithm 3:
                         // foreach ($n->childNodes as $c) {
                         //         $n->replaceChild(new \DOMText($text), $c);
                         // }
-
-                        // Algorithm 3:
-                        $n->nodeValue = $text;
                 }
 
                 return $this;
+        }
+
+        // Alias of setText.
+        public function text($text)
+        {
+                return $this->setText($text);
         }
 
         public function remove($xpath)
@@ -386,32 +408,34 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
                 $newContext = [];
 
-                foreach ($node as $k => $v) {
-                        // Default case are:
-                        // - [ 'element' => 'Text content of the element.' ]
-                        // - [ 'element' => [] ]
-                        $name  = $k;
-                        $value = $v;
+                foreach ($this->nodes as $n) {
+                        foreach ($node as $k => $v) {
+                                // Default cases are:
+                                // - [ 'element' => 'Text content of the element.' ]
+                                // - [ 'element' => [...] ]
+                                $name  = $k;
+                                $value = $v;
 
-                        // If the array key is an integer, the user has specified
-                        // only the child name, without a value.
-                        // [ 'element' ]
-                        if (\is_int($k)) {
-                                $name = $v;
-                                $value = null;
-                        }
-
-                        if (! \is_array($value)) {
-                                foreach ($this->nodes as $n) {
-                                        // The DOMElement instance must be different
-                                        // for every node, otherwise only one element
-                                        // is attached to the DOM.
-                                        $el = new \DOMElement($name, $value);
-                                        $newContext[] = $fn($n, $el);
+                                // If the array key is an integer the user has specified
+                                // only the child name, without a value.
+                                // [ 'element', ... ]
+                                if (\is_int($k)) {
+                                        $name = $v;
+                                        $value = null;
                                 }
-                        } else {
-                                // TODO
-                                throw new \Exception('Appending nested children is not yet implemented.');
+
+                                // The DOMElement instance must be different
+                                // for every node, otherwise only one element
+                                // is attached to the DOM.
+                                $el = new \DOMElement($name, \is_array($value) ? null : $value);
+                                $newContext[] = $fn($n, $el);
+
+                                // If the array key is an array the user has specified
+                                // a recursive structure.
+                                // [ 'element' => [...] ]
+                                if (\is_array($value)) {
+                                        $this->newContext($el)->appendChild($value, ...$optionals);
+                                }
                         }
                 }
 
@@ -577,6 +601,12 @@ class FluidXml implements FluidInterface
                 return $this;
         }
 
+        // Alias of setAttribute.
+        public function attr(...$arguments)
+        {
+                return $this->setAttribute(...$arguments);
+        }
+
         public function appendText($text)
         {
                 $this->newContext()->appendText($text);
@@ -596,6 +626,12 @@ class FluidXml implements FluidInterface
                 $this->newContext()->setText($text);
 
                 return $this;
+        }
+
+        // Alias of setText.
+        public function text($text)
+        {
+                return $this->setText($text);
         }
 
         public function remove($xpath)
