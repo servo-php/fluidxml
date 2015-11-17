@@ -13,7 +13,15 @@ $doc = new FluidXml();
 $doc->setAttribute('type', 'book')
     ->appendChild('title', 'The Theory Of Everything')
     ->appendChild('author', 'S. Hawking');
-    
+
+// Or, if you prefere, the concise syntax:
+
+$doc = fluidxml();
+
+$doc->attr('type', 'book')
+    ->add('title', 'The Theory Of Everything')
+    ->add('author', 'S. Hawking');
+
 echo $doc->xml();
 ```
 
@@ -26,7 +34,7 @@ echo $doc->xml();
 ```
 
 Creating structured documents is so easy that you'll never go back  
-(remember the old _DOMDocument_/_DOMNode_/_DOMElement_...).
+to the old _DOMDocument/DOMNode/DOMElement_.
 
 ```php
 $doc->appendChild('chapters', true)
@@ -35,7 +43,7 @@ $doc->appendChild('chapters', true)
          
 ```
 
-XPath is king.
+**XPath** is king.
 
 ```php
 $doc->query('//chapter')
@@ -44,7 +52,7 @@ $doc->query('//chapter')
     ->setAttribute('lang', 'en');
 ```
 
-And sometimes string templates are the fastest way.
+And sometimes **string templates** are the fastest way.
 
 ```php
 $cover = '<h1>The Theory Of Everything</h1>'
@@ -75,17 +83,103 @@ echo $doc->xml();
 Take a look at the [API][api] section for more powerful manipulations.
 
 
-## Why trying it
-Three great reasons, but you'll have the best answer trying it yourself.
+## Why
+Three great reasons to use it, but you'll have the best answer
+trying it yourself.
 
-FluidXML is **fun** to use, **concise** and **effective**. If it's not enough,  
+FluidXML is **fun** to use, **concise** and **effective**. If it's not enough,
 it has a compreansive test suite with a **100% code coverage**.
 
 
-## Installation
+## Requirements
+* PHP 7
 
-[api]: https://link/url
+
+## Installation
+Cloning the repository:
+```sh
+git clone https://github.com/servo-php/fluidxml.git
+```
+
+Using Composer will follow soon.
+
+
+## Usage
+```php
+require_once 'FluidXml.php';
+
+$xml = fluidxml();
+// is the same of
+$xml = new FluidXml();
+
+$xml = fluidxml([ 'version'    => '1.0',
+                  'encoding'   => 'UTF-8',
+                  'stylesheet' => null,
+                  'root'       => 'doc' ]);
+```
+
+
+## API
+```php
+fluidxml();
+new FluidXml();
+
+->query($xpath);
+
+->appendChild($child, ...$optionals);
+
+->prependSibling($sibling, ...$optionals);
+
+->appendSibling($sibling, ...$optionals);
+
+->appendXml($xml);
+
+->appendText($text);
+
+->appendCdata($cdata);
+
+->setText($text);
+
+->setAttribute(...$arguments);
+
+->remove($xpath);
+
+->xml();
+```
+
+```php
+// Aliases functions.
+
+->add($child, ...$optionals);                       // ->appendChild
+
+->prepend($sibling, ...$optionals);                 // ->prependSibling
+
+->insertSiblingBefore($sibling, ...$optionals);     // ->prependSibling
+
+->append($sibling, ...$optionals);                  // ->appendSibling
+
+->insertSiblingAfter($sibling, ...$optionals);      // ->appendSibling
+
+->attr(...$arguments);                              // ->setAttribute
+
+->text($text);                                      // ->setText
+```
+
+## Documentation
+Many examples are available insede the `specs` folder, as test cases,  
+which cover from the simplest case to the most comlex scenario.
+
+See the [Wiki](#wiki) (in progress).
+
+
+## Author
+Daniele Orlando <fluidxml@danieleorlando.com>
+
 
 ## License
 FluidXML is licensed under the BSD 2-Clause License.  
 See `documents/License.txt` for the details.
+
+
+[api]: #API
+[email]: mailto:fluidxml(at)danieleorlando.com
