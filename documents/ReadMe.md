@@ -166,8 +166,8 @@ new FluidXml();
 ```
 
 ## Documentation
-Many examples are available insede the `specs` folder, as test cases,  
-which cover from the simplest case to the most comlex scenario.
+Many examples are available insede the `specs/` folder, as test cases,  
+which cover from the simplest case to the most complex scenario.
 
 See the [Wiki](#wiki) (in progress).
 
@@ -181,5 +181,5 @@ FluidXML is licensed under the BSD 2-Clause License.
 See `documents/License.txt` for the details.
 
 
-[api]: #API
+[api]: #api
 [email]: mailto:fluidxml(at)danieleorlando.com
