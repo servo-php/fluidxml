@@ -4,7 +4,7 @@ FluidXML is a PHP library, under the Servo PHP framework umbrella,
 specifically designed to manipulate XML documents with a concise  
 and fluent interface.
 
-It leverages XPath and the fluent programming technique to be fun  
+It leverages XPath and the fluent programming pattern to be fun  
 and effective.
 
 ```php
@@ -17,7 +17,6 @@ $doc->setAttribute('type', 'book')
 // Or, if you prefere, the concise syntax:
 
 $doc = fluidxml();
-
 $doc->attr('type', 'book')
     ->add('title', 'The Theory Of Everything')
     ->add('author', 'S. Hawking');
@@ -55,11 +54,12 @@ $doc->query('//chapter')
 And sometimes **string templates** are the fastest way.
 
 ```php
-$cover = '<h1>The Theory Of Everything</h1>'
-        .'<img src="http://goo.gl/kO3Iov"/>';
-
 $doc->appendChild('cover', true)
-    ->appendXml($cover);
+    ->appendXml(<<<TPL
+        <h1>The Theory Of Everything</h1>
+        <img src="http://goo.gl/kO3Iov"/>
+TPL
+);
     
 echo $doc->xml();
 ```
@@ -87,8 +87,10 @@ Take a look at the [API][api] section for more powerful manipulations.
 Three great reasons to use it, but you'll have the best answer
 trying it yourself.
 
-FluidXML is **fun** to use, **concise** and **effective**. If it's not enough,
-it has a compreansive test suite with a **100% code coverage**.
+FluidXML is **fun** to use, **concise** and **effective**. If it's not enough, it has  
+a compreansive test suite with a **100% code coverage**.
+
+![100% Code Coverage](https://bytebucket.org/daniele_orlando/hosting/raw/a4a7f61de3793ec143ddcb75037da11abe434e23/FluidXML_code_coverage.png)
 
 
 ## Requirements
@@ -101,21 +103,19 @@ Cloning the repository:
 git clone https://github.com/servo-php/fluidxml.git
 ```
 
-Using Composer will follow soon.
+> Composer installation will follow soon.
 
 
 ## Usage
 ```php
 require_once 'FluidXml.php';
 
-$xml = fluidxml();
-// is the same of
 $xml = new FluidXml();
-
-$xml = fluidxml([ 'version'    => '1.0',
-                  'encoding'   => 'UTF-8',
-                  'stylesheet' => null,
-                  'root'       => 'doc' ]);
+// or
+$xml = new FluidXml([ 'version'    => '1.0',
+                      'encoding'   => 'UTF-8',
+                      'stylesheet' => null,
+                      'root'       => 'doc' ]);
 ```
 
 
@@ -144,6 +144,10 @@ new FluidXml();
 
 ->remove($xpath);
 
+->asArray();
+
+->length();
+
 ->xml();
 ```
 
@@ -166,10 +170,21 @@ new FluidXml();
 ```
 
 ## Documentation
-Many examples are available insede the `specs/` folder, as test cases,  
-which cover from the simplest case to the most complex scenario.
+Many examples are available inside the `specs/` folder, as test cases,  
+and inside the `documents/Examples.php` file. Both cover from the  
+simplest case to the most complex scenario.
 
-See the [Wiki](#wiki) (in progress).
+The complete API documentation can be generated, after cloning the  
+repository, executing
+```sh
+./support/tools/gendoc
+```
+and can be found under `documents/api`.
+
+
+## Roadmap
+* [ ] Porting the XML namespace implementation from the legacy FluidXML codebase
+* [ ] Expanding the API with some other useful methods
 
 
 ## Author
