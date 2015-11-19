@@ -109,22 +109,30 @@ If it's not enough, it has a compreansive test suite with a **100% code coverage
 
 
 ## Installation
-Cloning the repository:
-```sh
+* **Cloning the repository**:
+  ```sh
 git clone https://github.com/servo-php/fluidxml.git
 ```
 
-> Composer installation will follow soon.
+* **Using Composer**:
+  ```sh
+composer require "servo/fluidxml=dev-master"
+```
 
 
 ## Getting Started
-```php
+* **Cloning the repository**:
+  ```php
 require_once 'FluidXml.php';
-
-$xml = new FluidXml();
 ```
 
-See this [extensive Example](https://github.com/servo-php/fluidxml/wiki/Examples) to get started.
+* **Using Composer**:
+  ```php
+require_once 'vendor/autoload.php';
+```
+
+See this [extensive Example](https://github.com/servo-php/fluidxml/wiki/Examples)
+to get started and becoming a [ninja](http://1.viki.io/d/1863c/8b75dc48c9.gif).
 
 
 ## Documentation
