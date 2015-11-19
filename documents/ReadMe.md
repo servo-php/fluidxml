@@ -10,8 +10,7 @@ It leverages XPath and the fluent programming pattern to be fun and effective.
 
 ##### STOP _using the boring and verbose DOMDocument_.
 
-FluidXML has been specifically designed to bring XML documents  
-manipulation to the next level.
+FluidXML has been specifically designed to bring XML manipulation to the next level.
 
 ```php
 $book = new FluidXml();
