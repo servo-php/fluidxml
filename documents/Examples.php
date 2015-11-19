@@ -119,10 +119,10 @@ $book->query('//chapter')
 */
 
 $book->appendChild('cover', true)
-     ->appendXml(<<<TPL
+     ->appendXml(<<<XML
         <h1>The Theory Of Everything</h1>
         <img src="http://goo.gl/kO3Iov"/>
-TPL
+XML
 );
 
 
