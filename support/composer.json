@@ -1,6 +1,21 @@
 {
         "name": "servo/fluidxml",
         "description": "Concise and fluent XML manipulation library",
+        "type": "library",
+        "keywords": ["xml","templating"],
+        "homepage": "https://github.com/servo-php/fluidxml",
+        "license": "BSD-2-Clause",
+        "authors": [
+                {
+                        "name": "Daniele Orlando",
+                        "email": "fluidxml@danieleorlando.com",
+                        "homepage": "https://github.com/servo-php/fluidxml",
+                        "role": "Developer"
+                }
+        ],
+        "autoload": {
+                "files": ["source/FluidXml.php"]
+        },
         "config": {
                 "vendor-dir": "./composer"
         },
