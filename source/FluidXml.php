@@ -1,17 +1,115 @@
 <?php
 
-////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2015, Daniele Orlando <fluidxml(at)danieleorlando.com>
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this
+//    list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation
+//    and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+// IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+// OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+/**
+ * FluidXML is a PHP library, under the Servo PHP framework umbrella,
+ * specifically designed to manipulate XML documents with a concise
+ * and fluent interface.
+ *
+ * It leverages XPath and the fluent programming technique to be fun
+ * and effective.
+ *
+ * @author Daniele Orlando <fluidxml(at)danieleorlando.com>
+ *
+ * @license BSD-2-Clause
+ * @license https://opensource.org/licenses/BSD-2-Clause
+ */
+
+
+/**
+ * Constructs a new FluidXml instance.
+ *
+ * ```php
+ * $xml = fluidxml();
+ * // is the same of
+ * $xml = new FluidXml();
+ *
+ * $xml = fluidxml([
+ *
+ *   'version'    => '1.0',
+ *
+ *   'encoding'   => 'UTF-8',
+ *
+ *   'stylesheet' => null,
+ *
+ *   'root'       => 'doc' ]);
+ * ```
+ *
+ * @param array $arguments Options that influence the construction of the XML document.
+ *
+ * @return FluidXml A new FluidXml instance.
+ */
 function fluidxml(...$arguments)
 {
         return new FluidXml(...$arguments);
 }
-////////////////////////////////////////////////////////////////////////////////
-
 
 ////////////////////////////////////////////////////////////////////////////////
+
 interface FluidInterface
 {
+        /**
+         * Executes an XPath query.
+         *
+         * ```php
+         * $xml = fluidxml();
+
+         * $xml->query("/doc/book[@id='123']");
+         *
+         * // Relative queries are valid.
+         * $xml->query("/doc")->query("book[@id='123']");
+         * ```
+         *
+         * @param string $xpath The XPath to execute.
+         *
+         * @return FluidContext The context associated to the DOMNodeList.
+         */
         public function query($xpath);
+
+        /**
+         * Append a new node as child of the current context.
+         *
+         * ```php
+         * $xml = fluidxml();
+
+         * $xml->appendChild('title', 'The Theory Of Everything');
+         * $xml->appendChild([ 'author' => 'S. Hawking' ]);
+         *
+         * $xml->appendChild('chapters', true)->appendChild('chapter', ['id'=> 1]);
+         *
+         * ```
+         *
+         * @param string|array $child The child/children to add.
+         * @param string $value The child text content.
+         * @param bool $switchContext Whether to return the current context
+         *                            or the context of the created node.
+         *
+         * @return FluidContext The context associated to the DOMNodeList.
+         */
         public function appendChild($child, ...$optionals);
         public function prependSibling($sibling, ...$optionals);
         public function appendSibling($sibling, ...$optionals);
@@ -30,18 +128,16 @@ interface FluidInterface
         public function attr(...$arguments);
         public function text($text);
 }
-////////////////////////////////////////////////////////////////////////////////
-
 
 ////////////////////////////////////////////////////////////////////////////////
-class FluidNamespace
-{
-        // TODO
-}
+
+// class FluidNamespace
+// {
+//         // TODO
+// }
+
 ////////////////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////////////////
 class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 {
         private $dom;
@@ -402,40 +498,65 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                                 $n = \array_pop($node);
                                 $node[$n] = $opt;
                         } else {
-                                throw new \Exception('Optional argument "'.$opt.'" not recognized.');
+                                throw new \Exception("Optional argument '{$opt}' not recognized.");
                         }
                 }
 
                 $newContext = [];
 
+                $insertNode = function($parent, $name, $value = null) use (&$newContext, $fn) {
+                        // The DOMElement instance must be different for every node,
+                        // otherwise only one element is attached to the DOM.
+                        $el = new \DOMElement($name, $value);
+                        // $el = $this->dom->createElement($name, $value);
+                        $newContext[] = $fn($parent, $el);
+
+                        return $el;
+                };
+
+                $processNode = function($parent, $k, $v) use (&$processNode, $insertNode, $optionals) {
+                        if (\is_string($k)) {
+                                // The user has passed one of these two cases:
+                                // - [ 'element' => 'Text content.' ]
+                                // - [ 'element' => [...] ]
+
+                                if (\is_array($v)) {
+                                        // The user has passed a recursive structure:
+                                        // [ 'element' => [...] ]
+
+                                        $el = $insertNode($parent, $k);
+
+                                        $this->newContext($el)->appendChild($v, ...$optionals);
+                                } else {
+                                        // The user has passed a node name and a node value:
+                                        // [ 'element' => 'Text content.' ]
+
+                                        $insertNode($parent, $k, $v);
+                                }
+                        } else {
+                                // The user has passed one of these two cases:
+                                // - [ 'element', ... ]
+                                // - [ [...], [...], ... ]
+
+                                if (\is_array($v)) {
+                                        // The user has passed a wrapper array:
+                                        // [ [...], ... ]
+
+                                        foreach ($v as $kk => $vv) {
+                                                $processNode($parent, $kk, $vv);
+                                        }
+                                } else {
+                                        // The user has passed a node name without a node value:
+                                        // [ 'element', ... ]
+
+                                        $insertNode($parent, $v);
+                                }
+                        }
+                };
+
                 foreach ($this->nodes as $n) {
                         foreach ($node as $k => $v) {
-                                // Default cases are:
-                                // - [ 'element' => 'Text content of the element.' ]
-                                // - [ 'element' => [...] ]
-                                $name  = $k;
-                                $value = $v;
-
-                                // If the array key is an integer the user has specified
-                                // only the child name, without a value.
-                                // [ 'element', ... ]
-                                if (\is_int($k)) {
-                                        $name = $v;
-                                        $value = null;
-                                }
-
-                                // The DOMElement instance must be different
-                                // for every node, otherwise only one element
-                                // is attached to the DOM.
-                                $el = new \DOMElement($name, \is_array($value) ? null : $value);
-                                $newContext[] = $fn($n, $el);
-
-                                // If the array key is an array the user has specified
-                                // a recursive structure.
-                                // [ 'element' => [...] ]
-                                if (\is_array($value)) {
-                                        $this->newContext($el)->appendChild($value, ...$optionals);
-                                }
+                                $processNode($n, $k, $v);
                         }
                 }
 
@@ -456,10 +577,9 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 }
-////////////////////////////////////////////////////////////////////////////////
-
 
 ////////////////////////////////////////////////////////////////////////////////
+
 class FluidXml implements FluidInterface
 {
         private $dom;

@@ -6,11 +6,39 @@ cd ../..
 
 PATH="sandbox/composer/bin:$PATH"
 
-if ! chkcmd 'phpdoc'; then
-        echo ' error: "phpdoc" command not found.'
-        echo ' Execute "./bin/init" first.'
+if ! chkcmd 'apigen'; then
+        echo ' error: "apigen" command not found.'
+        echo ' Execute "./support/tools/init" first.'
         exit 1
 fi
 
+api_dir="documents/api"
 
-phpdoc -d "source" -t "documents/api" --template clean
+if test -d "$api_dir"; then
+        rm -rf "$api_dir"
+fi
+
+genapi() {
+        apigen generate                         \
+                --source "source"               \
+                --destination "$api_dir"   \
+                --template-theme bootstrap      \
+                --template-config "sandbox/composer/apigen/theme-bootstrap/src/config.neon" \
+                --title "FluidXML"              \
+                --todo                          \
+                --tree
+}
+
+doc_handler()
+{
+        genapi || true
+
+        while read -d '' e; do
+                clear
+                genapi || true
+        done
+}
+
+watch "source/" | dsstore_filter | doc_handler
+
+# chkcmd 'open' && open "$api_dir/index.html"

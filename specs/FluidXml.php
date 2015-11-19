@@ -255,6 +255,25 @@ EOF;
                                     "  </parent>\n"     .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);
+
+                        $xml = new FluidXml();
+                        $xml->appendChild([ 'child', ['child'], ['child' => 'value1'], ['child' => 'value2']])
+                             ->appendChild('parent', true)
+                             ->appendChild([ 'child', ['child'], ['child' => 'value1'], ['child' => 'value2']]);
+
+                        $expected = "<doc>\n"           .
+                                    "  <child/>\n"      .
+                                    "  <child/>\n"      .
+                                    "  <child>value1</child>\n"         .
+                                    "  <child>value2</child>\n"         .
+                                    "  <parent>\n"      .
+                                    "    <child/>\n"      .
+                                    "    <child/>\n"      .
+                                    "    <child>value1</child>\n"         .
+                                    "    <child>value2</child>\n"         .
+                                    "  </parent>\n"     .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
                 });
 
                 it('should add a child with some attributes', function() {
@@ -909,13 +928,17 @@ EOF;
                 it('should behave like .setAttribute', function() {
                         $xml = new FluidXml();
                         $xml->setAttribute('attr1', 'Attr1 Value')
+                            ->setAttribute(['attr2' => 'Attr2 Value', 'attr3' => 'Attr3 Value'])
                             ->appendChild('child', true)
-                            ->setAttribute('attr2', 'Attr2 Value');
+                            ->setAttribute('attr4', 'Attr4 Value')
+                            ->setAttribute(['attr5' => 'Attr5 Value', 'attr6' => 'Attr6 Value']);
 
                         $alias = new FluidXml();
                         $alias->attr('attr1', 'Attr1 Value')
+                              ->attr(['attr2' => 'Attr2 Value', 'attr3' => 'Attr3 Value'])
                               ->appendChild('child', true)
-                              ->attr('attr2', 'Attr2 Value');
+                              ->attr('attr4', 'Attr4 Value')
+                              ->attr(['attr5' => 'Attr5 Value', 'attr6' => 'Attr6 Value']);
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();

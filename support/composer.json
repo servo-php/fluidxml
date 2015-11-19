@@ -10,6 +10,6 @@
         "require-dev": {
                 "peridot-php/peridot": "1.*",
                 "peridot-php/peridot-code-coverage-reporters": "1.*",
-                "phpdocumentor/phpdocumentor": "2.*"
+                "apigen/apigen": "4.*"
         }
 }
