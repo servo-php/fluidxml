@@ -1,6 +1,6 @@
 # FluidXML
 
-FluidXML is a PHP library, under the Servo PHP framework umbrella,  
+FluidXML is a PHP library, under the Servo PHP framework umbrella ☂,  
 specifically designed to manipulate XML documents with a concise  
 and fluent interface.
 
@@ -149,7 +149,6 @@ The complete API documentation can be generated executing:
 ./support/tools/gendoc      # Generated under 'documents/api/'.
 ```
 
-
 ## APIs
 ```php
 fluidxml();
@@ -199,6 +198,15 @@ Alias methods:
 
 ->text($text);                                      // ->setText
 ```
+
+
+## Donation
+If you think this project is **awesome** or if you want to demonstrate  
+your immense gratitude **♡**, donate _1cent_.
+
+[![Donate](https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=8Y68ZQU8FXE8Q&lc=IT&item_name=FluidXML&item_number=servo%2dfluidxml&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted)
+
+#### Thanks! :D ♥
 
 
 ## Roadmap
