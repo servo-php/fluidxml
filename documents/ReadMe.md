@@ -37,10 +37,11 @@ $book->attr('type', 'book')
          ->add('chapter', 'The Expanding Universe',   ['id'=> 2])
      ->query('//chapter')
      ->attr('lang', 'en');
-
-echo $doc->xml();
 ```
 
+```php
+echo $book->xml();
+```
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <doc type="book">
@@ -144,6 +145,7 @@ The complete API documentation can be generated executing
 ## APIs
 ```php
 fluidxml();
+
 new FluidXml();
 
 ->query($xpath);
@@ -173,7 +175,7 @@ new FluidXml();
 ->xml();
 ```
 
-Aliases functions.
+Alias methods.
 ```php
 ->add($child, ...$optionals);                       // ->appendChild
 
