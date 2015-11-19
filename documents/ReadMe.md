@@ -204,7 +204,7 @@ Alias methods:
 If you think this project is **awesome** or if you want to demonstrate  
 your immense gratitude **♡**, donate _1cent_.
 
-[![Donate](https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=8Y68ZQU8FXE8Q&lc=IT&item_name=FluidXML&item_number=servo%2dfluidxml&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted)
+[![Donate](https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=1)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=8Y68ZQU8FXE8Q&lc=IT&item_name=FluidXML&item_number=servo%2dfluidxml&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted)
 
 #### Thanks! :D ♥
 
