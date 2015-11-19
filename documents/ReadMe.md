@@ -101,7 +101,7 @@ FluidXML is **fun** to use, **concise** and **effective**.
 
 If it's not enough, it has a compreansive test suite with a **100% code coverage**.
 
-![100% Code Coverage](https://bytebucket.org/daniele_orlando/hosting/raw/a4a7f61de3793ec143ddcb75037da11abe434e23/FluidXML_code_coverage.png)
+![100% Code Coverage](https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png)
 
 
 ## Requirements
