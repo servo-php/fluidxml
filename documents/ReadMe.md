@@ -144,7 +144,7 @@ Many examples are available:
 All them cover from the simplest case to the most complex scenario.
 
 
-The complete API documentation can be generated executing
+The complete API documentation can be generated executing:
 ```sh
 ./support/tools/gendoc      # Generated under 'documents/api/'.
 ```
@@ -183,7 +183,7 @@ new FluidXml();
 ->xml();
 ```
 
-Alias methods.
+Alias methods:
 ```php
 ->add($child, ...$optionals);                       // ->appendChild
 
