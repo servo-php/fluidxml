@@ -211,12 +211,13 @@ your immense gratitude **♡**, donate _1cent_.
 
 ## Roadmap
 * [ ] Porting the XML namespace implementation from the legacy FluidXML codebase
-* [ ] Expanding the API with some other useful methods
+* [ ] Expanding the APIs with some other useful methods
+* [ ] Extending the documentation
 
 <a href='https://pledgie.com/campaigns/30607'><img alt='Click here to lend your support to: FluidXML and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/30607.png?skin_name=chrome' border='0' ></a>
 
 ## Author
-Daniele Orlando - <fluidxml@danieleorlando.com>
+Daniele Orlando  [&lt;fluidxml@danieleorlando.com&gt;](mailto:fluidxml@danieleorlando.com)
 
 
 ## License
