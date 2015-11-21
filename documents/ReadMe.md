@@ -1,7 +1,11 @@
-# FluidXML
+[example]: https://github.com/servo-php/fluidxml/wiki/Examples
+[ninja]:   http://1.viki.io/d/1863c/8b75dc48c9.gif
+[donate-button]: https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=2
+[donate-link]:   https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=8Y68ZQU8FXE8Q&lc=IT&item_name=FluidXML&item_number=servo%2dfluidxml&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted
 
-FluidXML is a PHP library, under the Servo PHP framework umbrella ☂,  
-specifically designed to manipulate XML documents with a concise  
+# FluidXML
+FluidXML is a PHP library, under the Servo PHP framework umbrella ☂,<br/>
+specifically designed to manipulate XML documents with a concise<br/>
 and fluent interface.
 
 It leverages XPath and the fluent programming pattern to be fun and effective.
@@ -65,7 +69,7 @@ $food->add('fruit')                                           // A 'fruit' node 
      ->add([ ['egg'],
              ['egg'],
              ['egg'] ], ['price' => '0.25'])                  // Adding a bunch of 'egg's all with the same price.
-     ->add([ 'fridge' => [                                    
+     ->add([ 'fridge' => [
                  'omelette' => 'with potato',
                  'soupe'    => 'wit mashrooms' ]]);           // Deep tree structures are supported too.
 ```
@@ -85,17 +89,16 @@ And sometimes **string templates** are the fastest way.
 
 ```php
 $book->appendChild('cover', true)
-         ->appendXml(<<<XML
-             <h1>The Theory Of Everything</h1>
-             <img src="http://goo.gl/kO3Iov"/>
+     ->appendXml(<<<XML
+        <h1>The Theory Of Everything</h1>
+        <img src="http://goo.gl/kO3Iov"/>
 XML
 );
 ```
 
 
 ## Why
-Three great reasons to use it, but you'll have the best answer
-trying it yourself.
+Three great reasons to use it, but you'll have the best answer trying it yourself.
 
 FluidXML is **fun** to use, **concise** and **effective**.
 
@@ -116,7 +119,7 @@ git clone https://github.com/servo-php/fluidxml.git
 
 * **Using Composer**:
   ```sh
-composer require "servo/fluidxml=dev-master"
+composer require servo/fluidxml
 ```
 
 
@@ -131,23 +134,23 @@ require_once 'FluidXml.php';
 require_once 'vendor/autoload.php';
 ```
 
-See this [extensive Example](https://github.com/servo-php/fluidxml/wiki/Examples)
-to get started and becoming a [ninja](http://1.viki.io/d/1863c/8b75dc48c9.gif).
+See an [extensive Example][example]
+to get started and becoming a [ninja][ninja].
 
 
 ## Documentation
 Many examples are available:
-- in the [wiki Examples page](https://github.com/servo-php/fluidxml/wiki/Examples)
+- in the [wiki Examples page][example]
 - inside the `documents/Examples.php` file
 - inside the `specs/` folder, as test cases
 
 All them cover from the simplest case to the most complex scenario.
 
-
 The complete API documentation can be generated executing:
 ```sh
 ./support/tools/gendoc      # Generated under 'documents/api/'.
 ```
+
 
 ## APIs
 ```php
@@ -201,10 +204,10 @@ Alias methods:
 
 
 ## Donation
-If you think this project is **awesome** or if you want to demonstrate  
+If you think this project is **awesome** or if you want to demonstrate<br/>
 your immense gratitude **♡**, donate _1cent_.
 
-[![Donate](https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=2)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=8Y68ZQU8FXE8Q&lc=IT&item_name=FluidXML&item_number=servo%2dfluidxml&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted)
+[![Donate][donate-button]][donate-link]
 
 #### Thanks! :D ♥
 
@@ -214,7 +217,10 @@ your immense gratitude **♡**, donate _1cent_.
 * [ ] Expanding the APIs with some other useful methods
 * [ ] Extending the documentation
 
-<a href='https://pledgie.com/campaigns/30607'><img alt='Click here to lend your support to: FluidXML and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/30607.png?skin_name=chrome' border='0' ></a>
+<a href='https://pledgie.com/campaigns/30607'>
+    <img alt='Click here to lend your support to: FluidXML and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/30607.png?skin_name=chrome' border='0' >
+</a>
+
 
 ## Author
 Daniele Orlando  [&lt;fluidxml@danieleorlando.com&gt;](mailto:fluidxml@danieleorlando.com)

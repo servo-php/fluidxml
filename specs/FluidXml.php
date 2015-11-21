@@ -257,9 +257,9 @@ EOF;
                         assert_equal_xml($xml, $expected);
 
                         $xml = new FluidXml();
-                        $xml->appendChild([ 'child', ['child'], ['child' => 'value1'], ['child' => 'value2']])
+                        $xml->appendChild([ 'child', ['child'], ['child' => 'value1'], ['child' => 'value2'] ])
                              ->appendChild('parent', true)
-                             ->appendChild([ 'child', ['child'], ['child' => 'value1'], ['child' => 'value2']]);
+                             ->appendChild([ 'child', ['child'], ['child' => 'value3'], ['child' => 'value4'] ]);
 
                         $expected = "<doc>\n"           .
                                     "  <child/>\n"      .
@@ -269,8 +269,8 @@ EOF;
                                     "  <parent>\n"      .
                                     "    <child/>\n"      .
                                     "    <child/>\n"      .
-                                    "    <child>value1</child>\n"         .
-                                    "    <child>value2</child>\n"         .
+                                    "    <child>value3</child>\n"         .
+                                    "    <child>value4</child>\n"         .
                                     "  </parent>\n"     .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);

@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 . ".common.sh"
 cd ../..
 
-PATH="sandbox/composer/bin:$PATH"
+PATH="$(pwd)/sandbox/composer/bin:$PATH"
 
 if ! chkcmd 'peridot'; then
         echo ' error: "peridot" command not found.'
@@ -17,7 +17,9 @@ if ! chkcmd 'phpdbg'; then
         exit 1
 fi
 
-phpdbg -e "$(which peridot)" -c "support/peridot.php" -r html-code-coverage -g "*.php" "specs/"
+cd sandbox
+
+phpdbg -e "$(which peridot)" -c "../support/peridot.php" -r html-code-coverage -g "*.php" "../specs/"
 
 ## Type:
 ## run
