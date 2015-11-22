@@ -1,5 +1,9 @@
 [example]: https://github.com/servo-php/fluidxml/wiki/Examples
-[ninja]:   http://1.viki.io/d/1863c/8b75dc48c9.gif
+[example-file]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples.php
+[specs-file]: https://github.com/servo-php/fluidxml/blob/master/specs/FluidXml.php
+[license-file]: https://github.com/servo-php/fluidxml/blob/master/documents/License.txt
+[gettingstarted]: https://github.com/servo-php/fluidxml/wiki/Getting-Started
+[ninja]: http://1.viki.io/d/1863c/8b75dc48c9.gif
 [donate-button]: https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=2
 [donate-link]:   https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=8Y68ZQU8FXE8Q&lc=IT&item_name=FluidXML&item_number=servo%2dfluidxml&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted
 
@@ -30,7 +34,7 @@ $book->setAttribute('type', 'book')
 ```
 
 ```php
-// Or, if you prefere, there is a concise syntax:
+// Or, if you prefer, there is a concise syntax:
 
 $book = fluidxml();
 $book->attr('type', 'book')
@@ -134,15 +138,17 @@ require_once 'FluidXml.php';
 require_once 'vendor/autoload.php';
 ```
 
-See an [extensive Example][example]
-to get started and becoming a [ninja][ninja].
+See the [documentation](#documentation) to get started and becoming a [ninja][ninja].
 
 
 ## Documentation
-Many examples are available:
-- in the [wiki Examples page][example]
-- inside the `documents/Examples.php` file
-- inside the `specs/` folder, as test cases
+_5 minutes reading_ <br/>
+Follow the [Getting Started tutorial][gettingstarted] to become a [ninja][ninja] in no time.
+
+Many other examples are available:
+- in the wiki [Examples][example] page
+- inside the [`documents/Examples.php`][example-file] file
+- inside the [`specs/FluidXml.php`][specs-file] file (as test cases)
 
 All them cover from the simplest case to the most complex scenario.
 
@@ -213,6 +219,7 @@ your immense gratitude **♡**, donate _1cent_.
 
 
 ## Roadmap
+* [ ] PHP 5.4 backport
 * [ ] Porting the XML namespace implementation from the legacy FluidXML codebase
 * [ ] Expanding the APIs with some other useful methods
 * [ ] Extending the documentation
@@ -229,4 +236,4 @@ Daniele Orlando  [&lt;fluidxml@danieleorlando.com&gt;](mailto:fluidxml@danieleor
 ## License
 FluidXML is licensed under the BSD 2-Clause License.
 
-See `documents/License.txt` for the details.
+See [`documents/License.txt`][license-file] for the details.
