@@ -113,6 +113,7 @@ If it's not enough, it has a compreansive test suite with a **100% code coverage
 
 ## Requirements
 * PHP 7
+* _PHP 5.4 backport in progress_
 
 
 ## Installation
@@ -142,7 +143,7 @@ See the [documentation](#documentation) to get started and becoming a [ninja][ni
 
 
 ## Documentation
-_5 minutes reading_ <br/>
+_5 minutes reading_<br/>
 Follow the [Getting Started tutorial][gettingstarted] to become a [ninja][ninja] in no time.
 
 Many other examples are available:
