@@ -24,7 +24,6 @@
 // OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 /**
  * FluidXML is a PHP library, under the Servo PHP framework umbrella,
  * specifically designed to manipulate XML documents with a concise
@@ -38,7 +37,6 @@
  * @license BSD-2-Clause
  * @license https://opensource.org/licenses/BSD-2-Clause
  */
-
 
 /**
  * Constructs a new FluidXml instance.
@@ -67,8 +65,6 @@ function fluidxml(...$arguments)
 {
         return new FluidXml(...$arguments);
 }
-
-////////////////////////////////////////////////////////////////////////////////
 
 interface FluidInterface
 {
@@ -129,14 +125,207 @@ interface FluidInterface
         public function text($text);
 }
 
-////////////////////////////////////////////////////////////////////////////////
+class FluidXml implements FluidInterface
+{
+        private $dom;
 
-// class FluidNamespace
-// {
-//         // TODO
-// }
+        public function __construct($options = [])
+        {
+                $defaults = [ 'version'    => '1.0',
+                              'encoding'   => 'UTF-8',
+                              'stylesheet' => null,
+                              'namespace'  => null,
+                              'root'       => 'doc' ];
 
-////////////////////////////////////////////////////////////////////////////////
+                $opts = \array_merge($defaults, $options);
+
+                $this->dom = new \DOMDocument($opts['version'], $opts['encoding']);
+                $this->dom->formatOutput       = true;
+                $this->dom->preserveWhiteSpace = false;
+                $this->dom->resolveExternals   = true;
+
+                $this->namespace = $opts['namespace'];
+
+
+                if ($opts['root']) {
+                        $this->appendSibling($opts['root']);
+                }
+
+                if ($opts['stylesheet']) {
+                        $stylesheet = new \DOMProcessingInstruction('xml-stylesheet',
+                                                                    'type="text/xsl"'
+                                                                    ." encoding=\"{$opts['encoding']}\""
+                                                                    ." indent=\"yes\""
+                                                                    ." href=\"{$opts['stylesheet']}\"");
+                        $this->dom->insertBefore($stylesheet, $this->query('/*')[0]);
+                }
+        }
+
+        public function xml()
+        {
+                return $this->dom->saveXML();
+        }
+
+        public function dom()
+        {
+                return $this->dom;
+        }
+
+        public function query($xpath)
+        {
+                return $this->newContext($this->dom)->query($xpath);
+        }
+
+        public function appendChild($child, ...$optionals)
+        {
+                $context    = $this->newContext();
+                $newContext = $context->appendChild($child, ...$optionals);
+
+                return $this->chooseContext($context, $newContext);
+        }
+
+        // Alias of appendChild.
+        public function add($child, ...$optionals)
+        {
+                return $this->appendChild($child, ...$optionals);
+        }
+
+        public function prependSibling($sibling, ...$optionals)
+        {
+                if ($this->query('/*')->length() === 0) {
+                        // If the document doesn't have at least one root node,
+                        // the sibling creation fails. In this case we replace
+                        // the sibling creation with the creation of a generic node.
+                        $context    = $this->newContext($this->dom);
+                        $newContext = $context->appendChild($sibling, ...$optionals);
+                } else {
+                        $context    = $this->newContext();
+                        $newContext = $context->prependSibling($sibling, ...$optionals);
+                }
+
+                return $this->chooseContext($context, $newContext);
+        }
+
+        // Alias of prependSibling.
+        public function prepend($sibling, ...$optionals)
+        {
+                return $this->prependSibling($sibling, ...$optionals);
+        }
+
+        // Alias of prependSibling.
+        public function insertSiblingBefore($sibling, ...$optionals)
+        {
+                return $this->prependSibling($sibling, ...$optionals);
+        }
+
+        public function appendSibling($sibling, ...$optionals)
+        {
+                if ($this->query('/*')->length() === 0) {
+                        // If the document doesn't have at least one root node,
+                        // the sibling creation fails. In this case we replace
+                        // the sibling creation with the creation of a generic node.
+                        $context    = $this->newContext($this->dom);
+                        $newContext = $context->appendChild($sibling, ...$optionals);
+                } else {
+                        $context    = $this->newContext();
+                        $newContext = $context->appendSibling($sibling, ...$optionals);
+                }
+
+                return $this->chooseContext($context, $newContext);
+        }
+
+        // Alias of appendSibling.
+        public function append($sibling, ...$optionals)
+        {
+                return $this->appendSibling($sibling, ...$optionals);
+        }
+
+        // Alias of appendSibling.
+        public function insertSiblingAfter($sibling, ...$optionals)
+        {
+                return $this->appendSibling($sibling, ...$optionals);
+        }
+
+        public function appendXml($xml, $asRoot = false)
+        {
+                if ($asRoot) {
+                        $cx = $this->newContext($this->dom);
+                } else {
+                        $cx = $this->newContext();
+                }
+
+                $cx->appendXml($xml);
+
+                return $this;
+        }
+
+        public function setAttribute(...$arguments)
+        {
+                $this->newContext()->setAttribute(...$arguments);
+
+                return $this;
+        }
+
+        // Alias of setAttribute.
+        public function attr(...$arguments)
+        {
+                return $this->setAttribute(...$arguments);
+        }
+
+        public function appendText($text)
+        {
+                $this->newContext()->appendText($text);
+
+                return $this;
+        }
+
+        public function appendCdata($cdata)
+        {
+                $this->newContext()->appendCdata($cdata);
+
+                return $this;
+        }
+
+        public function setText($text)
+        {
+                $this->newContext()->setText($text);
+
+                return $this;
+        }
+
+        // Alias of setText.
+        public function text($text)
+        {
+                return $this->setText($text);
+        }
+
+        public function remove($xpath)
+        {
+                $this->newContext()->remove($xpath);
+
+                return $this;
+        }
+
+        protected function newContext($context = null)
+        {
+                if (! $context) {
+                        $context = $this->dom->documentElement;
+                }
+
+                return new FluidContext($this->dom, $context, $this->namespace);
+        }
+
+        protected function chooseContext($helpContext, $newContext)
+        {
+                // If the two contextes are diffent, the user has requested
+                // a switch of the context and we have to return it.
+                if ($helpContext !== $newContext) {
+                        return $newContext;
+                }
+
+                return $this;
+        }
+}
 
 class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 {
@@ -209,31 +398,31 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         }
 
         // \Iterator interface.
-        function rewind()
+        public function rewind()
         {
                 $this->seek = 0;
         }
 
         // \Iterator interface.
-        function current()
+        public function current()
         {
                 return $this->nodes[$this->seek];
         }
 
         // \Iterator interface.
-        function key()
+        public function key()
         {
                 return $this->seek;
         }
 
         // \Iterator interface.
-        function next()
+        public function next()
         {
                 ++$this->seek;
         }
 
         // \Iterator interface.
-        function valid()
+        public function valid()
         {
                 return isset($this->nodes[$this->seek]);
         }
@@ -578,207 +767,10 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-class FluidXml implements FluidInterface
+/*
+class FluidNamespace
 {
-        private $dom;
-
-        public function __construct($options = [])
-        {
-                $defaults = [ 'version'    => '1.0',
-                              'encoding'   => 'UTF-8',
-                              'stylesheet' => null,
-                              'namespace'  => null,
-                              'root'       => 'doc' ];
-
-                $opts = \array_merge($defaults, $options);
-
-                $this->dom = new \DOMDocument($opts['version'], $opts['encoding']);
-                $this->dom->formatOutput       = true;
-                $this->dom->preserveWhiteSpace = false;
-                $this->dom->resolveExternals   = true;
-
-                $this->namespace = $opts['namespace'];
-
-
-                if ($opts['root']) {
-                        $this->appendSibling($opts['root']);
-                }
-
-                if ($opts['stylesheet']) {
-                        $stylesheet = new \DOMProcessingInstruction('xml-stylesheet',
-                                                                    'type="text/xsl"'
-                                                                    ." encoding=\"{$opts['encoding']}\""
-                                                                    ." indent=\"yes\""
-                                                                    ." href=\"{$opts['stylesheet']}\"");
-                        $this->dom->insertBefore($stylesheet, $this->query('/*')[0]);
-                }
-        }
-
-        public function xml()
-        {
-                return $this->dom->saveXML();
-        }
-
-        public function dom()
-        {
-                return $this->dom;
-        }
-
-        public function query($xpath)
-        {
-                return $this->newContext($this->dom)->query($xpath);
-        }
-
-        public function appendChild($child, ...$optionals)
-        {
-                $context    = $this->newContext();
-                $newContext = $context->appendChild($child, ...$optionals);
-
-                return $this->chooseContext($context, $newContext);
-        }
-
-        // Alias of appendChild.
-        public function add($child, ...$optionals)
-        {
-                return $this->appendChild($child, ...$optionals);
-        }
-
-        public function prependSibling($sibling, ...$optionals)
-        {
-                if ($this->query('/*')->length() === 0) {
-                        // If the document doesn't have at least one root node,
-                        // the sibling creation fails. In this case we replace
-                        // the sibling creation with the creation of a generic node.
-                        $context    = $this->newContext($this->dom);
-                        $newContext = $context->appendChild($sibling, ...$optionals);
-                } else {
-                        $context    = $this->newContext();
-                        $newContext = $context->prependSibling($sibling, ...$optionals);
-                }
-
-                return $this->chooseContext($context, $newContext);
-        }
-
-        // Alias of prependSibling.
-        public function prepend($sibling, ...$optionals)
-        {
-                return $this->prependSibling($sibling, ...$optionals);
-        }
-
-        // Alias of prependSibling.
-        public function insertSiblingBefore($sibling, ...$optionals)
-        {
-                return $this->prependSibling($sibling, ...$optionals);
-        }
-
-        public function appendSibling($sibling, ...$optionals)
-        {
-                if ($this->query('/*')->length() === 0) {
-                        // If the document doesn't have at least one root node,
-                        // the sibling creation fails. In this case we replace
-                        // the sibling creation with the creation of a generic node.
-                        $context    = $this->newContext($this->dom);
-                        $newContext = $context->appendChild($sibling, ...$optionals);
-                } else {
-                        $context    = $this->newContext();
-                        $newContext = $context->appendSibling($sibling, ...$optionals);
-                }
-
-                return $this->chooseContext($context, $newContext);
-        }
-
-        // Alias of appendSibling.
-        public function append($sibling, ...$optionals)
-        {
-                return $this->appendSibling($sibling, ...$optionals);
-        }
-
-        // Alias of appendSibling.
-        public function insertSiblingAfter($sibling, ...$optionals)
-        {
-                return $this->appendSibling($sibling, ...$optionals);
-        }
-
-        public function appendXml($xml, $asRoot = false)
-        {
-                if ($asRoot) {
-                        $cx = $this->newContext($this->dom);
-                } else {
-                        $cx = $this->newContext();
-                }
-
-                $cx->appendXml($xml);
-
-                return $this;
-        }
-
-        public function setAttribute(...$arguments)
-        {
-                $this->newContext()->setAttribute(...$arguments);
-
-                return $this;
-        }
-
-        // Alias of setAttribute.
-        public function attr(...$arguments)
-        {
-                return $this->setAttribute(...$arguments);
-        }
-
-        public function appendText($text)
-        {
-                $this->newContext()->appendText($text);
-
-                return $this;
-        }
-
-        public function appendCdata($cdata)
-        {
-                $this->newContext()->appendCdata($cdata);
-
-                return $this;
-        }
-
-        public function setText($text)
-        {
-                $this->newContext()->setText($text);
-
-                return $this;
-        }
-
-        // Alias of setText.
-        public function text($text)
-        {
-                return $this->setText($text);
-        }
-
-        public function remove($xpath)
-        {
-                $this->newContext()->remove($xpath);
-
-                return $this;
-        }
-
-        protected function newContext($context = null)
-        {
-                if (! $context) {
-                        $context = $this->dom->documentElement;
-                }
-
-                return new FluidContext($this->dom, $context, $this->namespace);
-        }
-
-        protected function chooseContext($helpContext, $newContext)
-        {
-                // If the two contextes are diffent, the user has requested
-                // a switch of the context and we have to return it.
-                if ($helpContext !== $newContext) {
-                        return $newContext;
-                }
-
-                return $this;
-        }
+        // TODO
 }
-////////////////////////////////////////////////////////////////////////////////
+*/
+
