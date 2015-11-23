@@ -5,7 +5,7 @@
 [gettingstarted]: https://github.com/servo-php/fluidxml/wiki/Getting-Started
 [ninja]: http://1.viki.io/d/1863c/8b75dc48c9.gif
 [donate-button]: https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=2
-[donate-link]:   https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=8Y68ZQU8FXE8Q&lc=IT&item_name=FluidXML&item_number=servo%2dfluidxml&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted
+[donate-link]:   https://www.paypal.me/danieleorlando
 
 # FluidXML
 FluidXML is a PHP library, under the Servo PHP framework umbrella ☂,<br/>
