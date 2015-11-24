@@ -117,8 +117,22 @@ describe('FluidXml', function() {
                 });
         });
 
-        xdescribe('.namespace', function() {
-                it('should add namespace definitions', function() {
+        describe('.namespace', function() {
+                it('should register a namespace definition', function() {
+                        $xml   = new FluidXml();
+                        $x_ns  = new FluidNamespace('x', 'x.com');
+                        $xx_ns = fluidns('xx', 'xx.com', FluidNamespace::MODE_IMPLICIT);
+
+                        $xml->namespace($x_ns);
+                        $xml->namespace($xx_ns);
+                });
+
+                it('should register multiple namespace definitions', function() {
+                        $xml   = new FluidXml();
+                        $x_ns  = new FluidNamespace('x', 'x.com');
+                        $xx_ns = fluidns('xx', 'xx.com', FluidNamespace::MODE_IMPLICIT);
+
+                        $xml->namespace($x_ns, $xx_ns);
                 });
         });
 
@@ -206,8 +220,7 @@ describe('FluidXml', function() {
                         $x_ns  = new FluidNamespace('x', 'x.com');
                         $xx_ns = fluidns('xx', 'xx.com', FluidNamespace::MODE_IMPLICIT);
 
-                        $xml->namespace($x_ns);
-                        $xml->namespace($xx_ns);
+                        $xml->namespace($x_ns, $xx_ns);
 
                         $xml->appendChild('x:a',  true)
                             ->appendChild('x:b',  true)
@@ -1296,11 +1309,10 @@ describe('FluidContext', function() {
 describe('FluidNamespace', function() {
         describe('()', function() {
                 it('should accept an id, an uri and an optional mode flag', function() {
-                        $ns_id = 'x';
-                        $ns_uri = 'x.com';
+                        $ns_id   = 'x';
+                        $ns_uri  = 'x.com';
                         $ns_mode = FluidNamespace::MODE_EXPLICIT;
-
-                        $ns = new FluidNamespace($ns_id, $ns_uri);
+                        $ns      = new FluidNamespace($ns_id, $ns_uri);
 
                         $actual   = $ns->id();
                         $expected = $ns_id;
@@ -1314,7 +1326,7 @@ describe('FluidNamespace', function() {
                         $expected = $ns_mode;
                         assert($actual === $expected, __($actual, $expected));
 
-                        $ns_mode = FluidNamespace::MODE_EXPLICIT;
+                        $ns_mode = FluidNamespace::MODE_IMPLICIT;
                         $ns = new FluidNamespace($ns_id, $ns_uri, $ns_mode);
 
                         $actual   = $ns->mode();
@@ -1323,14 +1335,12 @@ describe('FluidNamespace', function() {
                 });
 
                 it('should accept an array with an id, an uri and an optional mode flag', function() {
-                        $ns_id = 'x';
-                        $ns_uri = 'x.com';
+                        $ns_id   = 'x';
+                        $ns_uri  = 'x.com';
                         $ns_mode = FluidNamespace::MODE_EXPLICIT;
-
                         $arguments = [ FluidNamespace::ID  => $ns_id,
                                        FluidNamespace::URI => $ns_uri ];
-
-                        $ns = new FluidNamespace($arguments);
+                        $ns      = new FluidNamespace($arguments);
 
                         $actual   = $ns->id();
                         $expected = $ns_id;
@@ -1347,6 +1357,89 @@ describe('FluidNamespace', function() {
                         $ns_mode = FluidNamespace::MODE_IMPLICIT;
                         $arguments[FluidNamespace::MODE] = $ns_mode;
                         $ns = new FluidNamespace($arguments);
+
+                        $actual   = $ns->mode();
+                        $expected = $ns_mode;
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.id', function() {
+                it('should return the namespace id', function() {
+                        $ns_id  = 'x';
+                        $ns_uri = 'x.com';
+                        $ns     = new FluidNamespace($ns_id, $ns_uri);
+
+                        $actual   = $ns->id();
+                        $expected = $ns_id;
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should change the namespace id', function() {
+                        $ns_id  = 'x';
+                        $ns_uri = 'x.com';
+                        $ns     = new FluidNamespace($ns_id, $ns_uri);
+
+                        $ns_id  = 'xx';
+                        $ns->id($ns_id);
+
+                        $actual   = $ns->id();
+                        $expected = $ns_id;
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.uri', function() {
+                it('should return the namespace uri', function() {
+                        $ns_id  = 'x';
+                        $ns_uri = 'x.com';
+                        $ns     = new FluidNamespace($ns_id, $ns_uri);
+
+                        $actual   = $ns->uri();
+                        $expected = $ns_uri;
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should change the namespace uri', function() {
+                        $ns_id  = 'x';
+                        $ns_uri = 'x.com';
+                        $ns     = new FluidNamespace($ns_id, $ns_uri);
+
+                        $ns_uri = 'xx.com';
+                        $ns->uri($ns_uri);
+
+                        $actual   = $ns->uri();
+                        $expected = $ns_uri;
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.mode', function() {
+                it('should return the namespace mode', function() {
+                        $ns_id   = 'x';
+                        $ns_uri  = 'x.com';
+                        $ns_mode = FluidNamespace::MODE_EXPLICIT;
+                        $ns      = new FluidNamespace($ns_id, $ns_uri);
+
+                        $actual   = $ns->mode();
+                        $expected = $ns_mode;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $ns_mode = FluidNamespace::MODE_IMPLICIT;
+                        $ns      = new FluidNamespace($ns_id, $ns_uri, $ns_mode);
+
+                        $actual   = $ns->mode();
+                        $expected = $ns_mode;
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should change the namespace mode', function() {
+                        $ns_id   = 'x';
+                        $ns_uri  = 'x.com';
+                        $ns      = new FluidNamespace($ns_id, $ns_uri);
+
+                        $ns_mode = FluidNamespace::MODE_IMPLICIT;
+                        $ns->mode($ns_mode);
 
                         $actual   = $ns->mode();
                         $expected = $ns_mode;

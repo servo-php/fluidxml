@@ -33,8 +33,9 @@ $book->setAttribute('type', 'book')
      ->setAttribute('lang', 'en');
 ```
 
+Or, if you prefer, there is a **concise syntax**.
+
 ```php
-// Or, if you prefer, there is a concise syntax:
 
 $book = fluidxml();
 $book->attr('type', 'book')
@@ -62,7 +63,7 @@ echo $book->xml();
 </doc>
 ```
 
-Creating structured documents is so easy that you'll never go back.
+Creating **structured documents** is so easy that you'll never go back.
 
 ```php
 $food = fluidxml();
@@ -89,7 +90,7 @@ $book->query('//chapter')
      ->setAttribute('lang', 'en');
 ```
 
-And sometimes **string templates** are the fastest way.
+And sometimes **string template** are the fastest way.
 
 ```php
 $book->appendChild('cover', true)
@@ -100,20 +101,34 @@ XML
 );
 ```
 
+**XML namespaces** are fully covered and FluidXml it's great even there.
 
-## Why
-Three great reasons to use it, but you'll have the best answer trying it yourself.
+```php
+$xhtml = new FluidNamespace('xhtml', 'http://www.w3.org/1999/xhtml');
+$svg   = new FluidNamespace('svg',   'http://www.w3.org/2000/svg');
+$book->namespace($xhtml)
+     ->namespace($xsl)
+     ->appendChild('xhtml:h1')
+     ->appendChild('svg:shape')
+     ->query('//xhtml:h1');
+```
+
+### Don't be shy, tell it: « IT'S SIMPLY AWESOME! »
+
+
+## Still doubtful?
+Other three great reasons to use FluidXML, but you'll have the best answer trying it yourself.
 
 FluidXML is **fun** to use, **concise** and **effective**.
 
-If it's not enough, it has a compreansive test suite with a **100% code coverage**.
+If it's not enough, it has a comprehensive test suite with a **100% code coverage**.
 
 ![100% Code Coverage](https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png)
 
 
 ## Requirements
 * PHP 7
-* _PHP 5.4 backport in progress_
+* For _PHP 5.4_ see the [RoadMap](#roadmap)
 
 
 ## Installation
@@ -161,9 +176,24 @@ The complete API documentation can be generated executing:
 
 ## APIs
 ```php
-fluidxml();
+/*******************************************************************************
+ * Functions
+ ******************************************************************************/
 
-new FluidXml();
+function fluidxml($options);
+
+function fluidns($id, $uri, $mode);
+
+
+/*******************************************************************************
+ * FluidXml interfaces
+ ******************************************************************************/
+
+class FluidXml
+
+__construct($options);
+
+->namespace(FluidNamespace $namespace);
 
 ->query($xpath);
 
@@ -185,15 +215,16 @@ new FluidXml();
 
 ->remove($xpath);
 
-->asArray();
+->asArray();    // Available after a query or a node insertion with context switch.
 
-->length();
+->length();     // Available after a query or a node insertion with context switch.
 
 ->xml();
-```
 
-Alias methods:
-```php
+/*
+ * Alias methods
+ */
+
 ->add($child, ...$optionals);                       // ->appendChild
 
 ->prepend($sibling, ...$optionals);                 // ->prependSibling
@@ -207,6 +238,23 @@ Alias methods:
 ->attr(...$arguments);                              // ->setAttribute
 
 ->text($text);                                      // ->setText
+
+
+/*******************************************************************************
+ * FluidNamespace interfaces
+ ******************************************************************************/
+
+class FluidNamespace
+
+__construct($id, $uri, $mode);
+
+->id($value = null);
+
+->uri($value = null);
+
+->mode($value = null);
+
+->querify($xpath);
 ```
 
 
@@ -216,13 +264,13 @@ your immense gratitude **♡**, donate _1cent_.
 
 [![Donate][donate-button]][donate-link]
 
-#### Thanks! :D ♥
+#### Thanks You! :D ♥
 
 
 ## Roadmap
-* [ ] PHP 5.4 backport
-* [ ] Porting the XML namespace implementation from the legacy FluidXML codebase
+* [x] Porting the XML namespace implementation from the legacy FluidXML codebase
 * [ ] Expanding the APIs with some other useful methods
+* [ ] PHP 5.4 backport
 * [ ] Extending the documentation
 
 <a href='https://pledgie.com/campaigns/30607'>

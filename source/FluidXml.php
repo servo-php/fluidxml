@@ -806,9 +806,11 @@ trait FluidNamespaceTrait
 {
         private $namespaces = [];
 
-        public function namespace(FluidNamespace $namespace)
+        public function namespace(FluidNamespace ...$namespaces)
         {
-                $this->namespaces[$namespace->id()] = $namespace;
+                foreach ($namespaces as $n) {
+                        $this->namespaces[$n->id()] = $n;
+                }
 
                 return $this;
         }
