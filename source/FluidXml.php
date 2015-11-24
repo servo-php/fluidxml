@@ -66,6 +66,12 @@ function fluidxml(...$arguments)
         return new FluidXml(...$arguments);
 }
 
+
+function fluidns(...$arguments)
+{
+        return new FluidNamespace(...$arguments);
+}
+
 interface FluidInterface
 {
         /**
@@ -127,6 +133,8 @@ interface FluidInterface
 
 class FluidXml implements FluidInterface
 {
+        use FluidNamespaceTrait;
+
         private $dom;
 
         public function __construct($options = [])
@@ -312,7 +320,7 @@ class FluidXml implements FluidInterface
                         $context = $this->dom->documentElement;
                 }
 
-                return new FluidContext($this->dom, $context, $this->namespace);
+                return new FluidContext($this->dom, $context, $this->namespaces);
         }
 
         protected function chooseContext($helpContext, $newContext)
@@ -329,12 +337,13 @@ class FluidXml implements FluidInterface
 
 class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 {
+        use FluidNamespaceTrait;
+
         private $dom;
-        private $namespace;
         private $nodes = [];
         private $seek = 0;
 
-        public function __construct(\DOMDocument $dom, $context, $namespace = null)
+        public function __construct(\DOMDocument $dom, $context, array $namespaces = null)
         {
                 $this->dom       = $dom;
                 $this->namespace = $namespace;
@@ -355,6 +364,10 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         } else {
                                 throw new \Exception('Node type not recognized.');
                         }
+                }
+
+                foreach ($namespaces as $n) {
+                        $this->namespace($n);
                 }
         }
 
@@ -438,9 +451,13 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         $xpath = [ $xpath ];
                 }
 
-                $results = [];
-
                 $domxp = new \DOMXPath($this->dom);
+
+                foreach ($this->namespaces as $n) {
+                        $domxp->registerNamespace($n->id(), $n->uri());
+                }
+
+                $results = [];
 
                 foreach ($this->nodes as $n) {
                         foreach ($xpath as $x) {
@@ -666,7 +683,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function newContext($context)
         {
-                return new FluidContext($this->dom, $context, $this->namespace);
+                return new FluidContext($this->dom, $context, $this->namespaces);
         }
 
         protected function insertNode($fn, $node, ...$optionals)
@@ -694,9 +711,27 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 $newContext = [];
 
                 $insertNode = function($parent, $name, $value = null) use (&$newContext, $fn) {
+                        $uri = null;
+
+                        // The node name can contain the namespace id prefix.
+                        // Example: xsl:template
+                        $name_parts = \explode(':', $name, 2);
+
+                        $name = \array_pop($name_parts);
+                        $id   = \array_pop($name_parts);
+
+                        if ($id) {
+                                $ns  = $this->namespaces[$id];
+                                $uri = $ns->uri();
+
+                                if ($ns->mode() === FluidNamespace::MODE_EXPLICIT) {
+                                        $name = "{$id}:{$name}";
+                                }
+                        }
+
                         // The DOMElement instance must be different for every node,
                         // otherwise only one element is attached to the DOM.
-                        $el = new \DOMElement($name, $value);
+                        $el = new \DOMElement($name, $value, $uri);
                         // $el = $this->dom->createElement($name, $value);
                         $newContext[] = $fn($parent, $el);
 
@@ -767,10 +802,107 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         }
 }
 
-/*
+trait FluidNamespaceTrait
+{
+        private $namespaces = [];
+
+        public function namespace(FluidNamespace $namespace)
+        {
+                $this->namespaces[$namespace->id()] = $namespace;
+
+                return $this;
+        }
+}
+
 class FluidNamespace
 {
-        // TODO
+        const ID   = 'id'  ;
+        const URI  = 'uri' ;
+        const MODE = 'mode';
+
+        const MODE_IMPLICIT = 0;
+        const MODE_EXPLICIT = 1;
+
+        private $config = [ self::ID   => '',
+                            self::URI  => '',
+                            self::MODE => self::MODE_EXPLICIT ];
+
+        public function __construct($id, $uri, $mode = 1)
+        {
+                if (\is_array($id)) {
+                        $args = $id;
+                        $id   = $args[self::ID];
+                        $uri  = $args[self::URI];
+
+                        if (isset($args[self::MODE])) {
+                                $mode = $args[self::MODE];
+                        }
+                }
+
+                $this->id($id);
+                $this->uri($uri);
+                $this->mode($mode);
+        }
+
+        public function id($value = null)
+        {
+                if ($value === null) {
+                        return $this->config[self::ID];
+                }
+
+                $this->config[self::ID] = $value;
+
+                return $this;
+        }
+
+        public function uri($value = null)
+        {
+                if ($value === null) {
+                        return $this->config[self::URI];
+                }
+
+                $this->config[self::URI] = $value;
+
+                return $this;
+        }
+
+        public function mode($value = null)
+        {
+                if ($value === null) {
+                        return $this->config[self::MODE];
+                }
+
+                $this->config[self::MODE] = $value;
+
+                return $this;
+        }
+
+        public function querify($xpath)
+        {
+                $id = $this->id();
+
+                if ($id) {
+                        $id .= ':';
+                }
+
+                // An XPath query may not start with a slash ('/').
+                // Relative queries are an example '../target".
+                $new_xpath = '';
+
+                $nodes = \explode('/', $xpath);
+
+                foreach ($nodes as $node) {
+                        // An XPath query may have multiple slashes ('/')
+                        // example: //target
+                        if ($node) {
+                                $new_xpath .= "{$id}{$node}";
+                        }
+
+                        $new_xpath .= '/';
+                }
+
+                // Removes the last appended slash.
+                return \substr($new_xpath, 0, -1);
+        }
 }
-*/
 

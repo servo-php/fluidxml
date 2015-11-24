@@ -4,16 +4,74 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".common.php";
 
 require_once 'FluidXml.php';
 
-
-use FluidNamespace as Name;
-
-
 describe('fluidxml', function() {
         it('should return a new FluidXml instance', function() {
                 $xml = fluidxml();
 
                 $actual = $xml;
                 assert_is_a($actual, FluidXml::class);
+        });
+
+        it('should behave like FluidXml::__construct', function() {
+                $xml   = new FluidXml();
+                $alias = fluidxml();
+
+                $actual   = $alias->xml();
+                $expected = $xml->xml();
+                assert($actual === $expected, __($actual, $expected));
+
+                $options = [ 'root'       => 'root',
+                             'version'    => '1.2',
+                             'encoding'   => 'UTF-16',
+                             'stylesheet' => 'stylesheet.xsl' ];
+
+                $xml   = new FluidXml($options);
+                $alias = fluidxml($options);
+
+                $actual   = $alias->xml();
+                $expected = $xml->xml();
+                assert($actual === $expected, __($actual, $expected));
+        });
+});
+
+describe('fluidns', function() {
+        it('should return a new FluidNamespace instance', function() {
+                $ns = fluidns();
+
+                $actual = $ns;
+                assert_is_a($actual, FluidNamespace::class);
+        });
+
+        it('should behave like FluidNamespace::__construct', function() {
+                $ns    = new FluidNamespace('x', 'x.com');
+                $alias = fluidns('x', 'x.com');
+
+                $actual   = $ns->id();
+                $expected = $alias->id();
+                assert($actual === $expected, __($actual, $expected));
+
+                $actual   = $ns->uri();
+                $expected = $alias->uri();
+                assert($actual === $expected, __($actual, $expected));
+
+                $actual   = $ns->mode();
+                $expected = $alias->mode();
+                assert($actual === $expected, __($actual, $expected));
+
+                $ns    = new FluidNamespace('x', 'x.com', FluidNamespace::MODE_IMPLICIT);
+                $alias = fluidns('x', 'x.com', FluidNamespace::MODE_IMPLICIT);
+
+                $actual   = $ns->id();
+                $expected = $alias->id();
+                assert($actual === $expected, __($actual, $expected));
+
+                $actual   = $ns->uri();
+                $expected = $alias->uri();
+                assert($actual === $expected, __($actual, $expected));
+
+                $actual   = $ns->mode();
+                $expected = $alias->mode();
+                assert($actual === $expected, __($actual, $expected));
         });
 });
 
@@ -58,6 +116,12 @@ describe('FluidXml', function() {
                         assert_is_a($actual, \DOMDocument::class);
                 });
         });
+
+        xdescribe('.namespace', function() {
+                it('should add namespace definitions', function() {
+                });
+        });
+
 
         describe('.query', function() {
                 it('should return the root nodes of the document', function() {
@@ -135,6 +199,83 @@ describe('FluidXml', function() {
                                     "  <extra/>\n"  .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);
+                });
+
+                it('should query namespaced nodes', function() {
+                        $xml   = new FluidXml();
+                        $x_ns  = new FluidNamespace('x', 'x.com');
+                        $xx_ns = fluidns('xx', 'xx.com', FluidNamespace::MODE_IMPLICIT);
+
+                        $xml->namespace($x_ns);
+                        $xml->namespace($xx_ns);
+
+                        $xml->appendChild('x:a',  true)
+                            ->appendChild('x:b',  true)
+                            ->appendChild('xx:c', true)
+                            ->appendChild('xx:d', true)
+                            ->appendChild('e',    true)
+                            ->appendChild('x:f',  true)
+                            ->appendChild('g');
+
+                        $r = $xml->query('/doc/a');
+
+                        $actual   = $r->length();
+                        $expected = 0;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('/doc/x:a');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'x:a';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('/doc/x:a/x:b');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'x:b';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('/doc/x:a/x:b/c');
+
+                        $actual   = $r->length();
+                        $expected = 0;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('/doc/x:a/x:b/xx:c');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'c';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('/doc/x:a/x:b/xx:c/xx:d');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'd';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('/doc/x:a/x:b/xx:c/xx:d/e');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'e';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('/doc/x:a/x:b/xx:c/xx:d/e/f');
+
+                        $actual   = $r->length();
+                        $expected = 0;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('/doc/x:a/x:b/xx:c/xx:d/e/x:f');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'x:f';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('/doc/x:a/x:b/xx:c/xx:d/e/x:f/g');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'g';
+                        assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -328,6 +469,28 @@ EOF;
 
                         $actual = $xml->appendChild(['child1', 'child2'], ['attr' => 'value'], true);
                         assert_is_a($actual, FluidContext::class);
+                });
+
+                it('should add namespaced children', function() {
+                        $xml = new FluidXml();
+                        $xml->namespace(new FluidNamespace('x', 'x.com'));
+                        $xml->namespace(fluidns('xx', 'xx.com', FluidNamespace::MODE_IMPLICIT));
+                        $xml->appendChild('x:xTag1', true)
+                            ->appendChild('x:xTag2');
+                        $xml->appendChild('xx:xxTag1', true)
+                            ->appendChild('xx:xxTag2')
+                            ->appendChild('tag3');
+
+                        $expected = "<doc>\n"                           .
+                                    "  <x:xTag1 xmlns:x=\"x.com\">\n"   .
+                                    "    <x:xTag2/>\n"                  .
+                                    "  </x:xTag1>\n"                    .
+                                    "  <xxTag1 xmlns=\"xx.com\">\n"     .
+                                    "    <xxTag2/>\n"                   .
+                                    "    <tag3/>\n"                     .
+                                    "  </xxTag1>\n"                     .
+                                    "</doc>";
+                        assert_equal_xml($xml, $expected);
                 });
         });
 
@@ -1129,3 +1292,90 @@ describe('FluidContext', function() {
                 });
         });
 });
+
+describe('FluidNamespace', function() {
+        describe('()', function() {
+                it('should accept an id, an uri and an optional mode flag', function() {
+                        $ns_id = 'x';
+                        $ns_uri = 'x.com';
+                        $ns_mode = FluidNamespace::MODE_EXPLICIT;
+
+                        $ns = new FluidNamespace($ns_id, $ns_uri);
+
+                        $actual   = $ns->id();
+                        $expected = $ns_id;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $ns->uri();
+                        $expected = $ns_uri;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $ns->mode();
+                        $expected = $ns_mode;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $ns_mode = FluidNamespace::MODE_EXPLICIT;
+                        $ns = new FluidNamespace($ns_id, $ns_uri, $ns_mode);
+
+                        $actual   = $ns->mode();
+                        $expected = $ns_mode;
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should accept an array with an id, an uri and an optional mode flag', function() {
+                        $ns_id = 'x';
+                        $ns_uri = 'x.com';
+                        $ns_mode = FluidNamespace::MODE_EXPLICIT;
+
+                        $arguments = [ FluidNamespace::ID  => $ns_id,
+                                       FluidNamespace::URI => $ns_uri ];
+
+                        $ns = new FluidNamespace($arguments);
+
+                        $actual   = $ns->id();
+                        $expected = $ns_id;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $ns->uri();
+                        $expected = $ns_uri;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $ns->mode();
+                        $expected = $ns_mode;
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $ns_mode = FluidNamespace::MODE_IMPLICIT;
+                        $arguments[FluidNamespace::MODE] = $ns_mode;
+                        $ns = new FluidNamespace($arguments);
+
+                        $actual   = $ns->mode();
+                        $expected = $ns_mode;
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.querify', function() {
+                it('should format an XPath query to use the namespace id', function() {
+                        $ns = new FluidNamespace('x', 'x.com');
+
+                        $actual   = $ns->querify('current/child');
+                        $expected = 'x:current/x:child';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $ns->querify('//current/child');
+                        $expected = '//x:current/x:child';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $ns = new FluidNamespace('x', 'x.com', FluidNamespace::MODE_IMPLICIT);
+
+                        $actual   = $ns->querify('current/child');
+                        $expected = 'x:current/x:child';
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $ns->querify('//current/child');
+                        $expected = '//x:current/x:child';
+                        assert($actual === $expected, __($actual, $expected));
+                });
+        });
+});
+
