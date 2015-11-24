@@ -113,7 +113,7 @@ $book->namespace($xhtml)
      ->query('//xhtml:h1');
 ```
 
-### Don't be shy, tell it: « IT'S SIMPLY AWESOME! »
+#### Don't be shy, tell it: « IT'S AWESOME! »
 
 
 ## Still doubtful?
@@ -123,7 +123,7 @@ FluidXML is **fun** to use, **concise** and **effective**.
 
 If it's not enough, it has a comprehensive test suite with a **100% code coverage**.
 
-![100% Code Coverage](https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png)
+![100% Code Coverage](https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png?nocache=1)
 
 
 ## Requirements
