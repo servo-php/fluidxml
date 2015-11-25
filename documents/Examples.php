@@ -60,9 +60,9 @@ $book->appendChild('chapters', true)                     // true forces the retu
 
 
 
-/************************************************
- * Child name and child value accepted formats. *
-*************************************************/
+/********************
+ * Appending nodes. *
+*********************/
 
 /*
 * Inserting a node can be performed in different ways,
@@ -71,20 +71,33 @@ $book->appendChild('chapters', true)                     // true forces the retu
 * are applicable to the standard syntax.
 */
 
+$food = fluidxml(['root' => 'food']);
 
-$food = fluidxml();
-$food->add('fruit')                                             // A 'fruit' node with an empty content.
-     ->add('fruit', 'orange')                                   // A 'fruit' node with 'Orange' as content.
-     ->add('fruit', 'apple',        ['price' => 'expensive'])   // Apple is expensive. :D
-     ->add([ 'fruit' => 'grapes' ], ['price' => 'cheap'])       // Grapes are cheap.
-     ->add([ 'Tiramisu',
-               'pizza' => 'Margherita' ])                       // Batch insertion of nodes.
-     ->add([ ['egg'],
-               ['egg'],
-               ['egg'] ], ['price' => '0.25'])                  // Adding a bunch of 'egg's all with the same price.
-     ->add([ 'fridge' => [
-                    'omelette' => 'with potato',
-                    'soupe'    => 'wit mashrooms']]);           // Deep tree structures are supported too.
+$food->add('fruit')               // A 'fruit' node with an empty content.
+     ->add('fruit', 'orange');    // A 'fruit' node with 'orange' as content.
+
+// A node can have even a bunch of attributes.
+$food->add('fruit', 'apple', [ 'price' => 'expensive',
+                               'color' => 'red' ]);
+
+// Batch insertion of nodes.
+$food->add([ 'cake' =>  'Tiramisu',
+             'pizza' => 'Margherita' ]);
+
+// PHP arrays can't contain identical keys.
+// But it's still possible to create, in a batch operation, nodes with the same tag.
+$food->add([ [ 'pasta' => 'Carbonara' ],
+             [ 'pasta' => 'Matriciana' ] ]);
+
+// A bunch of egg's all with the same price.
+$food->add([ ['egg'],
+             ['egg'],
+             ['egg'] ], ['price' => '0.25']);
+
+// Deep tree structures are supported too.
+$food->add([ 'fridge' => [
+                'omelette' => 'with potato',
+                'soupe'    => 'wit mashrooms' ] ]);
 
 echo $food->xml();
 echo "————————————————————————————————————————————————————————————————————————————————\n";

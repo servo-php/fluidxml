@@ -101,7 +101,7 @@ XML
 );
 ```
 
-**XML namespaces** are fully covered and FluidXml it's great even there.
+**XML Namespaces** are fully covered too and FluidXml is great even there.
 
 ```php
 $xhtml = new FluidNamespace('xhtml', 'http://www.w3.org/1999/xhtml');
@@ -113,7 +113,8 @@ $book->namespace($xhtml)
      ->query('//xhtml:h1');
 ```
 
-#### Don't be shy, tell it: « IT'S AWESOME! »
+Don't be shy, tell it:<br/>
+#### « IT'S AWESOME! » ;)
 
 
 ## Still doubtful?
@@ -128,7 +129,7 @@ If it's not enough, it has a comprehensive test suite with a **100% code coverag
 
 ## Requirements
 * PHP 7
-* For _PHP 5.4_ see the [RoadMap](#roadmap)
+* _For PHP 5.4 see the [RoadMap](#roadmap)_
 
 
 ## Installation
@@ -264,7 +265,7 @@ your immense gratitude **♡**, donate _1cent_.
 
 [![Donate][donate-button]][donate-link]
 
-#### Thanks You! :D ♥
+#### Thank You! :D ♥
 
 
 ## Roadmap

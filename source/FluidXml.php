@@ -345,8 +345,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         public function __construct(\DOMDocument $dom, $context, array $namespaces = null)
         {
-                $this->dom       = $dom;
-                $this->namespace = $namespace;
+                $this->dom = $dom;
 
                 if (! \is_array($context)) {
                         $context = [ $context ];
@@ -907,4 +906,3 @@ class FluidNamespace
                 return \substr($new_xpath, 0, -1);
         }
 }
-

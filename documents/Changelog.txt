@@ -1,0 +1,8 @@
+1.1.1:
+ * Fixes a NOTICE error.
+
+1.1:
+ * XML namespaces support added
+
+1.0:
+ * Initial release.
