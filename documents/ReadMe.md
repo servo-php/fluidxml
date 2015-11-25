@@ -1,8 +1,9 @@
-[example]: https://github.com/servo-php/fluidxml/wiki/Examples
-[example-file]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples.php
-[specs-file]: https://github.com/servo-php/fluidxml/blob/master/specs/FluidXml.php
-[license-file]: https://github.com/servo-php/fluidxml/blob/master/documents/License.txt
-[gettingstarted]: https://github.com/servo-php/fluidxml/wiki/Getting-Started
+[gettingstarted]: https://github.com/servo-php/fluidxml/blob/master/documents/Getting-Started.md
+[examples]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples.php
+[specs]: https://github.com/servo-php/fluidxml/blob/master/specs/FluidXml.php
+[wiki]: https://github.com/servo-php/fluidxml/wiki
+[license]: https://github.com/servo-php/fluidxml/blob/master/documents/License.txt
+[codecoverage]: https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png?nocache=1
 [ninja]: http://1.viki.io/d/1863c/8b75dc48c9.gif
 [donate-button]: https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=2
 [donate-link]:   https://www.paypal.me/danieleorlando
@@ -67,16 +68,20 @@ Creating **structured documents** is so easy that you'll never go back.
 
 ```php
 $food = fluidxml();
-$food->add('fruit')                                           // A 'fruit' node with an empty content.
-     ->add('fruit', 'apple', ['price' => 'expensive'])        // A 'fruit' node with 'apple' as content.
-     ->add([ 'Tiramisu',
-             'pizza' => 'Margherita' ])                       // Batch insertion of nodes.
-     ->add([ ['egg'],
+
+// Batch insertion of nodes.
+$food->add([ 'cake'  => 'Tiramisu',
+             'pizza' => 'Margherita' ]);
+
+// A bunch of egg's all with the same attribute.
+$food->add([ ['egg'],
              ['egg'],
-             ['egg'] ], ['price' => '0.25'])                  // Adding a bunch of 'egg's all with the same price.
-     ->add([ 'fridge' => [
-                 'omelette' => 'with potato',
-                 'soupe'    => 'wit mashrooms' ]]);           // Deep tree structures are supported too.
+             ['egg'] ], ['price' => '0.25']);
+
+// Deep tree structures are supported too.
+$food->add([ 'fridge' => [ 'omelette' => 'with potato',
+                           'soupe'    => 'with mashrooms' ],
+             'freezer' => [ 'meat' => 'beef' ] ]);
 ```
 
 **XPath** is king.
@@ -101,7 +106,7 @@ XML
 );
 ```
 
-**XML Namespaces** are fully covered too and FluidXml is great even there.
+**XML Namespaces** are fully covered too.
 
 ```php
 $xhtml = new FluidNamespace('xhtml', 'http://www.w3.org/1999/xhtml');
@@ -113,18 +118,17 @@ $book->namespace($xhtml)
      ->query('//xhtml:h1');
 ```
 
-Don't be shy, tell it:<br/>
-#### « IT'S AWESOME! » ;)
+Don't be shy and tell it: **« IT'S AWESOME! »** ^\_^
 
 
-## Still doubtful?
+## Still doubts?
 Other three great reasons to use FluidXML, but you'll have the best answer trying it yourself.
 
 FluidXML is **fun** to use, **concise** and **effective**.
 
 If it's not enough, it has a comprehensive test suite with a **100% code coverage**.
 
-![100% Code Coverage](https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png?nocache=1)
+![100% Code Coverage][codecoverage]
 
 
 ## Requirements
@@ -163,11 +167,12 @@ _5 minutes reading_<br/>
 Follow the [Getting Started tutorial][gettingstarted] to become a [ninja][ninja] in no time.
 
 Many other examples are available:
-- in the wiki [Examples][example] page
-- inside the [`documents/Examples.php`][example-file] file
-- inside the [`specs/FluidXml.php`][specs-file] file (as test cases)
+- inside the [`documents/Examples.php`][examples] file
+- inside the [`specs/FluidXml.php`][specs] file (as test cases)
 
 All them cover from the simplest case to the most complex scenario.
+
+For more reading, take a look at the [Wiki Page][wiki].
 
 The complete API documentation can be generated executing:
 ```sh
@@ -286,4 +291,4 @@ Daniele Orlando  [&lt;fluidxml@danieleorlando.com&gt;](mailto:fluidxml@danieleor
 ## License
 FluidXML is licensed under the BSD 2-Clause License.
 
-See [`documents/License.txt`][license-file] for the details.
+See [`documents/License.txt`][license] for the details.

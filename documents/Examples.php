@@ -17,10 +17,10 @@ $options = ['root' => 'book'];
 $book = new FluidXml($options);                         // It created an XML document with 'book' as root node.
 
 // Possible options are:
-$defaultOptions = [ 'version'    => '1.0',
-                    'encoding'   => 'UTF-8',
-                    'stylesheet' => null,               // The stylesheet URL.
-                    'root'       => 'doc' ];
+$defaultOptions = [ 'root'       => 'doc',      // The root node of the document.
+                    'version'    => '1.0',      // The version for the XML header.
+                    'encoding'   => 'UTF-8',    // The encoding for the XML header.
+                    'stylesheet' => null ];     // An url pointing to an XSL file.
 
 
 
@@ -53,9 +53,9 @@ echo "————————————————————————�
 */
 
 $book->appendChild('chapters', true)                     // true forces the return of the 'chapters' node.
-        ->appendChild('chapter', 'Ideas About The Universe', ['id' => 123, 'first' => ''])
-        ->appendChild('chapter', 'The Expanding Universe',   ['id' => 321])
-        ->appendChild('chapter', 'Black Holes',              ['id' => 432])
+        ->appendChild('chapter', 'Ideas About The Universe',    ['id' => 123, 'first' => ''])
+        ->appendChild('chapter', 'The Expanding Universe',      ['id' => 321])
+        ->appendChild('chapter', 'Black Holes',                 ['id' => 432])
         ->appendChild('chapter', 'Black Holes Ain\'t So Black', ['id' =>234]);
 
 
@@ -81,7 +81,7 @@ $food->add('fruit', 'apple', [ 'price' => 'expensive',
                                'color' => 'red' ]);
 
 // Batch insertion of nodes.
-$food->add([ 'cake' =>  'Tiramisu',
+$food->add([ 'cake'  => 'Tiramisu',
              'pizza' => 'Margherita' ]);
 
 // PHP arrays can't contain identical keys.
@@ -95,9 +95,9 @@ $food->add([ ['egg'],
              ['egg'] ], ['price' => '0.25']);
 
 // Deep tree structures are supported too.
-$food->add([ 'fridge' => [
-                'omelette' => 'with potato',
-                'soupe'    => 'wit mashrooms' ] ]);
+$food->add([ 'fridge' => [ 'omelette' => 'with potato',
+                           'soupe'    => 'with mashrooms' ],
+             'freezer' => [ 'meat' => 'beef' ] ]);
 
 echo $food->xml();
 echo "————————————————————————————————————————————————————————————————————————————————\n";

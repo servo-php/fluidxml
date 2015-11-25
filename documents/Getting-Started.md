@@ -3,7 +3,7 @@ FluidXML has been designed to give his best creating and manipulating XML docume
 It's quite common to see inside PHP projects the generation of XML documents through<br/>
 template engines, PHP/XML mixing or, in the best case, using DOMDocument.
 
-In every described situations FluidXML performs better in every way.
+In every described situation FluidXML performs better in every way.
 
 
 ## Creating your first XML document
