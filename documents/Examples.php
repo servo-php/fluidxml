@@ -22,12 +22,6 @@ $defaultOptions = [ 'root'       => 'doc',      // The root node of the document
                     'encoding'   => 'UTF-8',    // The encoding for the XML header.
                     'stylesheet' => null ];     // An url pointing to an XSL file.
 
-
-
-/************************************************************************
- * Customizing the root node with an attribute and some children nodes. *
-*************************************************************************/
-
 $book->setAttribute('type', 'science')                  // It sets an attribute of the root node ('book').
      ->appendChild([ 'title'  => 'The Theory Of Everything',
                      'author' => 'S. Hawking' ]);       // It creates two nodes, each one with some text inside.
@@ -104,20 +98,34 @@ echo "————————————————————————�
 
 
 
-/*********************
- * Chaining queries. *
-**********************/
+/******************
+ * XPath queries. *
+*******************/
 
 /*
-* Chaining queries gives you great flexibility to traverse the document
-* without loosing the manipulation flow.
+* XPath queries can be absolute or relative to the context over they are executed.
 */
+
+$eggs   = $food->query('//egg');
+$fruits = $food->query('//fruit[@price="expensive"]');
+
+echo "We have {$eggs->length()} eggs and {$fruits->length()} expensive fruit.\n";
+echo "————————————————————————————————————————————————————————————————————————————————\n";
 
 $book->query('//chapter')
      ->setAttribute('lang', 'en')
      ->query('..')
      ->setAttribute('lang', 'en')
-     ->query('/book/title')
+     ->query('../title')
+     ->setAttribute('lang', 'en');
+
+/*
+* The previous code presents a repetition: all 'setAttribute' calls are identical.
+* It can be refactored taking advantage of an advanced feature of 'query'.
+*/
+$book->query('//chapter',
+             '//chapters',
+             '/book/title')
      ->setAttribute('lang', 'en');
 
 

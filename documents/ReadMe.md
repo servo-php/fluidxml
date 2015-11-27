@@ -37,8 +37,8 @@ $book->setAttribute('type', 'book')
 Or, if you prefer, there is a **concise syntax**.
 
 ```php
-
 $book = fluidxml();
+
 $book->attr('type', 'book')
      ->add('title', 'The Theory Of Everything')
      ->add('author', 'S. Hawking')

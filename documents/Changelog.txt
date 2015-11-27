@@ -1,8 +1,16 @@
+1.2:
+* query() supports a variable number of XPaths
+* namespace() supports a variable number of FluidNamespace instances
+* namespace() supports a namespace id, uri and mode as arguments
+* namespaces() returns all registered namespaces
+* FluidNamespace instances are read-only
+* FluidNamespace::id/uri/mode() can't mutate the instance
+
 1.1.1:
- * Fixes a NOTICE error.
+* Fixes a NOTICE error
 
 1.1:
- * XML namespaces support added
+* XML namespaces support added
 
 1.0:
- * Initial release.
+* Initial release

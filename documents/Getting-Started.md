@@ -8,7 +8,7 @@ In every described situation FluidXML performs better in every way.
 
 ## Creating your first XML document
 
-First of all, depending the way you have chosen to install FluidXML, you have two<br/>
+First of all, depending the method you have chosen to install FluidXML, you have two<br/>
 options to include the library.
 * If you have cloned the repository, copy the `source/FluidXml.php` in your PHP<br/>
 project and include it:
@@ -32,7 +32,7 @@ We can proceed to create our first XML document in the simplest way.
 > $book = fluidxml();
 > ```
 
-It creates a new XML document with one root node that by default is called `<doc/>`.
+It creates a new XML document with one root node by default called `<doc/>`.
 
 ```php
 echo $book->xml();
@@ -114,6 +114,7 @@ boolean value returns the new node instead of the current one.
 > Extended syntax
 > ```php
 > // true asks to return the 'chapters' node instead of the 'book' node.
+>
 > $book->appendChild('chapters', true)
 >      ->appendChild('chapter', 'Ideas About The Universe')
 >      ->appendChild('chapter', 'The Expanding Universe');
@@ -121,6 +122,7 @@ boolean value returns the new node instead of the current one.
 > Concise syntax
 > ```php
 > // true asks to return the 'chapters' node instead of the 'book' node.
+>
 > $book->add('chapters', true)
 >      ->add('chapter', 'Ideas About The Universe')
 >      ->add('chapter', 'The Expanding Universe');
@@ -199,6 +201,81 @@ To demonstrate this concept, we create a new document that will be filled with f
   <pasta>Matriciana</pasta>
 </food>
 ```
+
+Another important argument is `$attributes`, which allows to set the attributes<br/>
+of a node contextually to its creation.
+
+> Extended syntax
+> ```php
+> $food->appendChild('fruit', 'apple', [ 'price' => 'expensive',
+>                                        'color' => 'red' ]);
+>
+> // which is identical to
+>
+> $food->appendChild('fruit', 'apple', true)        // Remember, passing 'true' returns the created node.
+>      ->setAttribute([ 'price' => 'expensive',
+>                       'color' => 'red' ]);
+>
+> // The advantage comes when multiple nodes have the same attributes.
+>
+> // A bunch of egg's all with the same price.
+> $food->appendChild([ ['egg'],
+>                      ['egg'],
+>                      ['egg'] ], ['price' => '0.25']);
+> ```
+> Concise syntax
+> ```php
+> $food->add('fruit', 'apple', [ 'price' => 'expensive',
+>                                'color' => 'red' ]);
+>
+> // which is identical to
+>
+> $food->add('fruit', 'apple', true)        // Remember, passing 'true' returns the created node.
+>      ->attr([ 'price' => 'expensive',
+>               'color' => 'red' ]);
+>
+> // The advantage comes when multiple nodes have the same attributes.
+>
+> // A bunch of egg's all with the same price.
+> $food->add([ ['egg'],
+>              ['egg'],
+>              ['egg'] ], ['price' => '0.25']);
+> ```
+
+
+## Executing XPath queries
+
+The possibilty to execute XPath queries very easily is another feature of FluidXML.
+
+```php
+$eggs   = $food->query('//egg');
+$fruits = $food->query('//fruit[@price="expensive"]');
+
+echo "We have {$eggs->length()} eggs and {$fruits->length()} expensive fruit.\n";
+```
+
+Chaining queries together with the usage of XPath relative queries gives an immense<br/>
+flexibility.
+
+```php
+$book->query('//chapter')
+     ->setAttribute('lang', 'en')
+     ->query('..')
+     ->setAttribute('lang', 'en')
+     ->query('../title')
+     ->setAttribute('lang', 'en');
+```
+
+> **Pro Tip**:
+> `query()` supports quering multiple XPath queries.<br/>
+> The previous example can be refactored using this advanced feature.
+> ```php
+> $book->query('//chapter',
+>              '//chapters',
+>              '/book/title')
+>      ->setAttribute('lang', 'en');
+> ```
+
 
 * * *
 #### This document is a draft. It will be continued.

@@ -90,7 +90,7 @@ interface FluidInterface
          *
          * @return FluidContext The context associated to the DOMNodeList.
          */
-        public function query($xpath);
+        public function query(...$xpath);
 
         /**
          * Append a new node as child of the current context.
@@ -179,9 +179,9 @@ class FluidXml implements FluidInterface
                 return $this->dom;
         }
 
-        public function query($xpath)
+        public function query(...$xpath)
         {
-                return $this->newContext($this->dom)->query($xpath);
+                return $this->newContext($this->dom)->query(...$xpath);
         }
 
         public function appendChild($child, ...$optionals)
@@ -343,7 +343,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         private $nodes = [];
         private $seek = 0;
 
-        public function __construct(\DOMDocument $dom, $context, array $namespaces = null)
+        public function __construct(\DOMDocument $dom, $context, array $namespaces = [])
         {
                 $this->dom = $dom;
 
@@ -353,8 +353,8 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
                 foreach ($context as $n) {
                         if ($n instanceof \DOMNodeList) {
-                                for ($i = 0, $l = $n->length; $i < $l; ++$i) {
-                                        $this->nodes[] = $n->item($i);
+                                foreach ($n as $i) {
+                                        $this->nodes[] = $i;
                                 }
                         } else if ($n instanceof \DOMNode) {
                                 $this->nodes[] = $n;
@@ -365,8 +365,8 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         }
                 }
 
-                foreach ($namespaces as $n) {
-                        $this->namespace($n);
+                if (! empty($namespaces)) {
+                        $this->namespace(...\array_values($namespaces));
                 }
         }
 
@@ -444,10 +444,12 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return \count($this->nodes);
         }
 
-        public function query($xpath)
+        public function query(...$xpath)
         {
-                if (! \is_array($xpath)) {
-                        $xpath = [ $xpath ];
+                $xpaths = $xpath;
+
+                if (\is_array($xpath[0])) {
+                        $xpaths = $xpath[0];
                 }
 
                 $domxp = new \DOMXPath($this->dom);
@@ -459,7 +461,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 $results = [];
 
                 foreach ($this->nodes as $n) {
-                        foreach ($xpath as $x) {
+                        foreach ($xpaths as $x) {
                                 // Returns a DOMNodeList.
                                 $res = $domxp->query($x, $n);
 
@@ -805,8 +807,29 @@ trait FluidNamespaceTrait
 {
         private $namespaces = [];
 
-        public function namespace(FluidNamespace ...$namespaces)
+        public function namespaces()
         {
+                return $this->namespaces;
+        }
+
+        public function namespace(...$arguments)
+        {
+                $namespaces = [];
+
+                if (\is_string($arguments[0])) {
+                        $args = [ $arguments[0], $arguments[1] ];
+
+                        if (isset($arguments[2])) {
+                                $args[] = $arguments[2];
+                        }
+
+                        $namespaces[] = new FluidNamespace(...$args);
+                } else if (\is_array($arguments[0])) {
+                        $namespaces = $arguments[0];
+                } else {
+                        $namespaces = $arguments;
+                }
+
                 foreach ($namespaces as $n) {
                         $this->namespaces[$n->id()] = $n;
                 }
@@ -840,42 +863,24 @@ class FluidNamespace
                         }
                 }
 
-                $this->id($id);
-                $this->uri($uri);
-                $this->mode($mode);
+                $this->config[self::ID]   = $id;
+                $this->config[self::URI]  = $uri;
+                $this->config[self::MODE] = $mode;
         }
 
-        public function id($value = null)
+        public function id()
         {
-                if ($value === null) {
-                        return $this->config[self::ID];
-                }
-
-                $this->config[self::ID] = $value;
-
-                return $this;
+                return $this->config[self::ID];
         }
 
-        public function uri($value = null)
+        public function uri()
         {
-                if ($value === null) {
-                        return $this->config[self::URI];
-                }
-
-                $this->config[self::URI] = $value;
-
-                return $this;
+                return $this->config[self::URI];
         }
 
-        public function mode($value = null)
+        public function mode()
         {
-                if ($value === null) {
-                        return $this->config[self::MODE];
-                }
-
-                $this->config[self::MODE] = $value;
-
-                return $this;
+                return $this->config[self::MODE];
         }
 
         public function querify($xpath)
