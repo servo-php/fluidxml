@@ -13,14 +13,20 @@ require_once 'FluidXml.php';
  * Creating an XML document. *
 ******************************/
 
-$options = ['root' => 'book'];
-$book = new FluidXml($options);                         // It created an XML document with 'book' as root node.
+$book = new FluidXml('book');
+// or
+$book = new FluidXml(['root' => 'book']);
 
-// Possible options are:
-$defaultOptions = [ 'root'       => 'doc',      // The root node of the document.
-                    'version'    => '1.0',      // The version for the XML header.
-                    'encoding'   => 'UTF-8',    // The encoding for the XML header.
-                    'stylesheet' => null ];     // An url pointing to an XSL file.
+// $book is an XML document with 'book' as root node.
+
+// The default options are:
+// [ 'root'       => 'doc',      // The root node of the document.
+//   'version'    => '1.0',      // The version for the XML header.
+//   'encoding'   => 'UTF-8',    // The encoding for the XML header.
+//   'stylesheet' => null ];     // An url pointing to an XSL file.
+
+$booksheet = new FluidXml('book', ['stylesheet' => 'http://domain.com/style.xsl']);
+
 
 $book->setAttribute('type', 'science')                  // It sets an attribute of the root node ('book').
      ->appendChild([ 'title'  => 'The Theory Of Everything',
@@ -61,11 +67,14 @@ $book->appendChild('chapters', true)                     // true forces the retu
 /*
 * Inserting a node can be performed in different ways,
 * each one with its pros and cons.
+*/
+
+/*
 * In this examples, it is used the concise syntax, but the same concepts
 * are applicable to the standard syntax.
 */
 
-$food = fluidxml(['root' => 'food']);
+$food = fluidxml('food');
 
 $food->add('fruit')               // A 'fruit' node with an empty content.
      ->add('fruit', 'orange');    // A 'fruit' node with 'orange' as content.
@@ -88,45 +97,22 @@ $food->add([ ['egg'],
              ['egg'],
              ['egg'] ], ['price' => '0.25']);
 
-// Deep tree structures are supported too.
-$food->add([ 'fridge' => [ 'omelette' => 'with potato',
-                           'soupe'    => 'with mashrooms' ],
-             'freezer' => [ 'meat' => 'beef' ] ]);
+// Complex array structures are supported too.
+$food->add([ 'fridge' => [
+                 'firstFloor' => [
+                     'omelette' => 'with potato' ],
+                 'secondFloor' => [
+                     'soupe' => 'with mashrooms' ]
+             ],
+             'freezer' => [
+                 'firstFloor' => [
+                     'meat' => 'beef' ],
+                 'secondFloor' => [
+                     'fish' => 'tuna' ],
+             ] ]);
 
 echo $food->xml();
 echo "————————————————————————————————————————————————————————————————————————————————\n";
-
-
-
-/******************
- * XPath queries. *
-*******************/
-
-/*
-* XPath queries can be absolute or relative to the context over they are executed.
-*/
-
-$eggs   = $food->query('//egg');
-$fruits = $food->query('//fruit[@price="expensive"]');
-
-echo "We have {$eggs->length()} eggs and {$fruits->length()} expensive fruit.\n";
-echo "————————————————————————————————————————————————————————————————————————————————\n";
-
-$book->query('//chapter')
-     ->setAttribute('lang', 'en')
-     ->query('..')
-     ->setAttribute('lang', 'en')
-     ->query('../title')
-     ->setAttribute('lang', 'en');
-
-/*
-* The previous code presents a repetition: all 'setAttribute' calls are identical.
-* It can be refactored taking advantage of an advanced feature of 'query'.
-*/
-$book->query('//chapter',
-             '//chapters',
-             '/book/title')
-     ->setAttribute('lang', 'en');
 
 
 
@@ -148,6 +134,38 @@ XML
 
 
 
+/******************
+ * XPath queries. *
+*******************/
+
+/*
+* XPath queries can be absolute or relative to the context over they are executed.
+*/
+
+$eggs   = $food->query('//egg');
+$fruits = $food->query('//fruit[@price="expensive"]');
+
+echo "We have {$eggs->length()} eggs and {$fruits->length()} expensive fruit.\n";
+echo "————————————————————————————————————————————————————————————————————————————————\n";
+
+$book->query('//chapter')
+     ->attr('lang', 'en')
+     ->query('..')
+     ->attr('lang', 'en')
+     ->query('../title')
+     ->attr('lang', 'en');
+
+/*
+* The previous code presents a repetition: all 'setAttribute' calls are identical.
+* It can be refactored taking advantage of an advanced feature of 'query'.
+*/
+$book->query('//chapter',
+             '//chapters',
+             '/book/title')
+     ->attr('lang', 'en');
+
+
+
 /**********************************
  * Array access and DOMNode apis. *
 ***********************************/
@@ -159,47 +177,72 @@ XML
 * You loose the FluidXML interface but gain direct access to the DOMNode apis.
 */
 
-$chaptersList = $book->query('//chapter');
+$chapters = $book->query('//chapter');
 
-$l = $chaptersList->length();
+// Returns a raw DOMNode.
+$first_chapter_node = $chapters[0];
+$last_chapter_node  = $chapters[$chapters->length() - 1];
 
-$lastChapterNode = $chaptersList[$l - 1];                // Returns a raw DOMNode.
-
-
+$first_chapter_node->setAttribute('first', '');
+$last_chapter_node->setAttribute('last', '');
 /*
 * This ->setAttribute is the DOMNode::setAttribute.
-* Many other methods/properties are available as:
+* not the FluidXml::setAttribute().
+* Many other methods/properties are available like:
 * - hasAttribute()
 * - getAttribute()
 * - nodeValue
-* See http://php.net/manual/en/class.domnode.php
+* See http://php.net/manual/en/class.domnode.php for the reference documentation.
 */
-$lastChapterNode->setAttribute('last', '');
 
 
 /*
 * To retrieve all DOMNode in one operation there is the ->asArray() method.
 */
-$chaptersListNodes = $chaptersList->asArray();          // Returns an array of DOMNode.
+$chapters_nodes = $chapters->asArray();          // Returns an array of DOMNode.
 
 echo $book->xml();
 echo "————————————————————————————————————————————————————————————————————————————————\n";
 
 
 /*
-* Because the result of a query behaves like an array, can be iterated too.
+* Because the result of a query behaves like an array, it can be iterated too.
 */
-foreach ($chaptersList as $i => $chapter) {
+foreach ($chapters as $i => $chapter) {
         // $chapter is an instance of DOMNode.
 
-        // This is a dummy example to explain how to access the content of a node.
-        if ($chapter->hasAttribute('first')) {
-                echo "The first chapter has title '{$chapter->nodeValue}'"
-                     . " with id '{$chapter->getAttribute('id')}'.\n";
+        $title = $chapter->nodeValue;
+        $id    = $chapter->getAttribute('id');
+        $has_first_attr = $chapter->hasAttribute('first');
+
+        if ($has_first_attr) {
+                echo "The first chapter has title '{$title}' with id '{$id}'.\n";
         } else {
                 $ii = $i + 1;
-                echo "Chapter {$ii} has title '{$chapter->nodeValue}'"
-                     . " with id '{$chapter->getAttribute('id')}'.\n";
+                echo "Chapter {$ii} has title '{$title}' with id '{$id}'.\n";
         }
 }
+echo "————————————————————————————————————————————————————————————————————————————————\n";
+
+
+
+/***************
+ * Namespaces. *
+****************/
+
+
+/*
+* To use a namespace you have to register its identifier together with its uri.
+*/
+
+$xhtml = fluidns('xhtml', 'http://www.w3.org/1999/xhtml');
+$book->namespace($xhtml)
+     ->namespace('svg', 'http://www.w3.org/2000/svg')
+     ->namespace('xsl', 'http://www.w3.org/TR/xsl', FluidNamespace::MODE_IMPLICIT)
+     ->add('xhtml:h1')
+     ->add([ 'xsl:template'  => [ 'xsl:variable' ] ])
+     ->query('//xhtml:h1')
+     ->add('svg:shape');
+
+echo $book->xml();
 echo "————————————————————————————————————————————————————————————————————————————————\n";

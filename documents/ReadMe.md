@@ -1,3 +1,4 @@
+[apis]: https://github.com/servo-php/fluidxml#apis
 [gettingstarted]: https://github.com/servo-php/fluidxml/blob/master/documents/Getting-Started.md
 [examples]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples.php
 [specs]: https://github.com/servo-php/fluidxml/blob/master/specs/FluidXml.php
@@ -109,10 +110,8 @@ XML
 **XML Namespaces** are fully covered too.
 
 ```php
-$xhtml = new FluidNamespace('xhtml', 'http://www.w3.org/1999/xhtml');
-$svg   = new FluidNamespace('svg',   'http://www.w3.org/2000/svg');
-$book->namespace($xhtml)
-     ->namespace($xsl)
+$book->namespace('xhtml', 'http://www.w3.org/1999/xhtml')
+     ->namespace('svg',   'http://www.w3.org/2000/svg')
      ->appendChild('xhtml:h1')
      ->appendChild('svg:shape')
      ->query('//xhtml:h1');
@@ -163,7 +162,7 @@ See the [documentation](#documentation) to get started and becoming a [ninja][ni
 
 
 ## Documentation
-_5 minutes reading_<br/>
+_10 minutes reading_<br/>
 Follow the [Getting Started tutorial][gettingstarted] to become a [ninja][ninja] in no time.
 
 Many other examples are available:
@@ -172,7 +171,8 @@ Many other examples are available:
 
 All them cover from the simplest case to the most complex scenario.
 
-For more reading, take a look at the [Wiki Page][wiki].
+Take a look at the [APIs][apis] to discover all the available manipulation operations,<br/>
+and go to the [Wiki Page][wiki] for more reading.
 
 The complete API documentation can be generated executing:
 ```sh
@@ -186,9 +186,9 @@ The complete API documentation can be generated executing:
  * Functions
  ******************************************************************************/
 
-function fluidxml($options);
+function fluidxml($root?, array $options?);
 
-function fluidns($id, $uri, $mode);
+function fluidns($id, $uri, $mode?);
 
 
 /*******************************************************************************
@@ -197,11 +197,13 @@ function fluidns($id, $uri, $mode);
 
 class FluidXml
 
-__construct($options);
+__construct($root?, array $options?);
 
-->namespace(FluidNamespace $namespace);
+->namespace(...$namespace);
 
-->query($xpath);
+->namespaces();
+
+->query(...$xpath);
 
 ->appendChild($child, ...$optionals);
 
@@ -252,13 +254,13 @@ __construct($options);
 
 class FluidNamespace
 
-__construct($id, $uri, $mode);
+__construct($id, $uri, $mode?);
 
-->id($value = null);
+->id();
 
-->uri($value = null);
+->uri();
 
-->mode($value = null);
+->mode();
 
 ->querify($xpath);
 ```

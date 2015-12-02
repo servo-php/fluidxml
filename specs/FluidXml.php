@@ -84,6 +84,11 @@ describe('FluidXml', function() {
         });
 
         it('should be an UTF-8 XML-1.0 document with one custom root element', function() {
+                $xml = new FluidXml('document');
+
+                $expected = "<document/>";
+                assert_equal_xml($xml, $expected);
+
                 $xml = new FluidXml(['root' => 'document']);
 
                 $expected = "<document/>";
@@ -292,7 +297,7 @@ describe('FluidXml', function() {
                         $expected = "<doc>\n"                   .
                                     "  <html lang=\"en\">\n"    .
                                     "    <head lang=\"en\"/>\n" .
-                                    "    <body lang=\"en\"/>\n" .
+                                        "    <body lang=\"en\"/>\n" .
                                     "  </html>\n"               .
                                     "</doc>";
                         assert_equal_xml($xml, $expected);

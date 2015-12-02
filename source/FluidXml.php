@@ -48,13 +48,13 @@
  *
  * $xml = fluidxml([
  *
+ *   'root'       => 'doc',
+ *
  *   'version'    => '1.0',
  *
  *   'encoding'   => 'UTF-8',
  *
- *   'stylesheet' => null,
- *
- *   'root'       => 'doc' ]);
+ *   'stylesheet' => null ]);
  * ```
  *
  * @param array $arguments Options that influence the construction of the XML document.
@@ -137,13 +137,22 @@ class FluidXml implements FluidInterface
 
         private $dom;
 
-        public function __construct($options = [])
+        public function __construct($root = null, $options = [])
         {
-                $defaults = [ 'version'    => '1.0',
+                $defaults = [ 'root'       => 'doc',
+                              'version'    => '1.0',
                               'encoding'   => 'UTF-8',
-                              'stylesheet' => null,
-                              'namespace'  => null,
-                              'root'       => 'doc' ];
+                              'stylesheet' => null ];
+
+                if (\is_string($root)) {
+                        // The root option can be specified as first argument
+                        // because it is the most common.
+                        $defaults['root'] = $root;
+                } else if (\is_array($root)) {
+                        // If the first argument is an array, the user has skipped
+                        // the root option and is passing a bunch of options all together.
+                        $options = $root;
+                }
 
                 $opts = \array_merge($defaults, $options);
 
@@ -151,9 +160,6 @@ class FluidXml implements FluidInterface
                 $this->dom->formatOutput       = true;
                 $this->dom->preserveWhiteSpace = false;
                 $this->dom->resolveExternals   = true;
-
-                $this->namespace = $opts['namespace'];
-
 
                 if ($opts['root']) {
                         $this->appendSibling($opts['root']);

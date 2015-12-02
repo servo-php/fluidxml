@@ -1,3 +1,5 @@
+[apis]: https://github.com/servo-php/fluidxml#apis
+
 FluidXML has been designed to give his best creating and manipulating XML documents.
 
 It's quite common to see inside PHP projects the generation of XML documents through<br/>
@@ -6,7 +8,7 @@ template engines, PHP/XML mixing or, in the best case, using DOMDocument.
 In every described situation FluidXML performs better in every way.
 
 
-## Creating your first XML document
+## Creating Your First XML Document
 
 First of all, depending the method you have chosen to install FluidXML, you have two<br/>
 options to include the library.
@@ -44,21 +46,29 @@ echo $book->xml();
 ```
 
 Whether there is the need to influence the document creation, the constructor supports<br/>
-an array of options.
+some options.
 
 > Extended syntax
 > ```php
-> $book = new FluidXml(['root' => 'book']);
+> $book = new FluidXml('book', ['stylesheet' => 'http://domain.com/style.xsl']);
+>
+> // Which is the same of
+>
+> $book = new FluidXml(['root' => 'book', 'stylesheet' => 'http://domain.com/style.xsl']);
 > ```
 > Concise syntax
 > ```php
-> $book = fluidxml(['root' => 'book']);
+> $book = fluidxml('book', ['stylesheet' => 'http://domain.com/style.xsl']);
+>
+> // Which is the same of
+>
+> $book = fluidns(['root' => 'book', 'stylesheet' => 'http://domain.com/style.xsl']);
 > ```
 
 Our XML document now has a root node called `<book/>`.
 
 > **Pro Tip**:
-> The constructor supports these options:
+> Supported options:
 > ```php
 > [ 'root'       => 'doc',    // The root node of the document.
 >   'version'    => '1.0',    // The version for the XML header.
@@ -67,7 +77,7 @@ Our XML document now has a root node called `<book/>`.
 > ```
 
 
-## Adding nodes
+## Adding Nodes
 
 Adding a node is super easy. Because FluidXML implements the fluid OOP pattern, multiple<br/>
 operations can be performed chaining methods calls.
@@ -101,7 +111,7 @@ echo $book->xml();
 The `appendChild`/`add` method supports up to four arguments to achieve from the simplest<br/>
 node insertion to nested trees creation.
 
-> _Public API_:
+> _Public API_
 > ```php
 > ->appendChild($node, $value?, $attributes? = [], $switchContext? = false)
 > ```
@@ -113,19 +123,19 @@ boolean value returns the new node instead of the current one.
 
 > Extended syntax
 > ```php
-> // true asks to return the 'chapters' node instead of the 'book' node.
->
 > $book->appendChild('chapters', true)
 >      ->appendChild('chapter', 'Ideas About The Universe')
 >      ->appendChild('chapter', 'The Expanding Universe');
+>
+> // true asks to return the 'chapters' node instead of the 'book' node.
 > ```
 > Concise syntax
 > ```php
-> // true asks to return the 'chapters' node instead of the 'book' node.
->
 > $book->add('chapters', true)
 >      ->add('chapter', 'Ideas About The Universe')
 >      ->add('chapter', 'The Expanding Universe');
+>
+> // true asks to return the 'chapters' node instead of the 'book' node.
 > ```
 
 ```php
@@ -151,7 +161,7 @@ To demonstrate this concept, we create a new document that will be filled with f
 
 > Extended syntax
 > ```php
-> $food = new FluidXml(['root' => 'food']);
+> $food = new FluidXml('food');
 >
 > $food->appendChild('fruit')               // A 'fruit' node with an empty content.
 >      ->appendChild('fruit', 'orange');    // A 'fruit' node with 'orange' as content.
@@ -171,7 +181,7 @@ To demonstrate this concept, we create a new document that will be filled with f
 > ```
 > Concise syntax
 > ```php
-> $food = fluidxml(['root' => 'food']);
+> $food = fluidxml('food');
 >
 > $food->add('fruit')               // A 'fruit' node with an empty content.
 >      ->add('fruit', 'orange');    // A 'fruit' node with 'orange' as content.
@@ -242,8 +252,92 @@ of a node contextually to its creation.
 >              ['egg'] ], ['price' => '0.25']);
 > ```
 
+Creating arbitrarily complex structures is possible too nesting arrays.
 
-## Executing XPath queries
+> Extended syntax
+> ```php
+> $food->appendChild([ 'fridge' => [
+>                          'firstFloor' => [
+>                              'omelette' => 'with potato' ],
+>                          'secondFloor' => [
+>                              'soupe' => 'with mashrooms' ]
+>                      ],
+>                      'freezer' => [
+>                          'firstFloor' => [
+>                              'meat' => 'beef' ],
+>                          'secondFloor' => [
+>                              'fish' => 'tuna' ],
+>                      ] ]);
+> ```
+> Concise syntax
+> ```php
+> $food->add([ 'fridge' => [
+>                  'firstFloor' => [
+>                      'omelette' => 'with potato' ],
+>                  'secondFloor' => [
+>                      'soupe' => 'with mashrooms' ]
+>              ],
+>              'freezer' => [
+>                  'firstFloor' => [
+>                      'meat' => 'beef' ],
+>                  'secondFloor' => [
+>                      'fish' => 'tuna' ],
+>              ] ]);
+> ```
+
+```php
+echo $food->xml();
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<food>
+  <fruit/>
+  <fruit>orange</fruit>
+  <fruit price="expensive" color="red">apple</fruit>
+  <cake>Tiramisu</cake>
+  <pizza>Margherita</pizza>
+  <pasta>Carbonara</pasta>
+  <pasta>Matriciana</pasta>
+  <egg price="0.25"/>
+  <egg price="0.25"/>
+  <egg price="0.25"/>
+  <fridge>
+    <firstFloor>
+      <omelette>with potato</omelette>
+    </firstFloor>
+    <secondFloor>
+      <soupe>with mashrooms</soupe>
+    </secondFloor>
+  </fridge>
+  <freezer>
+    <firstFloor>
+      <meat>beef</meat>
+    </firstFloor>
+    <secondFloor>
+      <fish>tuna</fish>
+    </secondFloor>
+  </freezer>
+</food>
+```
+
+
+## Adding XML Strings
+
+Sometimes XML/XHTML comes from legacy templating systems or external sources.<br/>
+In those cases the raw XML string can be injected directly into the document.
+
+```php
+$book->appendChild('cover', true)
+     ->appendXml(<<<XML
+        <h1>The Theory Of Everything</h1>
+        <img src="http://goo.gl/kO3Iov"/>
+XML
+);
+```
+
+
+## Executing XPath Queries
 
 The possibilty to execute XPath queries very easily is another feature of FluidXML.
 
@@ -254,30 +348,189 @@ $fruits = $food->query('//fruit[@price="expensive"]');
 echo "We have {$eggs->length()} eggs and {$fruits->length()} expensive fruit.\n";
 ```
 
-Chaining queries together with the usage of XPath relative queries gives an immense<br/>
+Chaining queries together with the usage of relative XPath queries gives an immense<br/>
 flexibility.
 
-```php
-$book->query('//chapter')
-     ->setAttribute('lang', 'en')
-     ->query('..')
-     ->setAttribute('lang', 'en')
-     ->query('../title')
-     ->setAttribute('lang', 'en');
-```
+> Extended syntax
+> ```php
+> $book->query('//chapter')
+>      ->setAttribute('lang', 'en')
+>      ->query('..')
+>      ->setAttribute('lang', 'en')
+>      ->query('../title')
+>      ->setAttribute('lang', 'en');
+> ```
+> Concise syntax
+> ```php
+> $book->query('//chapter')
+>      ->attr('lang', 'en')
+>      ->query('..')
+>      ->attr('lang', 'en')
+>      ->query('../title')
+>      ->attr('lang', 'en');
+> ```
 
 > **Pro Tip**:
-> `query()` supports quering multiple XPath queries.<br/>
-> The previous example can be refactored using this advanced feature.
+> `query()` supports quering multiple XPaths .<br/>
+> The previous example can be refactored using this feature.
 > ```php
 > $book->query('//chapter',
 >              '//chapters',
 >              '/book/title')
->      ->setAttribute('lang', 'en');
+>      ->attr('lang', 'en');
 > ```
 
 
-* * *
-#### This document is a draft. It will be continued.
-* * *
+## Accessing The DOMNode APIs
 
+FluidXML wraps the DOMNode native APIs extending them but without reimplementing<br/>
+what is already convenient to use.
+
+If you need access to the DOMNode instances, they can be retrieved from a query<br/>
+in different ways.
+
+Accessing the query results as array is one way.
+```php
+$chapters = $book->query('//chapter');
+
+// Returns a raw DOMNode instance.
+$first_chapter_node = $chapters[0];
+$last_chapter_node  = $chapters[$chapters->length() - 1];
+
+$first_chapter_node->setAttribute('first', '');
+$last_chapter_node->setAttribute('last', '');
+```
+
+> **Pro Tip**:<br/>
+> The `setAttribute()` method used in the previous example is the `DOMNode::setAttribute()`,<br/>
+> not the `FluidXml::setAttribute()/attr()`.<br/>
+> Many other DOMNode methods and properties are available like:
+> - `hasAttribute()`
+> - `getAttribute()`
+> - `nodeValue`
+>
+> See http://php.net/manual/en/class.domnode.php for the reference documentation.
+
+Another way to access the DOMNode instances is using the `asArray()` method.
+
+```php
+$nodes = $chapters->asArray();          // Returns an array of DOMNode instances.
+```
+
+Last and very useful is the possibility to iterate the query results to access<br/>
+the DOMNode instances.
+
+```php
+foreach ($chapters as $i => $chapter) {
+        // $chapter is an instance of DOMNode.
+
+        $title = $chapter->nodeValue;
+        $id    = $chapter->getAttribute('id');
+        $has_first_attr = $chapter->hasAttribute('first');
+
+        if ($has_first_attr) {
+                echo "The first chapter has title '{$title}' with id '{$id}'.\n";
+        } else {
+                $ii = $i + 1;
+                echo "Chapter {$ii} has title '{$title}' with id '{$id}'.\n";
+        }
+}
+```
+
+
+## Namespaces
+
+XML namespaces are an important part of documents manipulation and FluidXML makes<br/>
+so easy to use them that you will not believe.
+
+Start registering the namespace identifier together with the namespace uri.
+
+```php
+$book->namespace('xhtml', 'http://www.w3.org/1999/xhtml')
+     ->namespace('svg',   'http://www.w3.org/2000/svg')
+     ->namespace('xsl',   'http://www.w3.org/TR/xsl', FluidNamespace::MODE_IMPLICIT);
+```
+
+At this point you are ready to use it.
+
+> Extended syntax
+> ```php
+> $book->appendChild('xhtml:h1')
+>      ->appendChild([ 'xsl:template'  => [ 'xsl:variable' ] ])
+>      ->query('//xhtml:h1')
+>      ->appendChild('svg:shape');
+> ```
+> Concise syntax
+> ```php
+> $book->add('xhtml:h1')
+>      ->add([ 'xsl:template'  => [ 'xsl:variable' ] ])
+>      ->query('//xhtml:h1')
+>      ->add('svg:shape');
+> ```
+
+```php
+echo $book->xml();
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<book type="science">
+  <title lang="en">The Theory Of Everything</title>
+  <author>S. Hawking</author>
+  <chapters lang="en">
+    <chapter id="123" first="" lang="en">Ideas About The Universe</chapter>
+    <chapter id="321" lang="en">The Expanding Universe</chapter>
+    <chapter id="432" lang="en">Black Holes</chapter>
+    <chapter id="234" lang="en" last="">Black Holes Ain't So Black</chapter>
+  </chapters>
+  <cover>
+    <h1>The Theory Of Everything</h1>
+    <img src="http://goo.gl/kO3Iov"/>
+  </cover>
+  <xhtml:h1 xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <svg:shape xmlns:svg="http://www.w3.org/2000/svg"/>
+  </xhtml:h1>
+  <template xmlns="http://www.w3.org/TR/xsl">
+    <variable/>
+  </template>
+</book>
+```
+
+That's it! Even XML namespaces can be easy and fun to use.
+
+> **Pro Tip**:
+> A namespace can be defined even as a `FluidNamespace` instance,<br/>
+> to make easy to share namespaces between different documents.
+>
+> Extended syntax
+> ```php
+> $xhtml = new FluidNamespace('xhtml', 'http://www.w3.org/1999/xhtml');
+> $svg   = new FluidNamespace('svg',   'http://www.w3.org/2000/svg', FluidNamespace::MODE_IMPLICIT);
+> $book->namespace($xhtml)
+>      ->namespace($svg);
+> ```
+> Concise syntax
+> ```php
+> $xhtml = fluidns('xhtml', 'http://www.w3.org/1999/xhtml');
+> $svg   = fluidns('svg',   'http://www.w3.org/2000/svg', FluidNamespace::MODE_IMPLICIT);
+> $book->namespace($xhtml, $svg);
+> ```
+>
+> `namespace()` accepts a variable number of `FluidNamespace` instances,<br/>
+> so that multiple namespaces can be registered in one method call.
+
+
+
+## Where To Go Next
+
+We have concluded our brief but complete tour of FluidXML and you are ready to<br/>
+start manipulating XML like a real ninja.
+
+The dark ages of DOMDocument have come to the end. Long life to FluidXML.
+
+Go to the `documents` folder and take a look at the `Example.php` file to start<br/>
+experimenting with FluidXML.
+
+Take a look at the [APIs][apis] to discover all the available manipulation operations.
+
+Thanks and most important, have fun with XML.
