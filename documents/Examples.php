@@ -179,12 +179,12 @@ $book->query('//chapter',
 
 $chapters = $book->query('//chapter');
 
-// Returns a raw DOMNode.
-$first_chapter_node = $chapters[0];
-$last_chapter_node  = $chapters[$chapters->length() - 1];
+$l = $chapters->length();
 
-$first_chapter_node->setAttribute('first', '');
-$last_chapter_node->setAttribute('last', '');
+// DOMNode access.
+$chapters[0]->setAttribute('first', '');
+$chapters[$l - 1]->setAttribute('last', '');
+
 /*
 * This ->setAttribute is the DOMNode::setAttribute.
 * not the FluidXml::setAttribute().

@@ -1,5 +1,5 @@
 1.3:
-* FluidXml::__construct accepts as first argument the 'root' option
+* FluidXml::__construct accepts the 'root' option as first argument
 
 1.2:
 * query() supports a variable number of XPaths

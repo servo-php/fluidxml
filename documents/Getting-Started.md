@@ -62,7 +62,7 @@ some options.
 >
 > // Which is the same of
 >
-> $book = fluidns(['root' => 'book', 'stylesheet' => 'http://domain.com/style.xsl']);
+> $book = fluidxml(['root' => 'book', 'stylesheet' => 'http://domain.com/style.xsl']);
 > ```
 
 Our XML document now has a root node called `<book/>`.
@@ -393,12 +393,11 @@ Accessing the query results as array is one way.
 ```php
 $chapters = $book->query('//chapter');
 
-// Returns a raw DOMNode instance.
-$first_chapter_node = $chapters[0];
-$last_chapter_node  = $chapters[$chapters->length() - 1];
+$l = $chapters->length();
 
-$first_chapter_node->setAttribute('first', '');
-$last_chapter_node->setAttribute('last', '');
+// DOMNode access.
+$chapters[0]->setAttribute('first', '');
+$chapters[$l - 1]->setAttribute('last', '');
 ```
 
 > **Pro Tip**:<br/>

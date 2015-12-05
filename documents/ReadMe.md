@@ -7,7 +7,8 @@
 [codecoverage]: https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png?nocache=1
 [ninja]: http://1.viki.io/d/1863c/8b75dc48c9.gif
 [donate-button]: https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=2
-[donate-link]:   https://www.paypal.me/danieleorlando
+[donate-link]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UUBXYHQRVJE28
+[donate-link-alt]: https://www.paypal.me/danieleorlando
 
 # FluidXML
 FluidXML is a PHP library, under the Servo PHP framework umbrella ☂,<br/>
@@ -16,9 +17,8 @@ and fluent interface.
 
 It leverages XPath and the fluent programming pattern to be fun and effective.
 
-##### STOP _generating XML documents with template engines_.
-
-##### STOP _using the boring and verbose DOMDocument_.
+**STOP generating XML documents with template engines.**<br/>
+**STOP using the boring and verbose DOMDocument.**
 
 FluidXML has been specifically designed to bring XML manipulation to the next level.
 
@@ -89,11 +89,11 @@ $food->add([ 'fridge' => [ 'omelette' => 'with potato',
 
 ```php
 $book->query('//chapter')
-     ->setAttribute('lang', 'en')
+     ->attr('status', 'read')
      ->query('..')
-     ->setAttribute('lang', 'en')
-     ->query('/book/title')
-     ->setAttribute('lang', 'en');
+     ->attr('lang', 'en')
+     ->query('../title')
+     ->attr('country', 'us');
 ```
 
 And sometimes **string template** are the fastest way.
@@ -174,13 +174,13 @@ All them cover from the simplest case to the most complex scenario.
 Take a look at the [APIs][apis] to discover all the available manipulation operations,<br/>
 and go to the [Wiki Page][wiki] for more reading.
 
+
+## APIs
 The complete API documentation can be generated executing:
 ```sh
 ./support/tools/gendoc      # Generated under 'documents/api/'.
 ```
 
-
-## APIs
 ```php
 /*******************************************************************************
  * Functions
