@@ -1,4 +1,4 @@
-[apis]: https://github.com/servo-php/fluidxml/wiki/APIs
+[apis]: https://github.com/servo-php/fluidxml/blob/master/documents/APIs.md
 [gettingstarted]: https://github.com/servo-php/fluidxml/blob/master/documents/Getting-Started.md
 [examples]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples.php
 [specs]: https://github.com/servo-php/fluidxml/blob/master/specs/FluidXml.php

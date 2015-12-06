@@ -1,4 +1,7 @@
-[apis]: https://github.com/servo-php/fluidxml#apis
+[wiki]: https://github.com/servo-php/fluidxml/wiki
+[apis]: https://github.com/servo-php/fluidxml/blob/master/documents/APIs.md
+
+# Getting Started
 
 FluidXML has been designed to give his best creating and manipulating XML documents.
 
@@ -519,7 +522,6 @@ That's it! Even XML namespaces can be easy and fun to use.
 > so that multiple namespaces can be registered in one method call.
 
 
-
 ## Where To Go Next
 
 We have concluded our brief but complete tour of FluidXML and you are ready to<br/>
@@ -530,6 +532,7 @@ The dark ages of DOMDocument have come to the end. Long life to FluidXML.
 Go to the `documents` folder and take a look at the `Example.php` file to start<br/>
 experimenting with FluidXML.
 
-Take a look at the [APIs][apis] to discover all the available manipulation operations.
+Take a look at the [APIs][apis] to discover all the available manipulation operations,<br/>
+and go to the [Wiki Page][wiki] for more reading.
 
 Thanks and most important, have fun with XML.
