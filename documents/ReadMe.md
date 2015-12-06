@@ -1,4 +1,4 @@
-[apis]: https://github.com/servo-php/fluidxml#apis
+[apis]: https://github.com/servo-php/fluidxml/wiki/APIs
 [gettingstarted]: https://github.com/servo-php/fluidxml/blob/master/documents/Getting-Started.md
 [examples]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples.php
 [specs]: https://github.com/servo-php/fluidxml/blob/master/specs/FluidXml.php
@@ -173,97 +173,6 @@ All them cover from the simplest case to the most complex scenario.
 
 Take a look at the [APIs][apis] to discover all the available manipulation operations,<br/>
 and go to the [Wiki Page][wiki] for more reading.
-
-
-## APIs
-The complete API documentation can be generated executing:
-```sh
-./support/tools/gendoc      # Generated under 'documents/api/'.
-```
-
-```php
-/*******************************************************************************
- * Functions
- ******************************************************************************/
-
-function fluidxml($root?, array $options?);
-
-function fluidns($id, $uri, $mode?);
-
-
-/*******************************************************************************
- * FluidXml interfaces
- ******************************************************************************/
-
-class FluidXml
-
-__construct($root?, array $options?);
-
-->namespace(...$namespace);
-
-->namespaces();
-
-->query(...$xpath);
-
-->appendChild($child, ...$optionals);
-
-->prependSibling($sibling, ...$optionals);
-
-->appendSibling($sibling, ...$optionals);
-
-->appendXml($xml);
-
-->appendText($text);
-
-->appendCdata($cdata);
-
-->setText($text);
-
-->setAttribute(...$arguments);
-
-->remove($xpath);
-
-->asArray();    // Available after a query or a node insertion with context switch.
-
-->length();     // Available after a query or a node insertion with context switch.
-
-->xml();
-
-/*
- * Alias methods
- */
-
-->add($child, ...$optionals);                       // ->appendChild
-
-->prepend($sibling, ...$optionals);                 // ->prependSibling
-
-->insertSiblingBefore($sibling, ...$optionals);     // ->prependSibling
-
-->append($sibling, ...$optionals);                  // ->appendSibling
-
-->insertSiblingAfter($sibling, ...$optionals);      // ->appendSibling
-
-->attr(...$arguments);                              // ->setAttribute
-
-->text($text);                                      // ->setText
-
-
-/*******************************************************************************
- * FluidNamespace interfaces
- ******************************************************************************/
-
-class FluidNamespace
-
-__construct($id, $uri, $mode?);
-
-->id();
-
-->uri();
-
-->mode();
-
-->querify($xpath);
-```
 
 
 ## Donation
