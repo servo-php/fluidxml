@@ -15,15 +15,14 @@
 <img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png" height="64px" alt="Servo-PHP Logo"/>
 
 FluidXML is a PHP library, under the Servo PHP framework umbrella ☂,<br/>
-specifically designed to manipulate XML documents with a concise<br/>
-and fluent interface.
+designed to manipulate XML documents with a **concise** and **fluent** interface.
 
-It leverages XPath and the fluent programming pattern to be fun and effective.
+It leverages XPath and the fluent programming pattern to be **fun and effective**.
 
 **STOP generating XML documents with template engines.**<br/>
 **STOP using the boring and verbose DOMDocument.**
 
-FluidXML has been specifically designed to bring XML manipulation to the next level.
+FluidXML has been created to bring XML manipulation to the next level.
 
 ```php
 $book = new FluidXml();
