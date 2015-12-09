@@ -36,7 +36,7 @@ __construct($root?, array $options?);
 
 ->setAttribute(...$arguments);
 
-->remove($xpath);
+->remove(...$xpath);
 
 ->asArray();    // Available after a query or a node insertion with context switch.
 

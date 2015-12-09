@@ -120,7 +120,7 @@ interface FluidInterface
         public function appendCdata($cdata);
         public function setText($text);
         public function setAttribute(...$arguments);
-        public function remove($xpath);
+        public function remove(...$xpath);
         // Aliases:
         public function add($child, ...$optionals);
         public function prepend($sibling, ...$optionals);
@@ -313,9 +313,9 @@ class FluidXml implements FluidInterface
                 return $this->setText($text);
         }
 
-        public function remove($xpath)
+        public function remove(...$xpath)
         {
-                $this->newContext()->remove($xpath);
+                $this->newContext()->remove(...$xpath);
 
                 return $this;
         }
@@ -671,14 +671,15 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->setText($text);
         }
 
-        public function remove($xpath)
+        public function remove(...$xpath)
         {
-                // The function accepts a plain XPath string
-                // or a specific context.
-                $targets = $xpath;
+                // Arguments can be empty, a string or an array of strings.
 
-                if (! $xpath instanceof FluidContext) {
-                        $targets = $this->query($xpath);
+                if (empty($xpath)) {
+                        // The user has requested to remove the nodes of this context.
+                        $targets = $this->nodes;
+                } else {
+                        $targets = $this->query(...$xpath);
                 }
 
                 foreach ($targets as $t) {

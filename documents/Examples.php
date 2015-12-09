@@ -10,7 +10,7 @@ require_once 'FluidXml.php';
 
 
 /*****************************
- * Creating an XML document. *
+ * Creating An XML Document. *
 ******************************/
 
 $book = new FluidXml('book');
@@ -61,7 +61,7 @@ $book->appendChild('chapters', true)                     // true forces the retu
 
 
 /********************
- * Appending nodes. *
+ * Appending Nodes. *
 *********************/
 
 /*
@@ -116,9 +116,9 @@ echo "————————————————————————�
 
 
 
-/*****************************
- * Raw XML strings insertion.*
-******************************/
+/**********************
+ * Adding XML strings.*
+***********************/
 
 /*
 * Sometimes XML/XHTML comes from legacy templating systems
@@ -135,7 +135,7 @@ XML
 
 
 /******************
- * XPath queries. *
+ * XPath Queries. *
 *******************/
 
 /*
@@ -166,9 +166,9 @@ $book->query('//chapter',
 
 
 
-/**********************************
- * Array access and DOMNode apis. *
-***********************************/
+/*******************************
+ * Accessing The Node Content. *
+********************************/
 
 /*
 * The result of a query can be accessed even as array.
@@ -186,7 +186,7 @@ $chapters[0]->setAttribute('first', '');
 $chapters[$l - 1]->setAttribute('last', '');
 
 /*
-* This ->setAttribute is the DOMNode::setAttribute.
+* The previous ->setAttribute is the DOMNode::setAttribute.
 * not the FluidXml::setAttribute().
 * Many other methods/properties are available like:
 * - hasAttribute()
@@ -195,15 +195,8 @@ $chapters[$l - 1]->setAttribute('last', '');
 * See http://php.net/manual/en/class.domnode.php for the reference documentation.
 */
 
-
-/*
-* To retrieve all DOMNode in one operation there is the ->asArray() method.
-*/
-$chapters_nodes = $chapters->asArray();          // Returns an array of DOMNode.
-
 echo $book->xml();
 echo "————————————————————————————————————————————————————————————————————————————————\n";
-
 
 /*
 * Because the result of a query behaves like an array, it can be iterated too.
@@ -222,6 +215,12 @@ foreach ($chapters as $i => $chapter) {
                 echo "Chapter {$ii} has title '{$title}' with id '{$id}'.\n";
         }
 }
+
+/*
+* To retrieve all DOMNode in one operation there is the ->asArray() method.
+*/
+$chapters_nodes = $chapters->asArray();          // Returns an array of DOMNode.
+
 echo "————————————————————————————————————————————————————————————————————————————————\n";
 
 
@@ -245,4 +244,26 @@ $book->namespace($xhtml)
      ->add('svg:shape');
 
 echo $book->xml();
+echo "————————————————————————————————————————————————————————————————————————————————\n";
+
+
+
+/*******************
+ * Removing Nodes. *
+ *******************/
+
+$food->remove('//egg');     // Removes all the eggs.
+
+// Which is the same of
+// $food->query('//egg')->remove();     // Removes all the eggs using a query.
+// $food->query('/doc')->remove('egg'); // Removes all the eggs using a relative XPath.
+
+/* ->remove(...$xpath)
+ * accepts the same arguments of
+ * ->query(...$xpath)
+ * Remember that, like `->query()`, even `->remove()` accepts multiple XPath strings.
+ */
+$food->remove('//fruit', '//cake', '//pasta', '//pizza');
+
+echo $food->xml();
 echo "————————————————————————————————————————————————————————————————————————————————\n";

@@ -325,7 +325,7 @@ echo $food->xml();
 ```
 
 
-## Adding XML Strings
+## Adding XML Strings
 
 Sometimes XML/XHTML comes from legacy templating systems or external sources.<br/>
 In those cases the raw XML string can be injected directly into the document.
@@ -384,15 +384,15 @@ flexibility.
 > ```
 
 
-## Accessing The DOMNode APIs
+## Accessing The Node Content
 
 FluidXML wraps the DOMNode native APIs extending them but without reimplementing<br/>
 what is already convenient to use.
 
-If you need access to the DOMNode instances, they can be retrieved from a query<br/>
-in different ways.
+To access the node content after a query we can use the DOMNode own methods.
 
-Accessing the query results as array is one way.
+Accessing the query result as array or iterating it returns the DOMNode unwrapped.
+
 ```php
 $chapters = $book->query('//chapter');
 
@@ -401,28 +401,7 @@ $l = $chapters->length();
 // DOMNode access.
 $chapters[0]->setAttribute('first', '');
 $chapters[$l - 1]->setAttribute('last', '');
-```
 
-> **Pro Tip**:<br/>
-> The `setAttribute()` method used in the previous example is the `DOMNode::setAttribute()`,<br/>
-> not the `FluidXml::setAttribute()/attr()`.<br/>
-> Many other DOMNode methods and properties are available like:
-> - `hasAttribute()`
-> - `getAttribute()`
-> - `nodeValue`
->
-> See http://php.net/manual/en/class.domnode.php for the reference documentation.
-
-Another way to access the DOMNode instances is using the `asArray()` method.
-
-```php
-$nodes = $chapters->asArray();          // Returns an array of DOMNode instances.
-```
-
-Last and very useful is the possibility to iterate the query results to access<br/>
-the DOMNode instances.
-
-```php
 foreach ($chapters as $i => $chapter) {
         // $chapter is an instance of DOMNode.
 
@@ -437,6 +416,22 @@ foreach ($chapters as $i => $chapter) {
                 echo "Chapter {$ii} has title '{$title}' with id '{$id}'.\n";
         }
 }
+```
+
+> **Pro Tip**:<br/>
+> The `setAttribute()` method used in the previous example is the `DOMNode::setAttribute()`,<br/>
+> not the `FluidXml::setAttribute()/attr()`.<br/>
+> Many other DOMNode methods and properties are available like:
+> - `hasAttribute()`
+> - `getAttribute()`
+> - `nodeValue`
+>
+> See http://php.net/manual/en/class.domnode.php for the reference documentation.
+
+Another way to retrieve the DOMNode instances is using the `asArray()` method.
+
+```php
+$nodes = $chapters->asArray();          // Returns an array of DOMNode instances.
 ```
 
 
@@ -522,6 +517,33 @@ That's it! Even XML namespaces can be easy and fun to use.
 > so that multiple namespaces can be registered in one method call.
 
 
+## Removing Nodes
+
+Removing a node is just a matter of quering an XPath.
+
+```php
+$food->remove('//egg');     // Removes all the eggs.
+```
+
+Which is the same of
+
+```php
+$food->query('//egg')->remove();        // Removes all the eggs.
+```
+
+Quering and removing with relative XPath can be used too.
+
+```php
+$food->query('/doc')->remove('egg');    // Removes all the eggs.
+```
+
+> **ProTip**: `->remove(...$xpath)` accepts the same arguments of `->query(...$xpath)`.<br/>
+> Remember that, like `->query()`, even `->remove()` accepts multiple XPath strings.<br/>
+> ```php
+> $food->remove('//fruit', '//pasta', '//pizza');
+> ```
+
+
 ## Where To Go Next
 
 We have concluded our brief but complete tour of FluidXML and you are ready to<br/>
@@ -529,8 +551,7 @@ start manipulating XML like a real ninja.
 
 The dark ages of DOMDocument have come to the end. Long life to FluidXML.
 
-Go to the `documents` folder and take a look at the `Example.php` file to start<br/>
-experimenting with FluidXML.
+Open the `documents/Examples.php` file to start experimenting with FluidXML.
 
 Take a look at the [APIs][apis] to discover all the available manipulation operations,<br/>
 and go to the [Wiki Page][wiki] for more reading.

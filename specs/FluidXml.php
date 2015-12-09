@@ -993,174 +993,81 @@ EOF;
         });
 
         describe('.remove', function() {
-                it('should remove a descending node from the root node using xpath', function() {
-                        $xml = new FluidXml();
-                        $xml->appendChild('parent', true)
-                            ->appendChild('child');
+                $this->expected = "<doc>\n" .
+                                  "  <parent/>\n" .
+                                  "</doc>";
 
-                        $xml->remove('/doc/parent/child');
-
-                        $expected = "<doc>\n" .
-                                    "  <parent/>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should remove a descending node from the root node using a context', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('parent', true)
-                                  ->appendChild('child', true);
-
-                        $xml->remove($cx);
-
-                        $expected = "<doc>\n" .
-                                    "  <parent/>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should remove multiple descending nodes from the root node using xpath', function() {
+                $this->new_doc = function() {
                         $xml = new FluidXml();
                         $xml->appendChild('parent', true)
                             ->appendChild(['child1', 'child2'], ['class'=>'removable']);
 
-                        $xml->remove('/doc/parent/*[@class="removable"]');
+                        return $xml;
+                };
 
-                        $expected = "<doc>\n" .
-                                    "  <parent/>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
+                it('should remove the root node', function() {
+                        $xml = $this->new_doc->call($this);
+                        $xml->remove();
+
+                        assert_equal_xml($xml, '');
                 });
 
-                it('should remove multiple descending nodes from the root node using a context', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('parent', true)
-                                  ->appendChild(['child1', 'child2'], ['class'=>'removable'], true);
+                it('should remove the results of a query', function() {
+                        $xml = $this->new_doc->call($this);
+                        $xml->query('//*[@class="removable"]')->remove();
 
-                        $xml->remove($cx);
-
-                        $expected = "<doc>\n" .
-                                    "  <parent/>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
+                        assert_equal_xml($xml, $this->expected);
                 });
 
-                it('should remove a child node from a parent node using xpath', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('parent', true);
-                        $cx->appendChild('child');
+                it('should remove the absolute and relative targets of an XPath', function() {
+                        $xml = $this->new_doc->call($this);
+                        $xml->remove('//*[@class="removable"]');
 
-                        $cx->remove('child');
+                        assert_equal_xml($xml, $this->expected);
 
-                        $expected = "<doc>\n" .
-                                    "  <parent/>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
+                        $xml = $this->new_doc->call($this);
+                        $xml->query('/doc')->remove('//*[@class="removable"]');
+
+                        assert_equal_xml($xml, $this->expected);
+
+                        $xml = $this->new_doc->call($this);
+                        $xml->query('/doc/parent')->remove('*[@class="removable"]');
+
+                        assert_equal_xml($xml, $this->expected);
                 });
 
-                it('should remove a child node from a parent node using a context', function() {
-                        $xml = new FluidXml();
-                        $parent = $xml->appendChild('parent', true);
-                        $cx     = $parent->appendChild('child', true);
+                it('should remove the absolute and relative targets of an array of XPaths', function() {
+                        $xml = $this->new_doc->call($this);
+                        $xml->remove(['//child1', '//child2']);
 
-                        $parent->remove($cx);
+                        assert_equal_xml($xml, $this->expected);
 
-                        $expected = "<doc>\n" .
-                                    "  <parent/>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
+                        $xml = $this->new_doc->call($this);
+                        $xml->query('/doc')->remove(['//child1', '//child2']);
+
+                        assert_equal_xml($xml, $this->expected);
+
+                        $xml = $this->new_doc->call($this);
+                        $xml->query('/doc/parent')->remove(['child1', 'child2']);
+
+                        assert_equal_xml($xml, $this->expected);
                 });
 
-                it('should remove a descending node from an ancestor node using xpath', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('parent', true);
-                        $cx->appendChild('child', true)
-                           ->appendChild('subchild');
+                it('should remove the absolute and relative targets of a variable list of XPaths', function() {
+                        $xml = $this->new_doc->call($this);
+                        $xml->remove('//child1', '//child2');
 
-                        $cx->remove('child/subchild');
+                        assert_equal_xml($xml, $this->expected);
 
-                        $expected = "<doc>\n" .
-                                    "  <parent>\n" .
-                                    "    <child/>\n" .
-                                    "  </parent>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
+                        $xml = $this->new_doc->call($this);
+                        $xml->query('/doc')->remove('//child1', '//child2');
 
-                it('should remove a descending node from an ancestor node using a context', function() {
-                        $xml = new FluidXml();
-                        $parent = $xml->appendChild('parent', true);
-                        $cx = $parent->appendChild('child', true)
-                                     ->appendChild('subchild', true);
+                        assert_equal_xml($xml, $this->expected);
 
-                        $cx->remove($cx);
+                        $xml = $this->new_doc->call($this);
+                        $xml->query('/doc/parent')->remove('child1', 'child2');
 
-                        $expected = "<doc>\n" .
-                                    "  <parent>\n" .
-                                    "    <child/>\n" .
-                                    "  </parent>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should remove multiple children nodes from a parent node using xpath', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('parent', true);
-                        $cx->appendChild(['child1', 'child2'], ['class'=>'removable']);
-
-                        $cx->remove('*[@class="removable"]');
-
-                        $expected = "<doc>\n" .
-                                    "  <parent/>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should remove multiple children nodes from a parent node using a context', function() {
-                        $xml = new FluidXml();
-                        $parent = $xml->appendChild('parent', true);
-                        $cx     = $parent->appendChild(['child1', 'child2'], ['class'=>'removable'], true);
-
-                        $cx->remove($cx);
-
-                        $expected = "<doc>\n" .
-                                    "  <parent/>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should remove multiple descending nodes from an ancestor node using xpath', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('parent', true);
-                        $cx->appendChild('child', true)
-                           ->appendChild(['subchild1', 'subchild2'], ['class'=>'removable']);
-
-                        $cx->remove('child/*[@class="removable"]');
-
-                        $expected = "<doc>\n" .
-                                    "  <parent>\n" .
-                                    "    <child/>\n" .
-                                    "  </parent>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should remove multiple descending nodes from an ancestor node using a context', function() {
-                        $xml = new FluidXml();
-                        $parent = $xml->appendChild('parent', true);
-                        $cx = $parent->appendChild('child', true)
-                                     ->appendChild(['subchild1', 'subchild2'],
-                                                   ['class'=>'removable'],
-                                                   true);
-
-                        $parent->remove($cx);
-
-                        $expected = "<doc>\n" .
-                                    "  <parent>\n" .
-                                    "    <child/>\n" .
-                                    "  </parent>\n" .
-                                    "</doc>";
-                        assert_equal_xml($xml, $expected);
+                        assert_equal_xml($xml, $this->expected);
                 });
         });
 

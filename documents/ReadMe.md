@@ -9,8 +9,11 @@
 [donate-button]: https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=2
 [donate-link]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UUBXYHQRVJE28
 [donate-link-alt]: https://www.paypal.me/danieleorlando
+[thankyou]: https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_corazón.svg/2000px-Heart_corazón.svg.png
 
 # FluidXML
+<img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png" height="64px" alt="Servo-PHP Logo"/>
+
 FluidXML is a PHP library, under the Servo PHP framework umbrella ☂,<br/>
 specifically designed to manipulate XML documents with a concise<br/>
 and fluent interface.
@@ -96,7 +99,7 @@ $book->query('//chapter')
      ->attr('country', 'us');
 ```
 
-And sometimes **string template** are the fastest way.
+And sometimes **string templates** are the fastest way.
 
 ```php
 $book->appendChild('cover', true)
@@ -158,7 +161,7 @@ require_once 'FluidXml.php';
 require_once 'vendor/autoload.php';
 ```
 
-See the [documentation](#documentation) to get started and becoming a [ninja][ninja].
+See the [documentation](#documentation) to get started and become a [ninja][ninja].
 
 
 ## Documentation
@@ -181,12 +184,12 @@ your immense gratitude **♡**, donate _1cent_.
 
 [![Donate][donate-button]][donate-link]
 
-#### Thank You! :D ♥
+**Thank You! :D** [♥][thankyou]
 
 
 ## Roadmap
 * [x] Porting the XML namespace implementation from the legacy FluidXML codebase
-* [ ] Expanding the APIs with some other useful methods
+* [ ] Expanding the APIs
 * [ ] PHP 5.4 backport
 * [ ] Extending the documentation
 
