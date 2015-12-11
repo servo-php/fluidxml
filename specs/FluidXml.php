@@ -5,13 +5,6 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".common.php";
 require_once 'FluidXml.php';
 
 describe('fluidxml', function() {
-        it('should return a new FluidXml instance', function() {
-                $xml = fluidxml();
-
-                $actual = $xml;
-                assert_is_a($actual, FluidXml::class);
-        });
-
         it('should behave like FluidXml::__construct', function() {
                 $xml   = new FluidXml();
                 $alias = fluidxml();
@@ -34,14 +27,19 @@ describe('fluidxml', function() {
         });
 });
 
-describe('fluidns', function() {
-        it('should return a new FluidNamespace instance', function() {
-                $ns = fluidns();
+describe('fluidify', function() {
+        it('should behave like FluidXml::load', function() {
+                $doc   = '<tag>content</tag>';
+                $xml   = FluidXml::load($doc);
+                $alias = fluidify($doc);
 
-                $actual = $ns;
-                assert_is_a($actual, FluidNamespace::class);
+                $actual   = $alias->xml();
+                $expected = $xml->xml();
+                assert($actual === $expected, __($actual, $expected));
         });
+});
 
+describe('fluidns', function() {
         it('should behave like FluidNamespace::__construct', function() {
                 $ns    = new FluidNamespace('x', 'x.com');
                 $alias = fluidns('x', 'x.com');
@@ -111,6 +109,89 @@ describe('FluidXml', function() {
                 $xml = new FluidXml(['root' => null, 'stylesheet' => 'http://servo-php.org/fluidxml']);
                 $expected = "<?xml-stylesheet type=\"text/xsl\" encoding=\"UTF-8\" indent=\"yes\" href=\"http://servo-php.org/fluidxml\"?>";
                 assert_equal_xml($xml, $expected);
+        });
+
+        describe(':load', function() {
+                $this->doc = '<tag>content</tag>';
+                $this->dom = new \DOMDocument();
+                $this->dom->loadXML($this->doc);
+
+                it('should import an XML string', function() {
+                        $doc = $this->dom->saveXML();
+
+                        // The first empty line is used to test the trim of the string.
+
+                        // This $doc has the XML header.
+                        $xml = FluidXml::load("\n " . $doc);
+
+                        $expected = $this->doc;
+                        assert_equal_xml($xml, $expected);
+
+                        // This $doc is deprived of the XML header.
+                        $xml = FluidXml::load("\n " . \substr($doc, \strpos($doc, "\n") + 1));
+
+                        $expected = $this->doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should import an XML file', function() {
+                        $doc  = $this->doc;
+                        $ds = \DIRECTORY_SEPARATOR;
+                        $file = __DIR__ . "{$ds}..{$ds}sandbox{$ds}.fixture.xml";
+                        \file_put_contents($file, $doc);
+                        $xml = FluidXml::load($file);
+                        \unlink($file);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should import a DOMDocument', function() {
+                        $xml = FluidXml::load($this->dom);
+
+                        $expected = $this->doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should import a SimpleXMLElement', function() {
+                        $xml = FluidXml::load(\simplexml_import_dom($this->dom));
+
+                        $expected = $this->doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should throw for not supported documents', function() {
+                        try {
+                                $xml = FluidXml::load('.impossible.xml');
+                        } catch (\Exception $e) {
+                                $actual   = $e;
+                        }
+
+                        assert_is_a($actual, \Exception::class);
+                });
+        });
+
+        describe(':new', function() {
+                it('should behave like FluidXml::__construct', function() {
+                        $xml   = new FluidXml();
+                        $alias = FluidXml::new();
+
+                        $actual   = $alias->xml();
+                        $expected = $xml->xml();
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $options = [ 'root'       => 'root',
+                                     'version'    => '1.2',
+                                     'encoding'   => 'UTF-16',
+                                     'stylesheet' => 'stylesheet.xsl' ];
+
+                        $xml   = new FluidXml($options);
+                        $alias = FluidXml::new($options);
+
+                        $actual   = $alias->xml();
+                        $expected = $xml->xml();
+                        assert($actual === $expected, __($actual, $expected));
+                });
         });
 
         describe('.dom', function() {
@@ -753,8 +834,8 @@ EOF;
 
         describe('.appendXml', function() {
                 it('should populate the document with an xml document', function() {
-                        $xml = new FluidXml(['root'=>null]);
-                        $xml->appendXml('<root1/><root2/>', true);
+                        $xml = new FluidXml(['root' => null]);
+                        $xml->appendXml('<root1/><root2/>');
 
                         $expected = "<root1/>\n" .
                                     "<root2/>";
@@ -1006,65 +1087,65 @@ EOF;
                 };
 
                 it('should remove the root node', function() {
-                        $xml = $this->new_doc->call($this);
+                        $xml = $this->new_doc->__invoke();
                         $xml->remove();
 
                         assert_equal_xml($xml, '');
                 });
 
                 it('should remove the results of a query', function() {
-                        $xml = $this->new_doc->call($this);
+                        $xml = $this->new_doc->__invoke();
                         $xml->query('//*[@class="removable"]')->remove();
 
                         assert_equal_xml($xml, $this->expected);
                 });
 
                 it('should remove the absolute and relative targets of an XPath', function() {
-                        $xml = $this->new_doc->call($this);
+                        $xml = $this->new_doc->__invoke();
                         $xml->remove('//*[@class="removable"]');
 
                         assert_equal_xml($xml, $this->expected);
 
-                        $xml = $this->new_doc->call($this);
+                        $xml = $this->new_doc->__invoke();
                         $xml->query('/doc')->remove('//*[@class="removable"]');
 
                         assert_equal_xml($xml, $this->expected);
 
-                        $xml = $this->new_doc->call($this);
+                        $xml = $this->new_doc->__invoke();
                         $xml->query('/doc/parent')->remove('*[@class="removable"]');
 
                         assert_equal_xml($xml, $this->expected);
                 });
 
                 it('should remove the absolute and relative targets of an array of XPaths', function() {
-                        $xml = $this->new_doc->call($this);
+                        $xml = $this->new_doc->__invoke();
                         $xml->remove(['//child1', '//child2']);
 
                         assert_equal_xml($xml, $this->expected);
 
-                        $xml = $this->new_doc->call($this);
+                        $xml = $this->new_doc->__invoke();
                         $xml->query('/doc')->remove(['//child1', '//child2']);
 
                         assert_equal_xml($xml, $this->expected);
 
-                        $xml = $this->new_doc->call($this);
+                        $xml = $this->new_doc->__invoke();
                         $xml->query('/doc/parent')->remove(['child1', 'child2']);
 
                         assert_equal_xml($xml, $this->expected);
                 });
 
                 it('should remove the absolute and relative targets of a variable list of XPaths', function() {
-                        $xml = $this->new_doc->call($this);
+                        $xml = $this->new_doc->__invoke();
                         $xml->remove('//child1', '//child2');
 
                         assert_equal_xml($xml, $this->expected);
 
-                        $xml = $this->new_doc->call($this);
+                        $xml = $this->new_doc->__invoke();
                         $xml->query('/doc')->remove('//child1', '//child2');
 
                         assert_equal_xml($xml, $this->expected);
 
-                        $xml = $this->new_doc->call($this);
+                        $xml = $this->new_doc->__invoke();
                         $xml->query('/doc/parent')->remove('child1', 'child2');
 
                         assert_equal_xml($xml, $this->expected);

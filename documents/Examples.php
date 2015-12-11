@@ -116,13 +116,12 @@ echo "————————————————————————�
 
 
 
-/**********************
- * Adding XML strings.*
-***********************/
+/*************************
+ * Importing XML strings.*
+**************************/
 
 /*
-* Sometimes XML/XHTML comes from legacy templating systems
-* or external sources. In those cases the raw XML string can be injected too.
+* Raw XML/XHTML strings che be injected at any point of the document too.
 */
 
 $book->appendChild('cover', true)
@@ -131,6 +130,55 @@ $book->appendChild('cover', true)
         <img src="http://goo.gl/kO3Iov"/>
 XML
 );
+
+
+/*
+* The document can be filled with a raw XML string.
+*/
+$html = fluidxml(['root' => null]);
+$html->appendXml(<<<XML
+<html>
+    <head>
+        <meta/>
+    </head>
+    <body>
+        <p/>
+    </body>
+</html>
+XML
+);
+
+
+/*
+* Sometimes XML/XHTML comes from legacy templating systems or external sources.
+*/
+
+/* Remember, fluidify() is an alias for FluidXml::load(). */
+
+$string = $html->xml();
+// XML string import.
+$fluid = fluidify($string);
+echo $fluid->xml();
+echo "————————————————————————————————————————————————————————————————————————————————\n";
+
+
+$dom = new DOMDocument();
+$dom->loadXML($fluid->xml());
+// DOMDocument import.
+$fluid = fluidify($dom);
+echo $fluid->xml();
+echo "————————————————————————————————————————————————————————————————————————————————\n";
+
+
+$simplexml = new SimpleXMLElement($fluid->xml());
+// SimpleXMLElement import.
+$fluid = fluidify($simplexml);
+echo $fluid->xml();
+echo "————————————————————————————————————————————————————————————————————————————————\n";
+
+
+// XML file import.
+// $fluid = fluidify('path/to/file.xml');
 
 
 

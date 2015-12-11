@@ -15,7 +15,7 @@
 <img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png" height="64px" alt="Servo-PHP Logo"/>
 
 FluidXML is a PHP library, under the Servo PHP framework umbrella ☂,<br/>
-designed to manipulate XML documents with a **concise** and **fluent** interface.
+designed to manipulate XML documents with a **concise** and **fluent** API.
 
 It leverages XPath and the fluent programming pattern to be **fun and effective**.
 
@@ -27,14 +27,13 @@ FluidXML has been created to bring XML manipulation to the next level.
 ```php
 $book = new FluidXml();
 
-$book->setAttribute('type', 'book')
-     ->appendChild('title', 'The Theory Of Everything')
+$book->appendChild('title', 'The Theory Of Everything')
      ->appendChild('author', 'S. Hawking')
      ->appendChild('chapters', true)
          ->appendChild('chapter', 'Ideas About The Universe', ['id'=> 1])
          ->appendChild('chapter', 'The Expanding Universe',   ['id'=> 2])
      ->query('//chapter')
-     ->setAttribute('lang', 'en');
+         ->setAttribute('lang', 'en');
 ```
 
 Or, if you prefer, there is a **concise syntax**.
@@ -42,14 +41,13 @@ Or, if you prefer, there is a **concise syntax**.
 ```php
 $book = fluidxml();
 
-$book->attr('type', 'book')
-     ->add('title', 'The Theory Of Everything')
+$book->add('title', 'The Theory Of Everything')
      ->add('author', 'S. Hawking')
      ->add('chapters', true)
          ->add('chapter', 'Ideas About The Universe', ['id'=> 1])
          ->add('chapter', 'The Expanding Universe',   ['id'=> 2])
      ->query('//chapter')
-     ->attr('lang', 'en');
+         ->attr('lang', 'en');
 ```
 
 ```php
@@ -57,7 +55,7 @@ echo $book->xml();
 ```
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<doc type="book">
+<doc>
   <title>The Theory Of Everything</title>
   <author>S. Hawking</author>
   <chapters>
@@ -67,7 +65,7 @@ echo $book->xml();
 </doc>
 ```
 
-Creating **structured documents** is so easy that you'll never go back.
+Creating **structured documents** is so easy that you'll not believe.
 
 ```php
 $food = fluidxml();
@@ -119,6 +117,12 @@ $book->namespace('xhtml', 'http://www.w3.org/1999/xhtml')
      ->query('//xhtml:h1');
 ```
 
+Existing **DOMDocument** and **SimpleXML** documents are not a problem, just import them.
+
+```php
+$fluidxml = fluidify($domdocument);
+```
+
 Don't be shy and tell it: **« IT'S AWESOME! »** ^\_^
 
 
@@ -134,7 +138,7 @@ If it's not enough, it has a comprehensive test suite with a **100% code coverag
 
 ## Requirements
 * PHP 7
-* _For PHP 5.4 see the [RoadMap](#roadmap)_
+* _For PHP 5.6 see the [RoadMap](#roadmap)_
 
 
 ## Installation
@@ -189,7 +193,7 @@ your immense gratitude **♡**, donate _1cent_.
 ## Roadmap
 * [x] Porting the XML namespace implementation from the legacy FluidXML codebase
 * [ ] Expanding the APIs
-* [ ] PHP 5.4 backport
+* [ ] PHP 5.6 backport
 * [ ] Extending the documentation
 
 <a href='https://pledgie.com/campaigns/30607'>

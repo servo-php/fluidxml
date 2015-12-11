@@ -1,3 +1,11 @@
+1.5:
+* Supports for importing XML documents from:
+- String
+- File
+- DOMDocument
+- SimpleXMLElement
+* FluidXml::new(), FluidXml::load() and fluidify() are part of the family.
+
 1.4:
 * ->remove() can remove the results of a query and accepts multiple XPath
 strings.

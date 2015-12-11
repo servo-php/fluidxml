@@ -54,18 +54,22 @@
  *
  *   'encoding'   => 'UTF-8',
  *
- *   'stylesheet' => null ]);
+ *   'stylesheet' => null ]);
  * ```
  *
  * @param array $arguments Options that influence the construction of the XML document.
  *
  * @return FluidXml A new FluidXml instance.
  */
+function fluidify(...$arguments)
+{
+        return FluidXml::load(...$arguments);
+}
+
 function fluidxml(...$arguments)
 {
         return new FluidXml(...$arguments);
 }
-
 
 function fluidns(...$arguments)
 {
@@ -135,11 +139,56 @@ class FluidXml implements FluidInterface
 {
         use FluidNamespaceTrait;
 
+        const ROOT_NODE = 'doc';
+
         private $dom;
+
+        public static function new(...$arguments)
+        {
+                return new FluidXml(...$arguments);
+        }
+
+        public static function load($document)
+        {
+                $xml = null;
+
+                if (\is_string($document)) {
+                        // Removes any empty new line at the beginning,
+                        // otherwise the first character check fails.
+                        $document = \ltrim($document);
+
+                        if ($document[0] === '<') {
+                                $xml = $document;
+                        } else {
+                                $xml = \file_get_contents($document);
+                        }
+                } else if ($document instanceof \DOMDocument) {
+                        $xml = $document->saveXML();
+
+                } else if ($document instanceof \SimpleXMLElement) {
+                        $xml = $document->asXML();
+                }
+
+                if (! \is_string($xml)) {
+                        throw new Exception("Document '{$document}' not recognized.");
+                }
+
+                // The first line can be the XML header and must be removed
+                // for the appendXml() to succeed.
+
+                $dom = new \DOMDocument();
+                $dom->loadXML($xml);
+                // TODO:
+                // Investigate if it is the case to iterate the childNodes
+                // in case of multiple root nodes.
+                $xml = $dom->saveXML($dom->documentElement);
+
+                return FluidXml::new(['root' => null])->appendXml($xml);
+        }
 
         public function __construct($root = null, $options = [])
         {
-                $defaults = [ 'root'       => 'doc',
+                $defaults = [ 'root'       => self::ROOT_NODE,
                               'version'    => '1.0',
                               'encoding'   => 'UTF-8',
                               'stylesheet' => null ];
@@ -159,7 +208,6 @@ class FluidXml implements FluidInterface
                 $this->dom = new \DOMDocument($opts['version'], $opts['encoding']);
                 $this->dom->formatOutput       = true;
                 $this->dom->preserveWhiteSpace = false;
-                $this->dom->resolveExternals   = true;
 
                 if ($opts['root']) {
                         $this->appendSibling($opts['root']);
@@ -198,7 +246,7 @@ class FluidXml implements FluidInterface
                 return $this->chooseContext($context, $newContext);
         }
 
-        // Alias of appendChild.
+        // Alias of appendChild().
         public function add($child, ...$optionals)
         {
                 return $this->appendChild($child, ...$optionals);
@@ -220,13 +268,13 @@ class FluidXml implements FluidInterface
                 return $this->chooseContext($context, $newContext);
         }
 
-        // Alias of prependSibling.
+        // Alias of prependSibling().
         public function prepend($sibling, ...$optionals)
         {
                 return $this->prependSibling($sibling, ...$optionals);
         }
 
-        // Alias of prependSibling.
+        // Alias of prependSibling().
         public function insertSiblingBefore($sibling, ...$optionals)
         {
                 return $this->prependSibling($sibling, ...$optionals);
@@ -248,27 +296,24 @@ class FluidXml implements FluidInterface
                 return $this->chooseContext($context, $newContext);
         }
 
-        // Alias of appendSibling.
+        // Alias of appendSibling().
         public function append($sibling, ...$optionals)
         {
                 return $this->appendSibling($sibling, ...$optionals);
         }
 
-        // Alias of appendSibling.
+        // Alias of appendSibling().
         public function insertSiblingAfter($sibling, ...$optionals)
         {
                 return $this->appendSibling($sibling, ...$optionals);
         }
 
-        public function appendXml($xml, $asRoot = false)
+        public function appendXml($xml)
         {
-                if ($asRoot) {
-                        $cx = $this->newContext($this->dom);
-                } else {
-                        $cx = $this->newContext();
-                }
-
-                $cx->appendXml($xml);
+                // If the user has requested ['root' => null] at construction time
+                // the newContext() promotes DOMDocument as root node and appendXml()
+                // fills the DOMDocument with the passed XML.
+                $this->newContext()->appendXml($xml);
 
                 return $this;
         }
@@ -280,7 +325,7 @@ class FluidXml implements FluidInterface
                 return $this;
         }
 
-        // Alias of setAttribute.
+        // Alias of setAttribute().
         public function attr(...$arguments)
         {
                 return $this->setAttribute(...$arguments);
@@ -307,7 +352,7 @@ class FluidXml implements FluidInterface
                 return $this;
         }
 
-        // Alias of setText.
+        // Alias of setText().
         public function text($text)
         {
                 return $this->setText($text);
@@ -324,6 +369,15 @@ class FluidXml implements FluidInterface
         {
                 if (! $context) {
                         $context = $this->dom->documentElement;
+                }
+
+                // If the user has requested ['root' => null] at construction time
+                // the 'documentElement' property is null because we have not created
+                // a root node yet.
+                if (! $context) {
+                        // Whether there is not a root node, the DOMDocument is
+                        // promoted as root node.
+                        $context = $this->dom;
                 }
 
                 return new FluidContext($this->dom, $context, $this->namespaces);
@@ -513,7 +567,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->insertNode($fn, $child, ...$optionals);
         }
 
-        // Alias of appendChild.
+        // Alias of appendChild().
         public function add($child, ...$optionals)
         {
                 return $this->appendChild($child, ...$optionals);
@@ -528,13 +582,13 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->insertNode($fn, $sibling, ...$optionals);
         }
 
-        // Alias of prependSibling.
+        // Alias of prependSibling().
         public function prepend($sibling, ...$optionals)
         {
                 return $this->prependSibling($sibling, ...$optionals);
         }
 
-        // Alias of prependSibling.
+        // Alias of prependSibling().
         public function insertSiblingBefore($sibling, ...$optionals)
         {
                 return $this->prependSibling($sibling, ...$optionals);
@@ -550,13 +604,13 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->insertNode($fn, $sibling, ...$optionals);
         }
 
-        // Alias of appendSibling.
+        // Alias of appendSibling().
         public function append($sibling, ...$optionals)
         {
                 return $this->appendSibling($sibling, ...$optionals);
         }
 
-        // Alias of appendSibling.
+        // Alias of appendSibling().
         public function insertSiblingAfter($sibling, ...$optionals)
         {
                 return $this->appendSibling($sibling, ...$optionals);
@@ -565,6 +619,8 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         public function appendXml($xml)
         {
                 $newDom = new \DOMDocument();
+                $newDom->formatOutput       = true;
+                $newDom->preserveWhiteSpace = false;
                 // A way to import strings with multiple root nodes.
                 $newDom->loadXML("<root>$xml</root>");
 
@@ -620,7 +676,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        // Alias of setAttribute.
+        // Alias of setAttribute().
         public function attr(...$arguments)
         {
                 return $this->setAttribute(...$arguments);
@@ -665,7 +721,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        // Alias of setText.
+        // Alias of setText().
         public function text($text)
         {
                 return $this->setText($text);
@@ -737,10 +793,15 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                                 }
                         }
 
+                        // Algorithm 1:
+                        $el = new \DOMElement($name, $value, $uri);
+
+                        // Algorithm 2:
+                        // $el = $this->dom->createElement($name, $value);
+
                         // The DOMElement instance must be different for every node,
                         // otherwise only one element is attached to the DOM.
-                        $el = new \DOMElement($name, $value, $uri);
-                        // $el = $this->dom->createElement($name, $value);
+
                         $newContext[] = $fn($parent, $el);
 
                         return $el;

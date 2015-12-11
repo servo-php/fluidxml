@@ -231,7 +231,7 @@ of a node contextually to its creation.
 >
 > // The advantage comes when multiple nodes have the same attributes.
 >
-> // A bunch of egg's all with the same price.
+> // A bunch of eggs all with the same price.
 > $food->appendChild([ ['egg'],
 >                      ['egg'],
 >                      ['egg'] ], ['price' => '0.25']);
@@ -249,7 +249,7 @@ of a node contextually to its creation.
 >
 > // The advantage comes when multiple nodes have the same attributes.
 >
-> // A bunch of egg's all with the same price.
+> // A bunch of eggs all with the same price.
 > $food->add([ ['egg'],
 >              ['egg'],
 >              ['egg'] ], ['price' => '0.25']);
@@ -538,9 +538,72 @@ $food->query('/doc')->remove('egg');    // Removes all the eggs.
 ```
 
 > **ProTip**: `->remove(...$xpath)` accepts the same arguments of `->query(...$xpath)`.<br/>
-> Remember that, like `->query()`, even `->remove()` accepts multiple XPath strings.<br/>
+> This means that, like `->query()`, even `->remove()` accepts multiple XPath strings.<br/>
 > ```php
 > $food->remove('//fruit', '//pasta', '//pizza');
+> ```
+
+
+## Importing Existing Documents
+
+FluidXML provides an easy way to import existing documents from a variety of sources.
+
+The resulting object is a `FluidXml` instance filled with the XML of the imported document.
+
+* **XML String**<br/>
+> Extended syntax
+> ```php
+> $xml = <<<XML
+> <?xml version="1.0" encoding="UTF-8"?>
+> <html>
+>     <head/>
+>     <body/>
+> </html>
+> XML;
+>
+> $doc = FluidXml::load($xml);
+> ```
+> Concise syntax
+> ```php
+> $xml = <<<XML
+> <?xml version="1.0" encoding="UTF-8"?>
+> <html>
+>     <head/>
+>     <body/>
+> </html>
+> XML;
+>
+> $doc = fluidify($xml);
+> ```
+
+* **XML File**<br/>
+> Extended syntax
+> ```php
+> $doc = FluidXml::load('path/to/file.xml');
+> ```
+> Concise syntax
+> ```php
+> $doc = fluidify('path/to/file.xml');
+> ```
+
+* **DOMDocument**<br/>
+> Extended syntax
+> ```php
+> $doc = FluidXml::load($domdocument);  // $domdocument is an instance of DOMDocument.
+> ```
+> Concise syntax
+> ```php
+> $doc = fluidify($domdocument);        // $domdocument is an instance of DOMDocument.
+> ```
+
+* **SimpleXMLElement**<br/>
+> Extended syntax
+> ```php
+> $doc = FluidXml::load($simplexml);    // $simplexml is an instance of SimpleXMLElement.
+> ```
+> Concise syntax
+> ```php
+> $doc = fluidify($simplexml);          // $simplexml is an instance of SimpleXMLElement.
 > ```
 
 

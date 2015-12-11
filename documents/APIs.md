@@ -4,6 +4,8 @@
 ```php
 function fluidxml($root?, array $options?);
 
+function fluidify($document);
+
 function fluidns($id, $uri, $mode?);
 ```
 
@@ -11,6 +13,8 @@ function fluidns($id, $uri, $mode?);
 ## FluidXml interfaces
 ```php
 class FluidXml
+
+::load($document);
 
 __construct($root?, array $options?);
 
@@ -48,19 +52,21 @@ __construct($root?, array $options?);
  * Alias methods *
  *****************/
 
-->add($child, ...$optionals);                       // ->appendChild
+::new($root?, array $options?);                     // __construct()
 
-->prepend($sibling, ...$optionals);                 // ->prependSibling
+->add($child, ...$optionals);                       // ->appendChild()
 
-->insertSiblingBefore($sibling, ...$optionals);     // ->prependSibling
+->prepend($sibling, ...$optionals);                 // ->prependSibling()
 
-->append($sibling, ...$optionals);                  // ->appendSibling
+->insertSiblingBefore($sibling, ...$optionals);     // ->prependSibling()
 
-->insertSiblingAfter($sibling, ...$optionals);      // ->appendSibling
+->append($sibling, ...$optionals);                  // ->appendSibling()
 
-->attr(...$arguments);                              // ->setAttribute
+->insertSiblingAfter($sibling, ...$optionals);      // ->appendSibling()
 
-->text($text);                                      // ->setText
+->attr(...$arguments);                              // ->setAttribute()
+
+->text($text);                                      // ->setText()
 ```
 
 
