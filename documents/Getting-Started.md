@@ -15,7 +15,7 @@ In every described situation FluidXML performs better in every way.
 
 First of all, depending the method you have chosen to install FluidXML, you have two<br/>
 options to include the library.
-* If you have cloned the repository, copy the `source/FluidXml.php` in your PHP<br/>
+* If you have cloned the repository, copy the `source/FluidXml.php*` files in your PHP<br/>
 project and include it:
   ```php
 require_once 'FluidXml.php';
@@ -80,7 +80,7 @@ Our XML document now has a root node called `<book/>`.
 > ```
 
 > **Pro Tip**:<br/>
-> The Ruby object construction style is supported too.
+> The Ruby object construction style is supported too with PHP 7.
 > ```php
 > $doc = FluidXml::new('book', [/* options */]);
 > ```

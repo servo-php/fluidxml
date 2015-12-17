@@ -137,8 +137,7 @@ If it's not enough, it has a comprehensive test suite with a **100% code coverag
 
 
 ## Requirements
-* PHP 7
-* _For PHP 5.6 see the [RoadMap](#roadmap)_
+* PHP 5.6
 
 
 ## Installation
@@ -191,9 +190,9 @@ your immense gratitude **♡**, donate _1cent_.
 
 
 ## Roadmap
-* [x] Porting the XML namespace implementation from the legacy FluidXML codebase
+* [+] Porting the XML namespace implementation from the legacy FluidXML codebase
 * [ ] Expanding the APIs
-* [ ] PHP 5.6 backport
+* [+] PHP 5.6 backport
 * [ ] Extending the documentation
 
 <a href='https://pledgie.com/campaigns/30607'>

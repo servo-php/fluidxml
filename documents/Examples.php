@@ -26,7 +26,8 @@ $book = new FluidXml(['root' => 'book']);
 //   'stylesheet' => null ];     // An url pointing to an XSL file.
 
 $booksheet = new FluidXml('book', ['stylesheet' => 'http://domain.com/style.xsl']);
-
+// With PHP 7 this is valid too:
+// $booksheet = FluidXml::new('book', ['stylesheet' => 'http://domain.com/style.xsl']);
 
 $book->setAttribute('type', 'science')                  // It sets an attribute of the root node ('book').
      ->appendChild([ 'title'  => 'The Theory Of Everything',
