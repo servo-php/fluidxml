@@ -20,7 +20,7 @@
                 "vendor-dir": "./composer"
         },
         "require": {
-                "php": ">=7"
+                "php": ">=5.6"
         },
         "require-dev": {
                 "peridot-php/peridot": "1.*",

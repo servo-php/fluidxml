@@ -171,10 +171,11 @@ describe('FluidXml', function() {
                 });
         });
 
+        if (version_compare(phpversion(), '7', '>=')) {
         describe(':new', function() {
                 it('should behave like FluidXml::__construct', function() {
                         $xml   = new FluidXml();
-                        $alias = FluidXml::new();
+                        eval('$alias = FluidXml::new();');
 
                         $actual   = $alias->xml();
                         $expected = $xml->xml();
@@ -186,13 +187,14 @@ describe('FluidXml', function() {
                                      'stylesheet' => 'stylesheet.xsl' ];
 
                         $xml   = new FluidXml($options);
-                        $alias = FluidXml::new($options);
+                        eval('$alias = FluidXml::new($options);');
 
                         $actual   = $alias->xml();
                         $expected = $xml->xml();
                         assert($actual === $expected, __($actual, $expected));
                 });
         });
+        }
 
         describe('.dom', function() {
                 it('should return the DOMDocument of the document', function() {

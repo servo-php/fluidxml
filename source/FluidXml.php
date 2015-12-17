@@ -38,6 +38,12 @@
  * @license https://opensource.org/licenses/BSD-2-Clause
  */
 
+if (version_compare(phpversion(), '7', '<')) {
+        require_once __DIR__ . \DIRECTORY_SEPARATOR . 'FluidXml.php56.php';
+} else {
+        require_once __DIR__ . \DIRECTORY_SEPARATOR . 'FluidXml.php70.php';
+}
+
 /**
  * Constructs a new FluidXml instance.
  *
@@ -135,18 +141,56 @@ interface FluidInterface
         public function text($text);
 }
 
+trait FluidNamespaceTrait
+{
+        use FluidNamespaceShadowTrait;      // For compatibility with PHP 5.6.
+
+        private $namespaces = [];
+
+        public function namespaces()
+        {
+                return $this->namespaces;
+        }
+
+        // This method should be called 'namespace',
+        // but for compatibility with PHP 5.6
+        // it is shadowed by a facade method:
+        // - in PHP 7 by a real public 'namespace' method
+        // - in PHP 5 by a public __call method which understands a 'namespace' call.
+        protected function registerNamespace(...$arguments)
+        {
+                $namespaces = [];
+
+                if (\is_string($arguments[0])) {
+                        $args = [ $arguments[0], $arguments[1] ];
+
+                        if (isset($arguments[2])) {
+                                $args[] = $arguments[2];
+                        }
+
+                        $namespaces[] = new FluidNamespace(...$args);
+                } else if (\is_array($arguments[0])) {
+                        $namespaces = $arguments[0];
+                } else {
+                        $namespaces = $arguments;
+                }
+
+                foreach ($namespaces as $n) {
+                        $this->namespaces[$n->id()] = $n;
+                }
+
+                return $this;
+        }
+}
+
 class FluidXml implements FluidInterface
 {
-        use FluidNamespaceTrait;
+        use FluidNamespaceTrait,
+            FluidXmlShadowTrait;        // For compatibility with PHP 5.6.
 
         const ROOT_NODE = 'doc';
 
         private $dom;
-
-        public static function new(...$arguments)
-        {
-                return new FluidXml(...$arguments);
-        }
 
         public static function load($document)
         {
@@ -181,7 +225,7 @@ class FluidXml implements FluidInterface
                         throw new \Exception('Document not recognized.');
                 }
 
-                return FluidXml::new(['root' => null])->appendXml($xml);
+                return (new FluidXml(['root' => null]))->appendXml($xml);
         }
 
         public function __construct($root = null, $options = [])
@@ -874,41 +918,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
                 if ($switchContext) {
                         return $context;
-                }
-
-                return $this;
-        }
-}
-
-trait FluidNamespaceTrait
-{
-        private $namespaces = [];
-
-        public function namespaces()
-        {
-                return $this->namespaces;
-        }
-
-        public function namespace(...$arguments)
-        {
-                $namespaces = [];
-
-                if (\is_string($arguments[0])) {
-                        $args = [ $arguments[0], $arguments[1] ];
-
-                        if (isset($arguments[2])) {
-                                $args[] = $arguments[2];
-                        }
-
-                        $namespaces[] = new FluidNamespace(...$args);
-                } else if (\is_array($arguments[0])) {
-                        $namespaces = $arguments[0];
-                } else {
-                        $namespaces = $arguments;
-                }
-
-                foreach ($namespaces as $n) {
-                        $this->namespaces[$n->id()] = $n;
                 }
 
                 return $this;
