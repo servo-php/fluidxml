@@ -152,36 +152,34 @@ class FluidXml implements FluidInterface
         {
                 $xml = null;
 
-                if (\is_string($document)) {
+                if ($document instanceof \SimpleXMLElement) {
+                        $document = \dom_import_simplexml($document)->ownerDocument;
+                } else if (\is_string($document)) {
                         // Removes any empty new line at the beginning,
                         // otherwise the first character check fails.
                         $document = \ltrim($document);
 
                         if ($document[0] === '<') {
                                 $xml = $document;
-                        } else {
+                        } else if (\is_file($document) && \is_readable($document)) {
                                 $xml = \file_get_contents($document);
                         }
-                } else if ($document instanceof \DOMDocument) {
-                        $xml = $document->saveXML();
 
-                } else if ($document instanceof \SimpleXMLElement) {
-                        $xml = $document->asXML();
+                        if ($xml) {
+                                $document = new \DOMDocument();
+                                $document->loadXML($xml);
+                        }
+                }
+
+                if ($document instanceof \DOMDocument) {
+                        // The first line can be the XML header and must be removed
+                        // for the appendXml() to succeed.
+                        $xml = $document->saveXML($document->documentElement);
                 }
 
                 if (! \is_string($xml)) {
-                        throw new Exception("Document '{$document}' not recognized.");
+                        throw new \Exception('Document not recognized.');
                 }
-
-                // The first line can be the XML header and must be removed
-                // for the appendXml() to succeed.
-
-                $dom = new \DOMDocument();
-                $dom->loadXML($xml);
-                // TODO:
-                // Investigate if it is the case to iterate the childNodes
-                // in case of multiple root nodes.
-                $xml = $dom->saveXML($dom->documentElement);
 
                 return FluidXml::new(['root' => null])->appendXml($xml);
         }
@@ -624,8 +622,12 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // A way to import strings with multiple root nodes.
                 $newDom->loadXML("<root>$xml</root>");
 
-                $newDomXp = new \DOMXPath($newDom);
-                $newNodes = $newDomXp->query('/root/*');
+                // Algorithm 1:
+                // $newDomXp = new \DOMXPath($newDom);
+                // $newNodes = $newDomXp->query('/root/*');
+
+                // Algorithm 2:
+                $newNodes = $newDom->documentElement->childNodes;
 
                 foreach ($this->nodes as $n) {
                         foreach ($newNodes as $e) {

@@ -30,8 +30,8 @@ $book = new FluidXml();
 $book->appendChild('title', 'The Theory Of Everything')
      ->appendChild('author', 'S. Hawking')
      ->appendChild('chapters', true)
-         ->appendChild('chapter', 'Ideas About The Universe', ['id'=> 1])
-         ->appendChild('chapter', 'The Expanding Universe',   ['id'=> 2])
+         ->appendChild('chapter', 'Ideas About The Universe', ['id' => 1])
+         ->appendChild('chapter', 'The Expanding Universe',   ['id' => 2])
      ->query('//chapter')
          ->setAttribute('lang', 'en');
 ```
@@ -44,8 +44,8 @@ $book = fluidxml();
 $book->add('title', 'The Theory Of Everything')
      ->add('author', 'S. Hawking')
      ->add('chapters', true)
-         ->add('chapter', 'Ideas About The Universe', ['id'=> 1])
-         ->add('chapter', 'The Expanding Universe',   ['id'=> 2])
+         ->add('chapter', 'Ideas About The Universe', ['id' => 1])
+         ->add('chapter', 'The Expanding Universe',   ['id' => 2])
      ->query('//chapter')
          ->attr('lang', 'en');
 ```

@@ -833,7 +833,7 @@ EOF;
         });
 
         describe('.appendXml', function() {
-                it('should populate the document with an xml document', function() {
+                it('should fill the document with an xml document', function() {
                         $xml = new FluidXml(['root' => null]);
                         $xml->appendXml('<root1/><root2/>');
 

@@ -70,7 +70,7 @@ some options.
 
 Our XML document now has a root node called `<book/>`.
 
-> **Pro Tip**:
+> **Pro Tip**:<br/>
 > Supported options:
 > ```php
 > [ 'root'       => 'doc',    // The root node of the document.
@@ -78,6 +78,13 @@ Our XML document now has a root node called `<book/>`.
 >   'encoding'   => 'UTF-8',  // The encoding for the XML header.
 >   'stylesheet' => null ]    // An url pointing to an XSL file.
 > ```
+
+> **Pro Tip**:<br/>
+> The Ruby object construction style is supported too.
+> ```php
+> $doc = FluidXml::new('book', [/* options */]);
+> ```
+
 
 
 ## Adding Nodes
@@ -118,7 +125,7 @@ node insertion to nested trees creation.
 > ```php
 > ->appendChild($node, $value?, $attributes? = [], $switchContext? = false)
 > ```
-> **Pro Tip**:
+> **Pro Tip**:<br/>
 > Except for the `$node` argument, all others arguments can be passed in any order.
 
 One of the most important argument is the boolean flag `$switchContext`. Passing a `true`<br/>
@@ -373,9 +380,9 @@ flexibility.
 >      ->attr('lang', 'en');
 > ```
 
-> **Pro Tip**:
-> `query()` supports quering multiple XPaths .<br/>
-> The previous example can be refactored using this feature.
+> **Pro Tip**:<br/>
+> `query()` supports quering multiple XPaths. The previous example can be refactored<br/>
+> using this feature.
 > ```php
 > $book->query('//chapter',
 >              '//chapters',
@@ -425,6 +432,7 @@ foreach ($chapters as $i => $chapter) {
 > - `hasAttribute()`
 > - `getAttribute()`
 > - `nodeValue`
+> - `childNodes`
 >
 > See http://php.net/manual/en/class.domnode.php for the reference documentation.
 
@@ -495,7 +503,7 @@ echo $book->xml();
 
 That's it! Even XML namespaces can be easy and fun to use.
 
-> **Pro Tip**:
+> **Pro Tip**:<br/>
 > A namespace can be defined even as a `FluidNamespace` instance,<br/>
 > to make easy to share namespaces between different documents.
 >
@@ -503,8 +511,7 @@ That's it! Even XML namespaces can be easy and fun to use.
 > ```php
 > $xhtml = new FluidNamespace('xhtml', 'http://www.w3.org/1999/xhtml');
 > $svg   = new FluidNamespace('svg',   'http://www.w3.org/2000/svg', FluidNamespace::MODE_IMPLICIT);
-> $book->namespace($xhtml)
->      ->namespace($svg);
+> $book->namespace($xhtml, $svg);
 > ```
 > Concise syntax
 > ```php
@@ -537,7 +544,8 @@ Quering and removing with relative XPath can be used too.
 $food->query('/doc')->remove('egg');    // Removes all the eggs.
 ```
 
-> **ProTip**: `->remove(...$xpath)` accepts the same arguments of `->query(...$xpath)`.<br/>
+> **Pro Tip**:<br/>
+> `->remove(...$xpath)` accepts the same arguments of `->query(...$xpath)`.<br/>
 > This means that, like `->query()`, even `->remove()` accepts multiple XPath strings.<br/>
 > ```php
 > $food->remove('//fruit', '//pasta', '//pizza');
