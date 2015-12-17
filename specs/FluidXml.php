@@ -1307,7 +1307,7 @@ describe('FluidContext', function() {
                         $domxp = new \DOMXPath($dom);
                         $nodes = $domxp->query('/doc/*');
 
-                        $newCx = new FluidContext($dom, $nodes);
+                        $newCx = new FluidContext($nodes);
 
                         $actual   = $cx->asArray() === $newCx->asArray();
                         $expected = true;
@@ -1318,7 +1318,7 @@ describe('FluidContext', function() {
                         $xml = new FluidXml();
                         $cx = $xml->appendChild(['head', 'body'], true);
 
-                        $newCx = new FluidContext($xml->dom(), $cx);
+                        $newCx = new FluidContext($cx);
 
                         $actual   = $cx->asArray() === $newCx->asArray();
                         $expected = true;

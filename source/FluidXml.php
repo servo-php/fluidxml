@@ -378,7 +378,7 @@ class FluidXml implements FluidInterface
                         $context = $this->dom;
                 }
 
-                return new FluidContext($this->dom, $context, $this->namespaces);
+                return new FluidContext($context, $this->namespaces);
         }
 
         protected function chooseContext($helpContext, $newContext)
@@ -401,22 +401,29 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         private $nodes = [];
         private $seek = 0;
 
-        public function __construct(\DOMDocument $dom, $context, array $namespaces = [])
+        public function __construct($context, array $namespaces = [])
         {
-                $this->dom = $dom;
-
                 if (! \is_array($context)) {
                         $context = [ $context ];
                 }
 
                 foreach ($context as $n) {
                         if ($n instanceof \DOMNodeList) {
+                                $this->dom = $n[0]->ownerDocument;
+
                                 foreach ($n as $i) {
                                         $this->nodes[] = $i;
                                 }
                         } else if ($n instanceof \DOMNode) {
+                                $this->dom = ($n instanceof \DOMDocument) ?
+                                                $n
+                                             :
+                                                $n->ownerDocument;
+
                                 $this->nodes[] = $n;
                         } else if ($n instanceof FluidContext) {
+                                $this->dom   = $n[0]->ownerDocument;
+
                                 $this->nodes = \array_merge($this->nodes, $n->asArray());
                         } else {
                                 throw new \Exception('Node type not recognized.');
@@ -749,7 +756,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function newContext($context)
         {
-                return new FluidContext($this->dom, $context, $this->namespaces);
+                return new FluidContext($context, $this->namespaces);
         }
 
         protected function insertNode($fn, $node, ...$optionals)
