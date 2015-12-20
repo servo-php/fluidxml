@@ -1,3 +1,5 @@
+[travis]: https://travis-ci.org/servo-php/fluidxml
+[travis-badge]: https://travis-ci.org/servo-php/fluidxml.svg?branch=master
 [apis]: https://github.com/servo-php/fluidxml/blob/master/documents/APIs.md
 [gettingstarted]: https://github.com/servo-php/fluidxml/blob/master/documents/Getting-Started.md
 [examples]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples.php
@@ -11,7 +13,7 @@
 [donate-link-alt]: https://www.paypal.me/danieleorlando
 [thankyou]: https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_corazón.svg/2000px-Heart_corazón.svg.png
 
-![Build Status](https://travis-ci.org/servo-php/fluidxml.svg?branch=master)
+[![Build Status][travis-badge]][travis]
 
 # FluidXML
 <img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png" height="64px" alt="Servo-PHP Logo"/>

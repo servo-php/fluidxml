@@ -2,8 +2,6 @@
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".common.php";
 
-require_once 'FluidXml.php';
-
 describe('fluidxml', function() {
         it('should behave like FluidXml::__construct', function() {
                 $xml   = new FluidXml();
@@ -1566,4 +1564,3 @@ describe('FluidNamespace', function() {
                 });
         });
 });
-

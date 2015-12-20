@@ -13,11 +13,11 @@
                         "role": "Developer"
                 }
         ],
-        "autoload": {
-                "files": ["./../source/FluidXml.php"]
-        },
         "config": {
-                "vendor-dir": "./composer"
+                "vendor-dir": "./sandbox/composer"
+        },
+        "autoload": {
+                "files": ["./source/FluidXml.php"]
         },
         "require": {
                 "php": ">=5.6"

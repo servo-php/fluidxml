@@ -12,4 +12,4 @@ if ! chkcmd 'peridot'; then
         exit 1
 fi
 
-peridot -g "*.php" "specs/"
+peridot -g "*.php" "./specs/"
