@@ -4,12 +4,10 @@ cd "$(dirname "$0")"
 . ".common.sh"
 cd ../..
 
-
 if ! chkcmd 'composer'; then
         echo ' error: "composer" command not found.'
         exit 1
 fi
-
 
 mkdir -pv "sandbox"
 mkdir -pv "sandbox/composer"

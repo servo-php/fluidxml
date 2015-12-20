@@ -190,9 +190,9 @@ your immense gratitude **♡**, donate _1cent_.
 
 
 ## Roadmap
-* [+] Porting the XML namespace implementation from the legacy FluidXML codebase
+* [x] Porting the XML namespace implementation from the legacy FluidXML codebase
 * [ ] Expanding the APIs
-* [+] PHP 5.6 backport
+* [x] PHP 5.6 backport
 * [ ] Extending the documentation
 
 <a href='https://pledgie.com/campaigns/30607'>

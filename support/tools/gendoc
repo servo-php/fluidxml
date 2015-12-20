@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 . ".common.sh"
 cd ../..
 
-PATH="sandbox/composer/bin:$PATH"
+PATH="$(pwd)/sandbox/composer/bin:$PATH"
 
 if ! chkcmd 'apigen'; then
         echo ' error: "apigen" command not found.'
@@ -21,7 +21,7 @@ fi
 genapi() {
         apigen generate                         \
                 --source "source"               \
-                --destination "$api_dir"   \
+                --destination "$api_dir"        \
                 --template-theme bootstrap      \
                 --template-config "sandbox/composer/apigen/theme-bootstrap/src/config.neon" \
                 --title "FluidXML"              \
