@@ -127,10 +127,11 @@ interface FluidInterface
         public function appendSibling($sibling, ...$optionals);
         public function appendXml($xml);
         public function appendText($text);
-        public function appendCdata($cdata);
+        public function appendCdata($text);
         public function setText($text);
         public function setAttribute(...$arguments);
         public function remove(...$xpath);
+        public function xml($strip = false);
         // Aliases:
         public function add($child, ...$optionals);
         public function prepend($sibling, ...$optionals);
@@ -194,38 +195,27 @@ class FluidXml implements FluidInterface
 
         public static function load($document)
         {
-                $xml = null;
-
-                if ($document instanceof \SimpleXMLElement) {
-                        $document = \dom_import_simplexml($document)->ownerDocument;
-                } else if (\is_string($document)) {
+                if (\is_string($document)) {
                         // Removes any empty new line at the beginning,
                         // otherwise the first character check fails.
                         $document = \ltrim($document);
 
-                        if ($document[0] === '<') {
-                                $xml = $document;
-                        } else if (\is_file($document) && \is_readable($document)) {
-                                $xml = \file_get_contents($document);
+                        if ($document[0] !== '<') {
+                                $file        = $document;
+                                $is_file     = \is_file($file);
+                                $is_readable = \is_readable($file);
+
+                                if ($is_file && $is_readable) {
+                                        $document = \file_get_contents($file);
+                                }
+
+                                if (! $is_file || ! $is_readable || ! $document) {
+                                        throw new \Exception("File '$file' not accessible.");
+                                }
                         }
-
-                        if ($xml) {
-                                $document = new \DOMDocument();
-                                $document->loadXML($xml);
-                        }
                 }
 
-                if ($document instanceof \DOMDocument) {
-                        // The first line can be the XML header and must be removed
-                        // for the appendXml() to succeed.
-                        $xml = $document->saveXML($document->documentElement);
-                }
-
-                if (! \is_string($xml)) {
-                        throw new \Exception('Document not recognized.');
-                }
-
-                return (new FluidXml(['root' => null]))->appendXml($xml);
+                return (new FluidXml(['root' => null]))->appendXml($document);
         }
 
         public function __construct($root = null, $options = [])
@@ -265,8 +255,13 @@ class FluidXml implements FluidInterface
                 }
         }
 
-        public function xml()
+        public function xml($strip = false)
         {
+
+                if ($strip) {
+                        return $this->dom->saveXML($this->dom->documentElement);
+                }
+
                 return $this->dom->saveXML();
         }
 
@@ -380,9 +375,9 @@ class FluidXml implements FluidInterface
                 return $this;
         }
 
-        public function appendCdata($cdata)
+        public function appendCdata($text)
         {
-                $this->newContext()->appendCdata($cdata);
+                $this->newContext()->appendCdata($text);
 
                 return $this;
         }
@@ -667,21 +662,53 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         public function appendXml($xml)
         {
-                $newDom = new \DOMDocument();
-                $newDom->formatOutput       = true;
-                $newDom->preserveWhiteSpace = false;
-                // A way to import strings with multiple root nodes.
-                $newDom->loadXML("<root>$xml</root>");
+                $nodes = [];
 
-                // Algorithm 1:
-                // $newDomXp = new \DOMXPath($newDom);
-                // $newNodes = $newDomXp->query('/root/*');
+                if ($xml instanceof \DOMDocument) {
+                        // A DOMDocument can have multiple root nodes.
+                        // $nodes = [ $xml->documentElement ];
+                        $nodes = $xml->childNodes;
+                } else if ($xml instanceof \DOMNodeList) {
+                        $nodes = $xml;
 
-                // Algorithm 2:
-                $newNodes = $newDom->documentElement->childNodes;
+                } else if ($xml instanceof \DOMNode) {
+                        $nodes = [ $xml ];
+
+                } else if ($xml instanceof \SimpleXMLElement) {
+                        $nodes = [ dom_import_simplexml($xml) ];
+
+                } else if ($xml instanceof FluidXml) {
+                        $nodes = [ $xml->dom->documentElement ];
+
+                } else if ($xml instanceof FluidContext) {
+                        $nodes = $xml->asArray();
+
+                } else if (\is_string($xml)) {
+                        $dom = new \DOMDocument();
+                        $dom->formatOutput       = true;
+                        $dom->preserveWhiteSpace = false;
+
+                        $xml = \ltrim($xml);
+                        if ($xml[1] === '?') {
+                                $dom->loadXML($xml);
+                                $nodes = $dom->childNodes;
+                        } else {
+                                // A way to import strings with multiple root nodes.
+                                $dom->loadXML("<root>$xml</root>");
+
+                                // Algorithm 1:
+                                $nodes = $dom->documentElement->childNodes;
+
+                                // Algorithm 2:
+                                // $dom_xp = new \DOMXPath($dom);
+                                // $nodes = $dom_xp->query('/root/*');
+                        }
+                } else {
+                        throw new \Exception('XML document not supported.');
+                }
 
                 foreach ($this->nodes as $n) {
-                        foreach ($newNodes as $e) {
+                        foreach ($nodes as $e) {
                                 $n->appendChild($this->dom->importNode($e, true));
                         }
                 }
@@ -744,10 +771,10 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function appendCdata($cdata)
+        public function appendCdata($text)
         {
                 foreach ($this->nodes as $n) {
-                        $n->appendChild(new \DOMCDATASection($cdata));
+                        $n->appendChild(new \DOMCDATASection($text));
                 }
 
                 return $this;
@@ -798,6 +825,11 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
+        public function xml($strip = false)
+        {
+                return FluidHelper::domnodes_to_string($this->nodes);
+        }
+
         protected function newContext($context)
         {
                 return new FluidContext($context, $this->namespaces);
@@ -821,7 +853,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                                 $n = \array_pop($node);
                                 $node[$n] = $opt;
                         } else {
-                                throw new \Exception("Optional argument '{$opt}' not recognized.");
+                                throw new \Exception("Optional argument '$opt' not recognized.");
                         }
                 }
 
@@ -995,5 +1027,46 @@ class FluidNamespace
 
                 // Removes the last appended slash.
                 return \substr($new_xpath, 0, -1);
+        }
+}
+
+class FluidHelper
+{
+        public static function domdocument_to_string_without_headers(\DOMDocument $dom)
+        {
+                return $dom->saveXML($dom->documentElement);
+        }
+
+        public static function domnodelist_to_string(\DOMNodeList $nodelist)
+        {
+                $nodes = [];
+
+                foreach ($nodelist as $n) {
+                        $nodes[] = $n;
+                }
+
+                // TODO
+                // Test $nodes =(array) $nodelist;
+
+                return FluidHelper::domnodes_to_string($nodes);
+        }
+
+        public static function domnodes_to_string(array $nodes)
+        {
+                $dom = $nodes[0]->ownerDocument;
+                $xml = '';
+
+                foreach ($nodes as $n) {
+                        $xml .= $dom->saveXML($n) . PHP_EOL;
+                }
+
+                return \rtrim($xml);
+        }
+
+        public static function simplexml_to_string_without_headers(\SimpleXMLElement $element)
+        {
+                $dom = \dom_import_simplexml($element);
+
+                return $dom->ownerDocument->saveXML($dom->ownerDocument);
         }
 }

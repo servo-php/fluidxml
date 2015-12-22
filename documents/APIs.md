@@ -16,6 +16,8 @@ class FluidXml
 
 ::load($document);
 
+::new($root?, array $options?);                     // Alias of __construct(), requires PHP 7.
+
 __construct($root?, array $options?);
 
 ->namespace(...$namespace);
@@ -25,20 +27,34 @@ __construct($root?, array $options?);
 ->query(...$xpath);
 
 ->appendChild($child, ...$optionals);
+// alias:
+->add($child, ...$optionals);
 
 ->prependSibling($sibling, ...$optionals);
+// aliases:
+->prepend($sibling, ...$optionals);
+->insertSiblingBefore($sibling, ...$optionals);
 
 ->appendSibling($sibling, ...$optionals);
+// aliases:
+->append($sibling, ...$optionals);
+->insertSiblingAfter($sibling, ...$optionals);
 
 ->appendXml($xml);
 
 ->appendText($text);
 
-->appendCdata($cdata);
+->appendCdata($text);
+// alias:
+->cdata($text);
 
 ->setText($text);
+// alias:
+->text($text);
 
 ->setAttribute(...$arguments);
+// alias:
+->attr(...$arguments);
 
 ->remove(...$xpath);
 
@@ -46,27 +62,7 @@ __construct($root?, array $options?);
 
 ->length();     // Available after a query or a node insertion with context switch.
 
-->xml();
-
-/*****************
- * Alias methods *
- *****************/
-
-::new($root?, array $options?);                     // __construct()
-
-->add($child, ...$optionals);                       // ->appendChild()
-
-->prepend($sibling, ...$optionals);                 // ->prependSibling()
-
-->insertSiblingBefore($sibling, ...$optionals);     // ->prependSibling()
-
-->append($sibling, ...$optionals);                  // ->appendSibling()
-
-->insertSiblingAfter($sibling, ...$optionals);      // ->appendSibling()
-
-->attr(...$arguments);                              // ->setAttribute()
-
-->text($text);                                      // ->setText()
+->xml($strip = false);
 ```
 
 

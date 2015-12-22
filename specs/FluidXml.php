@@ -110,16 +110,17 @@ describe('FluidXml', function() {
         });
 
         describe(':load', function() {
-                $this->doc = '<tag>content</tag>';
+                $this->doc = "<root>\n"
+                           . "  <parent>content</parent>\n"
+                           . "</root>";
                 $this->dom = new \DOMDocument();
                 $this->dom->loadXML($this->doc);
 
                 it('should import an XML string', function() {
                         $doc = $this->dom->saveXML();
+                        // This $doc has the XML header.
 
                         // The first empty line is used to test the trim of the string.
-
-                        // This $doc has the XML header.
                         $xml = FluidXml::load("\n " . $doc);
 
                         $expected = $this->doc;
@@ -148,6 +149,24 @@ describe('FluidXml', function() {
                         $xml = FluidXml::load($this->dom);
 
                         $expected = $this->doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should import a DOMNode', function() {
+                        $domxp = new \DOMXPath($this->dom);
+                        $nodes = $domxp->query('/root/parent');
+                        $xml = FluidXml::load($nodes[0]);
+
+                        $expected = "<parent>content</parent>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should import a DOMNodeList', function() {
+                        $domxp = new \DOMXPath($this->dom);
+                        $nodes = $domxp->query('/root/parent');
+                        $xml = FluidXml::load($nodes);
+
+                        $expected = "<parent>content</parent>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -301,7 +320,6 @@ describe('FluidXml', function() {
                 });
         });
 
-
         describe('.query', function() {
                 it('should return the root nodes of the document', function() {
                         // XPATH: /*
@@ -331,12 +349,12 @@ describe('FluidXml', function() {
                         $xml->query(['//html', '//head', '//body'])
                             ->setAttribute('lang', 'en');
 
-                        $expected = "<doc>\n"                   .
-                                    "  <html lang=\"en\">\n"    .
-                                    "    <head lang=\"en\"/>\n" .
-                                    "    <body lang=\"en\"/>\n" .
-                                    "  </html>\n"               .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <html lang=\"en\">\n"
+                                  . "    <head lang=\"en\"/>\n"
+                                  . "    <body lang=\"en\"/>\n"
+                                  . "  </html>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
 
                         $xml = new FluidXml();
@@ -345,12 +363,12 @@ describe('FluidXml', function() {
                             ->query(['.', 'head', 'body'])
                             ->setAttribute('lang', 'en');
 
-                        $expected = "<doc>\n"                   .
-                                    "  <html lang=\"en\">\n"    .
-                                    "    <head lang=\"en\"/>\n" .
-                                    "    <body lang=\"en\"/>\n" .
-                                    "  </html>\n"               .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <html lang=\"en\">\n"
+                                  . "    <head lang=\"en\"/>\n"
+                                  . "    <body lang=\"en\"/>\n"
+                                  . "  </html>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -361,12 +379,12 @@ describe('FluidXml', function() {
                         $xml->query('//html', '//head', '//body')
                             ->setAttribute('lang', 'en');
 
-                        $expected = "<doc>\n"                   .
-                                    "  <html lang=\"en\">\n"    .
-                                    "    <head lang=\"en\"/>\n" .
-                                    "    <body lang=\"en\"/>\n" .
-                                    "  </html>\n"               .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <html lang=\"en\">\n"
+                                  . "    <head lang=\"en\"/>\n"
+                                  . "    <body lang=\"en\"/>\n"
+                                  . "  </html>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
 
                         $xml = new FluidXml();
@@ -375,12 +393,12 @@ describe('FluidXml', function() {
                             ->query('.', 'head', 'body')
                             ->setAttribute('lang', 'en');
 
-                        $expected = "<doc>\n"                   .
-                                    "  <html lang=\"en\">\n"    .
-                                    "    <head lang=\"en\"/>\n" .
-                                        "    <body lang=\"en\"/>\n" .
-                                    "  </html>\n"               .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <html lang=\"en\">\n"
+                                  . "    <head lang=\"en\"/>\n"
+                                  . "    <body lang=\"en\"/>\n"
+                                  . "  </html>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -428,15 +446,15 @@ describe('FluidXml', function() {
                             ->query('../..')
                             ->appendChild('extra');
 
-                        $expected = "<doc>\n"       .
-                                    "  <html>\n"    .
-                                    "    <head/>\n" .
-                                    "    <body>\n"  .
-                                    "      <h1/>\n" .
-                                    "    </body>\n" .
-                                    "  </html>\n"   .
-                                    "  <extra/>\n"  .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <html>\n"
+                                  . "    <head/>\n"
+                                  . "    <body>\n"
+                                  . "      <h1/>\n"
+                                  . "    </body>\n"
+                                  . "  </html>\n"
+                                  . "  <extra/>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -526,14 +544,14 @@ describe('FluidXml', function() {
                             ->appendChild('child3')
                             ->appendChild('child4');
 
-                        $expected = "<doc>\n"           .
-                                    "  <child1/>\n"     .
-                                    "  <child2/>\n"     .
-                                    "  <parent>\n"      .
-                                    "    <child3/>\n"   .
-                                    "    <child4/>\n"   .
-                                    "  </parent>\n"     .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child1/>\n"
+                                  . "  <child2/>\n"
+                                  . "  <parent>\n"
+                                  . "    <child3/>\n"
+                                  . "    <child4/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -543,14 +561,14 @@ describe('FluidXml', function() {
                             ->appendChild('parent', true)
                             ->appendChild(['child3', 'child4']);
 
-                        $expected = "<doc>\n"           .
-                                    "  <child1/>\n"     .
-                                    "  <child2/>\n"     .
-                                    "  <parent>\n"      .
-                                    "    <child3/>\n"   .
-                                    "    <child4/>\n"   .
-                                    "  </parent>\n"     .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child1/>\n"
+                                  . "  <child2/>\n"
+                                  . "  <parent>\n"
+                                  . "    <child3/>\n"
+                                  . "    <child4/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -608,14 +626,14 @@ EOF;
                             ->appendChild(['child3' => 'value3'])
                             ->appendChild('child4', 'value4');
 
-                        $expected = "<doc>\n"           .
-                                    "  <child1>value1</child1>\n"     .
-                                    "  <child2>value2</child2>\n"     .
-                                    "  <parent>\n"      .
-                                    "    <child3>value3</child3>\n"   .
-                                    "    <child4>value4</child4>\n"   .
-                                    "  </parent>\n"     .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child1>value1</child1>\n"
+                                  . "  <child2>value2</child2>\n"
+                                  . "  <parent>\n"
+                                  . "    <child3>value3</child3>\n"
+                                  . "    <child4>value4</child4>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -625,14 +643,14 @@ EOF;
                              ->appendChild('parent', true)
                              ->appendChild(['child3' => 'value3', 'child4' => 'value4']);
 
-                        $expected = "<doc>\n"           .
-                                    "  <child1>value1</child1>\n"     .
-                                    "  <child2>value2</child2>\n"     .
-                                    "  <parent>\n"      .
-                                    "    <child3>value3</child3>\n"   .
-                                    "    <child4>value4</child4>\n"   .
-                                    "  </parent>\n"     .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child1>value1</child1>\n"
+                                  . "  <child2>value2</child2>\n"
+                                  . "  <parent>\n"
+                                  . "    <child3>value3</child3>\n"
+                                  . "    <child4>value4</child4>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
 
                         $xml = new FluidXml();
@@ -640,18 +658,18 @@ EOF;
                              ->appendChild('parent', true)
                              ->appendChild([ 'child', ['child'], ['child' => 'value3'], ['child' => 'value4'] ]);
 
-                        $expected = "<doc>\n"           .
-                                    "  <child/>\n"      .
-                                    "  <child/>\n"      .
-                                    "  <child>value1</child>\n"         .
-                                    "  <child>value2</child>\n"         .
-                                    "  <parent>\n"      .
-                                    "    <child/>\n"      .
-                                    "    <child/>\n"      .
-                                    "    <child>value3</child>\n"         .
-                                    "    <child>value4</child>\n"         .
-                                    "  </parent>\n"     .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child/>\n"
+                                  . "  <child/>\n"
+                                  . "  <child>value1</child>\n"
+                                  . "  <child>value2</child>\n"
+                                  . "  <parent>\n"
+                                  . "    <child/>\n"
+                                  . "    <child/>\n"
+                                  . "    <child>value3</child>\n"
+                                  . "    <child>value4</child>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -661,12 +679,12 @@ EOF;
                             ->appendChild('parent', true)
                             ->appendChild('child2', ['class' => 'Class attr', 'id' => 'Id attr2']);
 
-                        $expected = "<doc>\n"   .
-                                    "  <child1 class=\"Class attr\" id=\"Id attr1\"/>\n"        .
-                                    "  <parent>\n"      .
-                                    "    <child2 class=\"Class attr\" id=\"Id attr2\"/>\n"      .
-                                    "  </parent>\n"     .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child1 class=\"Class attr\" id=\"Id attr1\"/>\n"
+                                  . "  <parent>\n"
+                                  . "    <child2 class=\"Class attr\" id=\"Id attr2\"/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -676,14 +694,14 @@ EOF;
                             ->appendChild('parent', true)
                             ->appendChild(['child3', 'child4'], ['class' => 'Class attr', 'id' => 'Id attr2']);
 
-                        $expected = "<doc>\n"   .
-                                    "  <child1 class=\"Class attr\" id=\"Id attr1\"/>\n"       .
-                                    "  <child2 class=\"Class attr\" id=\"Id attr1\"/>\n"       .
-                                    "  <parent>\n"      .
-                                    "    <child3 class=\"Class attr\" id=\"Id attr2\"/>\n"      .
-                                    "    <child4 class=\"Class attr\" id=\"Id attr2\"/>\n"      .
-                                    "  </parent>\n"     .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child1 class=\"Class attr\" id=\"Id attr1\"/>\n"
+                                  . "  <child2 class=\"Class attr\" id=\"Id attr1\"/>\n"
+                                  . "  <parent>\n"
+                                  . "    <child3 class=\"Class attr\" id=\"Id attr2\"/>\n"
+                                  . "    <child4 class=\"Class attr\" id=\"Id attr2\"/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -719,15 +737,15 @@ EOF;
                             ->appendChild('xx:xxTag2')
                             ->appendChild('tag3');
 
-                        $expected = "<doc>\n"                           .
-                                    "  <x:xTag1 xmlns:x=\"x.com\">\n"   .
-                                    "    <x:xTag2/>\n"                  .
-                                    "  </x:xTag1>\n"                    .
-                                    "  <xxTag1 xmlns=\"xx.com\">\n"     .
-                                    "    <xxTag2/>\n"                   .
-                                    "    <tag3/>\n"                     .
-                                    "  </xxTag1>\n"                     .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <x:xTag1 xmlns:x=\"x.com\">\n"
+                                  . "    <x:xTag2/>\n"
+                                  . "  </x:xTag1>\n"
+                                  . "  <xxTag1 xmlns=\"xx.com\">\n"
+                                  . "    <xxTag2/>\n"
+                                  . "    <tag3/>\n"
+                                  . "  </xxTag1>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
         });
@@ -773,11 +791,11 @@ EOF;
                             ->prependSibling('sibling1')
                             ->prependSibling('sibling2');
 
-                        $expected = "<doc>\n"      .
-                                    "  <sibling1/>\n" .
-                                    "  <sibling2/>\n" .
-                                    "  <parent/>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <sibling1/>\n"
+                                  . "  <sibling2/>\n"
+                                  . "  <parent/>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
         });
@@ -823,11 +841,11 @@ EOF;
                             ->appendSibling('sibling1')
                             ->appendSibling('sibling2');
 
-                        $expected = "<doc>\n"      .
-                                    "  <parent/>\n" .
-                                    "  <sibling2/>\n" .
-                                    "  <sibling1/>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <parent/>\n"
+                                  . "  <sibling2/>\n"
+                                  . "  <sibling1/>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
         });
@@ -837,8 +855,8 @@ EOF;
                         $xml = new FluidXml(['root' => null]);
                         $xml->appendXml('<root1/><root2/>');
 
-                        $expected = "<root1/>\n" .
-                                    "<root2/>";
+                        $expected = "<root1/>\n"
+                                  . "<root2/>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -846,10 +864,10 @@ EOF;
                         $xml = new FluidXml();
                         $xml->appendXml('<child1/><child2/>');
 
-                        $expected = "<doc>\n"      .
-                                    "  <child1/>\n" .
-                                    "  <child2/>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child1/>\n"
+                                  . "  <child2/>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -858,12 +876,12 @@ EOF;
                         $xml->appendChild('parent', true)
                             ->appendXml('<child1/><child2/>');
 
-                        $expected = "<doc>\n"         .
-                                    "  <parent>\n"    .
-                                    "    <child1/>\n" .
-                                    "    <child2/>\n" .
-                                    "  </parent>\n"   .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <parent>\n"
+                                  . "    <child1/>\n"
+                                  . "    <child2/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
         });
@@ -907,9 +925,9 @@ EOF;
                             ->setAttribute('attr1', 'Attr1 Value')
                             ->setAttribute('attr2', 'Attr2 Value');
 
-                        $expected = "<doc>\n"   .
-                                    "  <child attr1=\"Attr1 Value\" attr2=\"Attr2 Value\"/>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child attr1=\"Attr1 Value\" attr2=\"Attr2 Value\"/>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
 
                         $xml = new FluidXml();
@@ -917,9 +935,9 @@ EOF;
                             ->setAttribute(['attr1' => 'Attr1 Value',
                                             'attr2' => 'Attr2 Value']);
 
-                        $expected = "<doc>\n"   .
-                                    "  <child attr1=\"Attr1 Value\" attr2=\"Attr2 Value\"/>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child attr1=\"Attr1 Value\" attr2=\"Attr2 Value\"/>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -930,9 +948,9 @@ EOF;
                             ->setAttribute('attr2', 'Attr2 Value')
                             ->setAttribute('attr2', 'Attr2 New Value');
 
-                        $expected = "<doc>\n"   .
-                                    "  <child attr1=\"Attr1 Value\" attr2=\"Attr2 New Value\"/>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child attr1=\"Attr1 Value\" attr2=\"Attr2 New Value\"/>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
 
                         $xml = new FluidXml();
@@ -941,9 +959,9 @@ EOF;
                                             'attr2' => 'Attr2 Value'])
                             ->setAttribute('attr1', 'Attr1 New Value');
 
-                        $expected = "<doc>\n"   .
-                                    "  <child attr1=\"Attr1 New Value\" attr2=\"Attr2 Value\"/>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child attr1=\"Attr1 New Value\" attr2=\"Attr2 Value\"/>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
         });
@@ -967,16 +985,16 @@ EOF;
                         $cx = $xml->appendChild('p', true);
                         $cx->appendText('Document Text First Line');
 
-                        $expected = "<doc>\n" .
-                                    "  <p>Document Text First Line</p>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <p>Document Text First Line</p>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
 
                         $cx->appendText('Document Text Second Line');
 
-                        $expected = "<doc>\n" .
-                                    "  <p>Document Text First LineDocument Text Second Line</p>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <p>Document Text First LineDocument Text Second Line</p>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
         });
@@ -1008,9 +1026,9 @@ EOF;
                         $cx = $xml->appendChild('p', true);
                         $cx->setText('Document Text');
 
-                        $expected = "<doc>\n" .
-                                    "  <p>Document Text</p>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <p>Document Text</p>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -1019,16 +1037,16 @@ EOF;
                         $cx = $xml->appendChild('p', true);
                         $cx->setText('Document Text');
 
-                        $expected = "<doc>\n" .
-                                    "  <p>Document Text</p>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <p>Document Text</p>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
 
                         $cx->setText('Document New Text');
 
-                        $expected = "<doc>\n" .
-                                    "  <p>Document New Text</p>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <p>Document New Text</p>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
         });
@@ -1038,17 +1056,17 @@ EOF;
                         $xml = new FluidXml();
                         $xml->appendCdata('// <, > and & are characters that should be escaped in a XML context.');
 
-                        $expected = "<doc>" .
-                                    "<![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>" .
-                                    "</doc>";
+                        $expected = "<doc>"
+                                  . "<![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
 
                         $xml->appendCdata('// <second &cdata section>');
 
-                        $expected = "<doc>" .
-                                    "<![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>" .
-                                    "<![CDATA[// <second &cdata section>]]>" .
-                                    "</doc>";
+                        $expected = "<doc>"
+                                  . "<![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>"
+                                  . "<![CDATA[// <second &cdata section>]]>"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -1057,26 +1075,26 @@ EOF;
                         $cx = $xml->appendChild('pre', true);
                         $cx->appendCdata('// <, > and & are characters that should be escaped in a XML context.');
 
-                        $expected = "<doc>\n" .
-                                    "  <pre><![CDATA[// <, > and & are characters that should be escaped in a XML context.]]></pre>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <pre><![CDATA[// <, > and & are characters that should be escaped in a XML context.]]></pre>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
 
                         $cx->appendCdata('// <second &cdata section>');
 
-                        $expected = "<doc>\n" .
-                                    "  <pre><![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>" .
-                                       "<![CDATA[// <second &cdata section>]]>" .
-                                       "</pre>\n" .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <pre><![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>"
+                                  .    "<![CDATA[// <second &cdata section>]]>"
+                                  .    "</pre>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
         });
 
         describe('.remove', function() {
-                $this->expected = "<doc>\n" .
-                                  "  <parent/>\n" .
-                                  "</doc>";
+                $this->expected = "<doc>\n"
+                                . "  <parent/>\n"
+                                . "</doc>";
 
                 $this->new_doc = function() {
                         $xml = new FluidXml();
@@ -1149,6 +1167,57 @@ EOF;
                         $xml->query('/doc/parent')->remove('child1', 'child2');
 
                         assert_equal_xml($xml, $this->expected);
+                });
+        });
+
+        describe('.xml', function() {
+                it('should return the document as XML string', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                                ->appendChild('child', 'content');
+
+                        $expected = "<doc>\n"
+                                  . "  <parent>\n"
+                                  . "    <child>content</child>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should return the document as XML string without the XML headers (declaration and stylesheet)', function() {
+                        $xml = new FluidXml(['stylesheet' => 'x.com/style.xsl']);
+                        $xml->appendChild('parent', true)
+                                ->appendChild('child', 'content');
+
+                        $actual   = $xml->xml(true);
+                        $expected = "<doc>\n"
+                                  . "  <parent>\n"
+                                  . "    <child>content</child>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should return a node and the inner XML as XML string', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                                ->appendText('parent content')
+                                ->appendChild('child', 'content');
+
+                        $actual   = $xml->query('//parent')->xml();
+                        $expected = "<parent>parent content<child>content</child></parent>";
+                        assert($actual === $expected, __($actual, $expected));
+
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                                ->appendChild('child', 'content1')
+                                ->appendChild('child', 'content2');
+
+                        $actual   = $xml->query('//child')->xml();
+                        $expected = "<child>content1</child>\n"
+                                  . "<child>content2</child>";
+                        assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1413,26 +1482,26 @@ describe('FluidContext', function() {
                         $expected = 8;
                         assert($actual === $expected, __($actual, $expected));
 
-                        $expected = "<doc>\n"                   .
-                                    "  <child1>\n"              .
-                                    "    <subchild1/>\n"        .
-                                    "    <subchild2/>\n"        .
-                                    "    <subchild3/>\n"        .
-                                    "    <subchild4/>\n"        .
-                                    "    <subchild5/>\n"        .
-                                    "    <subchild6/>\n"        .
-                                    "    <subchild7/>\n"        .
-                                    "  </child1>\n"             .
-                                    "  <child2>\n"              .
-                                    "    <subchild1/>\n"        .
-                                    "    <subchild2/>\n"        .
-                                    "    <subchild3/>\n"        .
-                                    "    <subchild4/>\n"        .
-                                    "    <subchild5/>\n"        .
-                                    "    <subchild6/>\n"        .
-                                    "    <subchild7/>\n"        .
-                                    "  </child2>\n"             .
-                                    "</doc>";
+                        $expected = "<doc>\n"
+                                  . "  <child1>\n"
+                                  . "    <subchild1/>\n"
+                                  . "    <subchild2/>\n"
+                                  . "    <subchild3/>\n"
+                                  . "    <subchild4/>\n"
+                                  . "    <subchild5/>\n"
+                                  . "    <subchild6/>\n"
+                                  . "    <subchild7/>\n"
+                                  . "  </child1>\n"
+                                  . "  <child2>\n"
+                                  . "    <subchild1/>\n"
+                                  . "    <subchild2/>\n"
+                                  . "    <subchild3/>\n"
+                                  . "    <subchild4/>\n"
+                                  . "    <subchild5/>\n"
+                                  . "    <subchild6/>\n"
+                                  . "    <subchild7/>\n"
+                                  . "  </child2>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
         });

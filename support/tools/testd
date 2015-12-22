@@ -4,15 +4,15 @@ cd "$(dirname "$0")"
 . "./.common.sh"
 cd ../..
 
-tester="./support/tools/test"
+tester="./support/tools/testv"
 
 test_handler()
 {
         "$tester" || true
 
         while read -d '' e; do
-                clear
-                "$tester" || true
+                ## test -f skips a file descriptor written by vim.
+                test -f "$e" && "$tester" || true
         done
 }
 

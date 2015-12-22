@@ -12,17 +12,20 @@ if ! chkcmd 'peridot'; then
         exit 1
 fi
 
-if ! chkcmd 'phpdbg'; then
-        echo ' error: "phpdbg" command not found.'
-        exit 1
-fi
-
 cd sandbox
 
-phpdbg -e "$(which peridot)" -c "../support/peridot.php" -r html-code-coverage -g "*.php" "../specs/"
+peridot_arguments='-c "../support/peridot.php" -r html-code-coverage -g "*.php" "../specs/"'
 
-## Type:
-## run
-## quit
+if chkcmd 'phpdbg'; then
+        echo ' type: run'
+        echo '       quit'
+        echo
+
+        eval "phpdbg -e \"$(which peridot)\" $peridot_arguments"
+else
+        echo ' info: "phpdbg" command not found.'
+
+        eval "peridot $peridot_arguments"
+fi
 
 chkcmd 'open' && open "code-coverage-report/index.html"

@@ -20,6 +20,11 @@ return function (EventEmitterInterface $eventEmitter) {
         // });
 
         $eventEmitter->on('code-coverage.start', function (AbstractCodeCoverageReporter $reporter) {
-                $reporter->addDirectoryToWhitelist(__DIR__ . '/../source');
+                /*
+                $reporter->addDirectoryToWhitelist(__DIR__ . '/../source')
+                         ->addFilesToBlacklist([__DIR__ . '/../source/FluidXml.php56.php',
+                                                __DIR__ . '/../source/FluidXml.php70.php']);
+                */
+                $reporter->addFilesToWhitelist([__DIR__ . '/../source/FluidXml.php']);
         });
 };
