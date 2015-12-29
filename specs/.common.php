@@ -1,8 +1,8 @@
 <?php
 
-$ds = DIRECTORY_SEPARATOR;
+$ds = \DIRECTORY_SEPARATOR;
 $source_dir = __DIR__ . "{$ds}..{$ds}source";
-set_include_path($source_dir . PATH_SEPARATOR . get_include_path());
+\set_include_path($source_dir . \PATH_SEPARATOR . \get_include_path());
 
 function __($actual, $expected)
 {
@@ -26,10 +26,10 @@ function assert_equal_xml($actual, $expected)
 
         $actual   = \trim($actual->xml());
         $expected = \trim($xml_header . $expected);
-        assert($actual === $expected, __($actual, $expected));
+        \assert($actual === $expected, __($actual, $expected));
 }
 
 function assert_is_a($actual, $expected)
 {
-        assert(\is_a($actual, $expected) === true, __(\get_class($actual), $expected));
+        \assert(\is_a($actual, $expected) === true, __(\get_class($actual), $expected));
 }

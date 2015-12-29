@@ -678,7 +678,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         $nodes = [ dom_import_simplexml($xml) ];
 
                 } else if ($xml instanceof FluidXml) {
-                        $nodes = [ $xml->dom->documentElement ];
+                        $nodes = [ $xml->dom()->documentElement ];
 
                 } else if ($xml instanceof FluidContext) {
                         $nodes = $xml->asArray();

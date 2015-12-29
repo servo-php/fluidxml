@@ -9,7 +9,7 @@ describe('fluidxml', function() {
 
                 $actual   = $alias->xml();
                 $expected = $xml->xml();
-                assert($actual === $expected, __($actual, $expected));
+                \assert($actual === $expected, __($actual, $expected));
 
                 $options = [ 'root'       => 'root',
                              'version'    => '1.2',
@@ -21,7 +21,7 @@ describe('fluidxml', function() {
 
                 $actual   = $alias->xml();
                 $expected = $xml->xml();
-                assert($actual === $expected, __($actual, $expected));
+                \assert($actual === $expected, __($actual, $expected));
         });
 });
 
@@ -33,7 +33,7 @@ describe('fluidify', function() {
 
                 $actual   = $alias->xml();
                 $expected = $xml->xml();
-                assert($actual === $expected, __($actual, $expected));
+                \assert($actual === $expected, __($actual, $expected));
         });
 });
 
@@ -44,30 +44,30 @@ describe('fluidns', function() {
 
                 $actual   = $ns->id();
                 $expected = $alias->id();
-                assert($actual === $expected, __($actual, $expected));
+                \assert($actual === $expected, __($actual, $expected));
 
                 $actual   = $ns->uri();
                 $expected = $alias->uri();
-                assert($actual === $expected, __($actual, $expected));
+                \assert($actual === $expected, __($actual, $expected));
 
                 $actual   = $ns->mode();
                 $expected = $alias->mode();
-                assert($actual === $expected, __($actual, $expected));
+                \assert($actual === $expected, __($actual, $expected));
 
                 $ns    = new FluidNamespace('x', 'x.com', FluidNamespace::MODE_IMPLICIT);
                 $alias = fluidns('x', 'x.com', FluidNamespace::MODE_IMPLICIT);
 
                 $actual   = $ns->id();
                 $expected = $alias->id();
-                assert($actual === $expected, __($actual, $expected));
+                \assert($actual === $expected, __($actual, $expected));
 
                 $actual   = $ns->uri();
                 $expected = $alias->uri();
-                assert($actual === $expected, __($actual, $expected));
+                \assert($actual === $expected, __($actual, $expected));
 
                 $actual   = $ns->mode();
                 $expected = $alias->mode();
-                assert($actual === $expected, __($actual, $expected));
+                \assert($actual === $expected, __($actual, $expected));
         });
 });
 
@@ -110,32 +110,31 @@ describe('FluidXml', function() {
         });
 
         describe(':load', function() {
-                $this->doc = "<root>\n"
-                           . "  <parent>content</parent>\n"
-                           . "</root>";
-                $this->dom = new \DOMDocument();
-                $this->dom->loadXML($this->doc);
+                $doc = "<root>\n"
+                     . "  <parent>content</parent>\n"
+                     . "</root>";
+                $dom = new \DOMDocument();
+                $dom->loadXML($doc);
 
-                it('should import an XML string', function() {
-                        $doc = $this->dom->saveXML();
-                        // This $doc has the XML header.
+                it('should import an XML string', function() use ($doc, $dom) {
+                        $exp = $dom->saveXML();
+                        // This $exp has the XML header.
 
                         // The first empty line is used to test the trim of the string.
-                        $xml = FluidXml::load("\n " . $doc);
+                        $xml = FluidXml::load("\n " . $exp);
 
-                        $expected = $this->doc;
+                        $expected = $doc;
                         assert_equal_xml($xml, $expected);
 
-                        // This $doc is deprived of the XML header.
-                        $xml = FluidXml::load("\n " . \substr($doc, \strpos($doc, "\n") + 1));
+                        // This $exp is deprived of the XML header.
+                        $xml = FluidXml::load("\n " . \substr($exp, \strpos($exp, "\n") + 1));
 
-                        $expected = $this->doc;
+                        $expected = $doc;
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should import an XML file', function() {
-                        $doc  = $this->doc;
-                        $ds = \DIRECTORY_SEPARATOR;
+                it('should import an XML file', function() use ($doc) {
+                        $ds   = \DIRECTORY_SEPARATOR;
                         $file = __DIR__ . "{$ds}..{$ds}sandbox{$ds}.fixture.xml";
                         \file_put_contents($file, $doc);
                         $xml = FluidXml::load($file);
@@ -145,15 +144,15 @@ describe('FluidXml', function() {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should import a DOMDocument', function() {
-                        $xml = FluidXml::load($this->dom);
+                it('should import a DOMDocument', function() use ($doc, $dom) {
+                        $xml = FluidXml::load($dom);
 
-                        $expected = $this->doc;
+                        $expected = $doc;
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should import a DOMNode', function() {
-                        $domxp = new \DOMXPath($this->dom);
+                it('should import a DOMNode', function() use ($dom) {
+                        $domxp = new \DOMXPath($dom);
                         $nodes = $domxp->query('/root/parent');
                         $xml = FluidXml::load($nodes[0]);
 
@@ -161,8 +160,8 @@ describe('FluidXml', function() {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should import a DOMNodeList', function() {
-                        $domxp = new \DOMXPath($this->dom);
+                it('should import a DOMNodeList', function() use ($dom) {
+                        $domxp = new \DOMXPath($dom);
                         $nodes = $domxp->query('/root/parent');
                         $xml = FluidXml::load($nodes);
 
@@ -170,14 +169,29 @@ describe('FluidXml', function() {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should import a SimpleXMLElement', function() {
-                        $xml = FluidXml::load(\simplexml_import_dom($this->dom));
+                it('should import a SimpleXMLElement', function() use ($doc, $dom) {
+                        $xml = FluidXml::load(\simplexml_import_dom($dom));
 
-                        $expected = $this->doc;
+                        $expected = $doc;
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should throw for not supported documents', function() {
+                it('should import a FluidXml', function() use ($doc) {
+                        $xml = FluidXml::load(FluidXml::load($doc));
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should import a FluidContext', function() use ($doc) {
+                        $cx  = FluidXml::load($doc)->query('/root');
+                        $xml = FluidXml::load($cx);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should throw for not existing file', function() {
                         try {
                                 $xml = FluidXml::load('.impossible.xml');
                         } catch (\Exception $e) {
@@ -186,9 +200,19 @@ describe('FluidXml', function() {
 
                         assert_is_a($actual, \Exception::class);
                 });
+
+                it('should throw for not supported documents', function() {
+                        try {
+                                $xml = FluidXml::load([]);
+                        } catch (\Exception $e) {
+                                $actual   = $e;
+                        }
+
+                        assert_is_a($actual, \Exception::class);
+                });
         });
 
-        if (version_compare(phpversion(), '7', '>=')) {
+        if (\version_compare(\phpversion(), '7', '>=')) {
         describe(':new', function() {
                 it('should behave like FluidXml::__construct', function() {
                         $xml   = new FluidXml();
@@ -196,7 +220,7 @@ describe('FluidXml', function() {
 
                         $actual   = $alias->xml();
                         $expected = $xml->xml();
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $options = [ 'root'       => 'root',
                                      'version'    => '1.2',
@@ -208,7 +232,7 @@ describe('FluidXml', function() {
 
                         $actual   = $alias->xml();
                         $expected = $xml->xml();
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
         }
@@ -235,11 +259,11 @@ describe('FluidXml', function() {
 
                         $actual   = $nss[$ns1->id()];
                         $expected = $ns1;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $nss[$ns2->id()];
                         $expected = $ns2;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -254,11 +278,11 @@ describe('FluidXml', function() {
 
                         $actual   = $nss[$x_ns->id()];
                         $expected = $x_ns;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $nss[$xx_ns->id()];
                         $expected = $xx_ns;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should accept an id, an uri and an optional mode flag', function() {
@@ -270,19 +294,19 @@ describe('FluidXml', function() {
 
                         $actual   = $nss['x']->uri();
                         $expected = 'x.com';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $nss['x']->mode();
                         $expected = FluidNamespace::MODE_EXPLICIT;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $nss['xx']->uri();
                         $expected = 'xx.com';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $nss['xx']->mode();
                         $expected = FluidNamespace::MODE_IMPLICIT;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should accept variable namespaces arguments', function() {
@@ -295,11 +319,11 @@ describe('FluidXml', function() {
 
                         $actual   = $nss[$x_ns->id()];
                         $expected = $x_ns;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $nss[$xx_ns->id()];
                         $expected = $xx_ns;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should accept an array of namespaces', function() {
@@ -312,11 +336,11 @@ describe('FluidXml', function() {
 
                         $actual   = $nss[$x_ns->id()];
                         $expected = $x_ns;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $nss[$xx_ns->id()];
                         $expected = $xx_ns;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -328,18 +352,18 @@ describe('FluidXml', function() {
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'doc';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $xml->appendSibling('meta');
                         $cx = $xml->query('/*');
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'doc';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $cx[1]->nodeName;
                         $expected = 'meta';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should accept an array of queries', function() {
@@ -411,7 +435,7 @@ describe('FluidXml', function() {
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'body';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $xml = new FluidXml();
                         $xml->appendChild('html', true)->appendChild(['head','body']);
@@ -419,7 +443,7 @@ describe('FluidXml', function() {
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'head';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should query the root of the document from a sub query', function() {
@@ -433,7 +457,7 @@ describe('FluidXml', function() {
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'head';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should perform relative queries ascending the DOM tree', function() {
@@ -477,61 +501,61 @@ describe('FluidXml', function() {
 
                         $actual   = $r->length();
                         $expected = 0;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $r = $xml->query('/doc/x:a');
 
                         $actual   = $r[0]->nodeName;
                         $expected = 'x:a';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $r = $xml->query('/doc/x:a/x:b');
 
                         $actual   = $r[0]->nodeName;
                         $expected = 'x:b';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $r = $xml->query('/doc/x:a/x:b/c');
 
                         $actual   = $r->length();
                         $expected = 0;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $r = $xml->query('/doc/x:a/x:b/xx:c');
 
                         $actual   = $r[0]->nodeName;
                         $expected = 'c';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $r = $xml->query('/doc/x:a/x:b/xx:c/xx:d');
 
                         $actual   = $r[0]->nodeName;
                         $expected = 'd';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $r = $xml->query('/doc/x:a/x:b/xx:c/xx:d/e');
 
                         $actual   = $r[0]->nodeName;
                         $expected = 'e';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $r = $xml->query('/doc/x:a/x:b/xx:c/xx:d/e/f');
 
                         $actual   = $r->length();
                         $expected = 0;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $r = $xml->query('/doc/x:a/x:b/xx:c/xx:d/e/x:f');
 
                         $actual   = $r[0]->nodeName;
                         $expected = 'x:f';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $r = $xml->query('/doc/x:a/x:b/xx:c/xx:d/e/x:f/g');
 
                         $actual   = $r[0]->nodeName;
                         $expected = 'g';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -759,15 +783,15 @@ EOF;
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'extra';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $cx[1]->nodeName;
                         $expected = 'meta';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $cx[2]->nodeName;
                         $expected = 'doc';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should add more than one root node to a document with no root node', function() {
@@ -778,11 +802,11 @@ EOF;
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'extra';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $cx[1]->nodeName;
                         $expected = 'meta';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should insert a sibling node before a node', function() {
@@ -809,15 +833,15 @@ EOF;
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'doc';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $cx[1]->nodeName;
                         $expected = 'extra';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $cx[2]->nodeName;
                         $expected = 'meta';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should add more than one root node to a document with no root node', function() {
@@ -828,11 +852,11 @@ EOF;
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'meta';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $cx[1]->nodeName;
                         $expected = 'extra';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should insert a sibling node after a node', function() {
@@ -851,7 +875,21 @@ EOF;
         });
 
         describe('.appendXml', function() {
-                it('should fill the document with an xml document', function() {
+                $doc = "<doc>\n"
+                     . "  <parent>content</parent>\n"
+                     . "</doc>";
+                $dom = new \DOMDocument();
+                $dom->loadXML($doc);
+
+                it('should fill the document with an XML string', function() {
+                        $xml = new FluidXml(['root' => null]);
+                        $xml->appendXml('<root/>');
+
+                        $expected = "<root/>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should fill the document with an XML string with multiple root nodes', function() {
                         $xml = new FluidXml(['root' => null]);
                         $xml->appendXml('<root1/><root2/>');
 
@@ -860,7 +898,7 @@ EOF;
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should add to the document an xml document', function() {
+                it('should add an XML string with multiple root nodes', function() {
                         $xml = new FluidXml();
                         $xml->appendXml('<child1/><child2/>');
 
@@ -869,9 +907,7 @@ EOF;
                                   . "  <child2/>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
-                });
 
-                it('should add to a node an xml document', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('parent', true)
                             ->appendXml('<child1/><child2/>');
@@ -883,6 +919,76 @@ EOF;
                                   . "  </parent>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a DOMDocument', function() use ($doc) {
+                        $dom = new DOMDocument();
+                        $dom->loadXML('<parent>content</parent>');
+
+                        $xml = new FluidXml();
+                        $xml->appendXml($dom);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a DOMNode', function() use ($doc, $dom) {
+                        $xp    = new \DOMXPath($dom);
+                        $nodes = $xp->query('/doc/parent');
+                        $xml   = new FluidXml();
+                        $xml->appendXml($nodes[0]);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a DOMNodeList', function() use ($doc, $dom) {
+                        $xp    = new \DOMXPath($dom);
+                        $nodes = $xp->query('/doc/parent');
+                        $xml   = new FluidXml();
+                        $xml->appendXml($nodes);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a SimpleXMLElement', function() use ($doc, $dom) {
+                        $sxml = \simplexml_import_dom($dom);
+                        $xml  = new FluidXml();
+                        $xml->appendXml($sxml->children());
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a FluidXml', function() use ($doc, $dom) {
+                        $nodes = $dom->documentElement->childNodes;
+                        $fxml = FluidXml::load($nodes);
+                        $xml  = new FluidXml();
+                        $xml->appendXml($fxml);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a FluidContext', function() use ($doc, $dom) {
+                        $fxml = FluidXml::load($dom)->query('/doc/parent');
+                        $xml  = new FluidXml();
+                        $xml->appendXml($fxml);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should throw for not supported input', function() {
+                        $xml  = new FluidXml();
+                        try {
+                                $xml->appendXml([]);
+                        } catch (\Exception $e) {
+                                $actual   = $e;
+                        }
+
+                        assert_is_a($actual, \Exception::class);
                 });
         });
 
@@ -1092,11 +1198,11 @@ EOF;
         });
 
         describe('.remove', function() {
-                $this->expected = "<doc>\n"
-                                . "  <parent/>\n"
-                                . "</doc>";
+                $expected = "<doc>\n"
+                          . "  <parent/>\n"
+                          . "</doc>";
 
-                $this->new_doc = function() {
+                $new_doc = function() {
                         $xml = new FluidXml();
                         $xml->appendChild('parent', true)
                             ->appendChild(['child1', 'child2'], ['class'=>'removable']);
@@ -1104,69 +1210,69 @@ EOF;
                         return $xml;
                 };
 
-                it('should remove the root node', function() {
-                        $xml = $this->new_doc->__invoke();
+                it('should remove the root node', function() use ($new_doc) {
+                        $xml = $new_doc();
                         $xml->remove();
 
                         assert_equal_xml($xml, '');
                 });
 
-                it('should remove the results of a query', function() {
-                        $xml = $this->new_doc->__invoke();
+                it('should remove the results of a query', function() use ($new_doc, $expected) {
+                        $xml = $new_doc();
                         $xml->query('//*[@class="removable"]')->remove();
 
-                        assert_equal_xml($xml, $this->expected);
+                        assert_equal_xml($xml, $expected);
                 });
 
-                it('should remove the absolute and relative targets of an XPath', function() {
-                        $xml = $this->new_doc->__invoke();
+                it('should remove the absolute and relative targets of an XPath', function() use ($new_doc, $expected) {
+                        $xml = $new_doc();
                         $xml->remove('//*[@class="removable"]');
 
-                        assert_equal_xml($xml, $this->expected);
+                        assert_equal_xml($xml, $expected);
 
-                        $xml = $this->new_doc->__invoke();
+                        $xml = $new_doc();
                         $xml->query('/doc')->remove('//*[@class="removable"]');
 
-                        assert_equal_xml($xml, $this->expected);
+                        assert_equal_xml($xml, $expected);
 
-                        $xml = $this->new_doc->__invoke();
+                        $xml = $new_doc();
                         $xml->query('/doc/parent')->remove('*[@class="removable"]');
 
-                        assert_equal_xml($xml, $this->expected);
+                        assert_equal_xml($xml, $expected);
                 });
 
-                it('should remove the absolute and relative targets of an array of XPaths', function() {
-                        $xml = $this->new_doc->__invoke();
+                it('should remove the absolute and relative targets of an array of XPaths', function() use ($new_doc, $expected) {
+                        $xml = $new_doc();
                         $xml->remove(['//child1', '//child2']);
 
-                        assert_equal_xml($xml, $this->expected);
+                        assert_equal_xml($xml, $expected);
 
-                        $xml = $this->new_doc->__invoke();
+                        $xml = $new_doc();
                         $xml->query('/doc')->remove(['//child1', '//child2']);
 
-                        assert_equal_xml($xml, $this->expected);
+                        assert_equal_xml($xml, $expected);
 
-                        $xml = $this->new_doc->__invoke();
+                        $xml = $new_doc();
                         $xml->query('/doc/parent')->remove(['child1', 'child2']);
 
-                        assert_equal_xml($xml, $this->expected);
+                        assert_equal_xml($xml, $expected);
                 });
 
-                it('should remove the absolute and relative targets of a variable list of XPaths', function() {
-                        $xml = $this->new_doc->__invoke();
+                it('should remove the absolute and relative targets of a variable list of XPaths', function() use ($new_doc, $expected) {
+                        $xml = $new_doc();
                         $xml->remove('//child1', '//child2');
 
-                        assert_equal_xml($xml, $this->expected);
+                        assert_equal_xml($xml, $expected);
 
-                        $xml = $this->new_doc->__invoke();
+                        $xml = $new_doc();
                         $xml->query('/doc')->remove('//child1', '//child2');
 
-                        assert_equal_xml($xml, $this->expected);
+                        assert_equal_xml($xml, $expected);
 
-                        $xml = $this->new_doc->__invoke();
+                        $xml = $new_doc();
                         $xml->query('/doc/parent')->remove('child1', 'child2');
 
-                        assert_equal_xml($xml, $this->expected);
+                        assert_equal_xml($xml, $expected);
                 });
         });
 
@@ -1196,7 +1302,7 @@ EOF;
                                   . "    <child>content</child>\n"
                                   . "  </parent>\n"
                                   . "</doc>";
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should return a node and the inner XML as XML string', function() {
@@ -1207,7 +1313,7 @@ EOF;
 
                         $actual   = $xml->query('//parent')->xml();
                         $expected = "<parent>parent content<child>content</child></parent>";
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $xml = new FluidXml();
                         $xml->appendChild('parent', true)
@@ -1217,7 +1323,7 @@ EOF;
                         $actual   = $xml->query('//child')->xml();
                         $expected = "<child>content1</child>\n"
                                   . "<child>content2</child>";
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1233,7 +1339,7 @@ EOF;
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1249,7 +1355,7 @@ EOF;
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1265,7 +1371,7 @@ EOF;
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1281,7 +1387,7 @@ EOF;
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1297,7 +1403,7 @@ EOF;
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1319,7 +1425,7 @@ EOF;
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1337,7 +1443,7 @@ EOF;
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 });
@@ -1354,7 +1460,7 @@ describe('FluidContext', function() {
                 foreach ($cx as $k => $v) {
                         $actual = \is_int($k);
                         $expected = true;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual = $v;
                         assert_is_a($actual, \DOMNode::class);
@@ -1364,7 +1470,7 @@ describe('FluidContext', function() {
 
                 $actual = $representation;
                 $expected = [0 => 'head', 1 => 'body'];
-                assert($actual === $expected, __($actual, $expected));
+                \assert($actual === $expected, __($actual, $expected));
         });
 
         describe('()', function() {
@@ -1380,7 +1486,7 @@ describe('FluidContext', function() {
 
                         $actual   = $cx->asArray() === $newCx->asArray();
                         $expected = true;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should accept a FluidContext', function() {
@@ -1391,7 +1497,7 @@ describe('FluidContext', function() {
 
                         $actual   = $cx->asArray() === $newCx->asArray();
                         $expected = true;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1413,15 +1519,15 @@ describe('FluidContext', function() {
 
                         $actual   = isset($cx[0]);
                         $expected = true;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = isset($cx[3]);
                         $expected = false;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $cx[3];
                         $expected = null;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         try {
                                 $cx[] = "value";
@@ -1434,11 +1540,11 @@ describe('FluidContext', function() {
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'head';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $cx[1]->nodeName;
                         $expected = 'extra';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1450,11 +1556,11 @@ describe('FluidContext', function() {
                         $a = $cx->asArray();
 
                         $actual = $a;
-                        assert(\is_array($actual));
+                        \assert(\is_array($actual));
 
                         $actual   = \count($a);
                         $expected = 2;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1465,22 +1571,22 @@ describe('FluidContext', function() {
 
                         $actual   = $cx->length();
                         $expected = 1;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $cx = $xml->appendChild(['child1', 'child2'], true);
                         $actual   = $cx->length();
                         $expected = 2;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $cx = $cx->appendChild(['subchild1', 'subchild2', 'subchild3']);
                         $actual   = $cx->length();
                         $expected = 2;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $cx = $cx->appendChild(['subchild4', 'subchild5', 'subchild6', 'subchild7'], true);
                         $actual   = $cx->length();
                         $expected = 8;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $expected = "<doc>\n"
                                   . "  <child1>\n"
@@ -1517,22 +1623,22 @@ describe('FluidNamespace', function() {
 
                         $actual   = $ns->id();
                         $expected = $ns_id;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $ns->uri();
                         $expected = $ns_uri;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $ns->mode();
                         $expected = $ns_mode;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $ns_mode = FluidNamespace::MODE_IMPLICIT;
                         $ns = new FluidNamespace($ns_id, $ns_uri, $ns_mode);
 
                         $actual   = $ns->mode();
                         $expected = $ns_mode;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should accept an array with an id, an uri and an optional mode flag', function() {
@@ -1545,15 +1651,15 @@ describe('FluidNamespace', function() {
 
                         $actual   = $ns->id();
                         $expected = $ns_id;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $ns->uri();
                         $expected = $ns_uri;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $ns->mode();
                         $expected = $ns_mode;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $ns_mode = FluidNamespace::MODE_IMPLICIT;
                         $args[FluidNamespace::MODE] = $ns_mode;
@@ -1561,7 +1667,7 @@ describe('FluidNamespace', function() {
 
                         $actual   = $ns->mode();
                         $expected = $ns_mode;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1573,7 +1679,7 @@ describe('FluidNamespace', function() {
 
                         $actual   = $ns->id();
                         $expected = $ns_id;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1585,7 +1691,7 @@ describe('FluidNamespace', function() {
 
                         $actual   = $ns->uri();
                         $expected = $ns_uri;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1598,14 +1704,14 @@ describe('FluidNamespace', function() {
 
                         $actual   = $ns->mode();
                         $expected = $ns_mode;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $ns_mode = FluidNamespace::MODE_IMPLICIT;
                         $ns      = new FluidNamespace($ns_id, $ns_uri, $ns_mode);
 
                         $actual   = $ns->mode();
                         $expected = $ns_mode;
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1615,21 +1721,21 @@ describe('FluidNamespace', function() {
 
                         $actual   = $ns->querify('current/child');
                         $expected = 'x:current/x:child';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $ns->querify('//current/child');
                         $expected = '//x:current/x:child';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $ns = new FluidNamespace('x', 'x.com', FluidNamespace::MODE_IMPLICIT);
 
                         $actual   = $ns->querify('current/child');
                         $expected = 'x:current/x:child';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $ns->querify('//current/child');
                         $expected = '//x:current/x:child';
-                        assert($actual === $expected, __($actual, $expected));
+                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 });
