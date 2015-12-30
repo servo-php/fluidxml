@@ -203,7 +203,7 @@ describe('FluidXml', function() {
 
                 it('should throw for not supported documents', function() {
                         try {
-                                $xml = FluidXml::load([]);
+                                $xml = FluidXml::load(0);
                         } catch (\Exception $e) {
                                 $actual   = $e;
                         }
@@ -772,6 +772,122 @@ EOF;
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
+
+                $doc = "<doc>\n"
+                     . "  <parent>content</parent>\n"
+                     . "</doc>";
+                $dom = new \DOMDocument();
+                $dom->loadXML($doc);
+
+                it('should fill the document with an XML string', function() {
+                        $xml = new FluidXml(['root' => null]);
+                        $xml->appendChild('<root/>');
+
+                        $expected = "<root/>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should fill the document with an XML string with multiple root nodes', function() {
+                        $xml = new FluidXml(['root' => null]);
+                        $xml->appendChild('<root1/><root2/>');
+
+                        $expected = "<root1/>\n"
+                                  . "<root2/>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add an XML string with multiple root nodes', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('<child1/><child2/>');
+
+                        $expected = "<doc>\n"
+                                  . "  <child1/>\n"
+                                  . "  <child2/>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                            ->appendChild('<child1/><child2/>');
+
+                        $expected = "<doc>\n"
+                                  . "  <parent>\n"
+                                  . "    <child1/>\n"
+                                  . "    <child2/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a DOMDocument', function() use ($doc) {
+                        $dom = new DOMDocument();
+                        $dom->loadXML('<parent>content</parent>');
+
+                        $xml = new FluidXml();
+                        $xml->appendChild($dom);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a DOMNode', function() use ($doc, $dom) {
+                        $xp    = new \DOMXPath($dom);
+                        $nodes = $xp->query('/doc/parent');
+                        $xml   = new FluidXml();
+                        $xml->appendChild($nodes[0]);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a DOMNodeList', function() use ($doc, $dom) {
+                        $xp    = new \DOMXPath($dom);
+                        $nodes = $xp->query('/doc/parent');
+                        $xml   = new FluidXml();
+                        $xml->appendChild($nodes);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a SimpleXMLElement', function() use ($doc, $dom) {
+                        $sxml = \simplexml_import_dom($dom);
+                        $xml  = new FluidXml();
+                        $xml->appendChild($sxml->children());
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a FluidXml', function() use ($doc, $dom) {
+                        $nodes = $dom->documentElement->childNodes;
+                        $fxml = FluidXml::load($nodes);
+                        $xml  = new FluidXml();
+                        $xml->appendChild($fxml);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a FluidContext', function() use ($doc, $dom) {
+                        $fxml = FluidXml::load($dom)->query('/doc/parent');
+                        $xml  = new FluidXml();
+                        $xml->appendChild($fxml);
+
+                        $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should throw for not supported input', function() {
+                        $xml  = new FluidXml();
+                        try {
+                                $xml->appendChild(0);
+                        } catch (\Exception $e) {
+                                $actual   = $e;
+                        }
+
+                        assert_is_a($actual, \Exception::class);
+                });
         });
 
         describe('.prependSibling', function() {
@@ -809,7 +925,7 @@ EOF;
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                it('should insert a sibling node before a node', function() {
+                it('should add a sibling node before a node', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('parent', true)
                             ->prependSibling('sibling1')
@@ -819,6 +935,28 @@ EOF;
                                   . "  <sibling1/>\n"
                                   . "  <sibling2/>\n"
                                   . "  <parent/>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add an XML document instance before a node', function() {
+                        $dom = new DOMDocument();
+                        $dom->loadXML('<parent>content</parent>');
+
+                        $xml = new FluidXml();
+                        $xml->prependSibling($dom);
+
+                        $expected = "<parent>content</parent>\n"
+                                  . "<doc/>";
+                        assert_equal_xml($xml, $expected);
+
+                        $xml = new FluidXml();
+                        $xml->appendChild('sibling', true)
+                            ->prependSibling($dom);
+
+                        $expected = "<doc>\n"
+                                  . "  <parent>content</parent>\n"
+                                  . "  <sibling/>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
@@ -859,7 +997,7 @@ EOF;
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                it('should insert a sibling node after a node', function() {
+                it('should add a sibling node after a node', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('parent', true)
                             ->appendSibling('sibling1')
@@ -872,123 +1010,27 @@ EOF;
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
-        });
 
-        describe('.appendXml', function() {
-                $doc = "<doc>\n"
-                     . "  <parent>content</parent>\n"
-                     . "</doc>";
-                $dom = new \DOMDocument();
-                $dom->loadXML($doc);
-
-                it('should fill the document with an XML string', function() {
-                        $xml = new FluidXml(['root' => null]);
-                        $xml->appendXml('<root/>');
-
-                        $expected = "<root/>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should fill the document with an XML string with multiple root nodes', function() {
-                        $xml = new FluidXml(['root' => null]);
-                        $xml->appendXml('<root1/><root2/>');
-
-                        $expected = "<root1/>\n"
-                                  . "<root2/>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add an XML string with multiple root nodes', function() {
-                        $xml = new FluidXml();
-                        $xml->appendXml('<child1/><child2/>');
-
-                        $expected = "<doc>\n"
-                                  . "  <child1/>\n"
-                                  . "  <child2/>\n"
-                                  . "</doc>";
-                        assert_equal_xml($xml, $expected);
-
-                        $xml = new FluidXml();
-                        $xml->appendChild('parent', true)
-                            ->appendXml('<child1/><child2/>');
-
-                        $expected = "<doc>\n"
-                                  . "  <parent>\n"
-                                  . "    <child1/>\n"
-                                  . "    <child2/>\n"
-                                  . "  </parent>\n"
-                                  . "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add a DOMDocument', function() use ($doc) {
+                it('should add an XML document instance after a node', function() {
                         $dom = new DOMDocument();
                         $dom->loadXML('<parent>content</parent>');
 
                         $xml = new FluidXml();
-                        $xml->appendXml($dom);
+                        $xml->appendSibling($dom);
 
-                        $expected = $doc;
+                        $expected = "<doc/>\n"
+                                  . "<parent>content</parent>";
                         assert_equal_xml($xml, $expected);
-                });
 
-                it('should add a DOMNode', function() use ($doc, $dom) {
-                        $xp    = new \DOMXPath($dom);
-                        $nodes = $xp->query('/doc/parent');
-                        $xml   = new FluidXml();
-                        $xml->appendXml($nodes[0]);
+                        $xml = new FluidXml();
+                        $xml->appendChild('sibling', true)
+                            ->appendSibling($dom);
 
-                        $expected = $doc;
+                        $expected = "<doc>\n"
+                                  . "  <sibling/>\n"
+                                  . "  <parent>content</parent>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
-                });
-
-                it('should add a DOMNodeList', function() use ($doc, $dom) {
-                        $xp    = new \DOMXPath($dom);
-                        $nodes = $xp->query('/doc/parent');
-                        $xml   = new FluidXml();
-                        $xml->appendXml($nodes);
-
-                        $expected = $doc;
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add a SimpleXMLElement', function() use ($doc, $dom) {
-                        $sxml = \simplexml_import_dom($dom);
-                        $xml  = new FluidXml();
-                        $xml->appendXml($sxml->children());
-
-                        $expected = $doc;
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add a FluidXml', function() use ($doc, $dom) {
-                        $nodes = $dom->documentElement->childNodes;
-                        $fxml = FluidXml::load($nodes);
-                        $xml  = new FluidXml();
-                        $xml->appendXml($fxml);
-
-                        $expected = $doc;
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add a FluidContext', function() use ($doc, $dom) {
-                        $fxml = FluidXml::load($dom)->query('/doc/parent');
-                        $xml  = new FluidXml();
-                        $xml->appendXml($fxml);
-
-                        $expected = $doc;
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should throw for not supported input', function() {
-                        $xml  = new FluidXml();
-                        try {
-                                $xml->appendXml([]);
-                        } catch (\Exception $e) {
-                                $actual   = $e;
-                        }
-
-                        assert_is_a($actual, \Exception::class);
                 });
         });
 
