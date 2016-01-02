@@ -72,6 +72,8 @@ describe('fluidns', function() {
 });
 
 describe('FluidXml', function() {
+        $stylesheet = "<?xml-stylesheet type=\"text/xsl\" encoding=\"UTF-8\" indent=\"yes\" href=\"http://servo-php.org/fluidxml\"?>";
+
         it('should be an UTF-8 XML-1.0 document with one default root element', function() {
                 $xml = new FluidXml();
 
@@ -98,14 +100,18 @@ describe('FluidXml', function() {
                 assert_equal_xml($xml, $expected);
         });
 
-        it('should be an UTF-8 XML-1.0 document with a stylesheet', function() {
+        it('should be an UTF-8 XML-1.0 document with a stylesheet and a root element', function() use ($stylesheet) {
                 $xml = new FluidXml(['stylesheet' => 'http://servo-php.org/fluidxml']);
 
-                $expected = "<?xml-stylesheet type=\"text/xsl\" encoding=\"UTF-8\" indent=\"yes\" href=\"http://servo-php.org/fluidxml\"?>\n<doc/>";
+                $expected = $stylesheet . "\n"
+                          . "<doc/>";
                 assert_equal_xml($xml, $expected);
+        });
 
+        it('should be an UTF-8 XML-1.0 document with a stylesheet and no root element', function() use ($stylesheet) {
                 $xml = new FluidXml(['root' => null, 'stylesheet' => 'http://servo-php.org/fluidxml']);
-                $expected = "<?xml-stylesheet type=\"text/xsl\" encoding=\"UTF-8\" indent=\"yes\" href=\"http://servo-php.org/fluidxml\"?>";
+
+                $expected = $stylesheet;
                 assert_equal_xml($xml, $expected);
         });
 
@@ -1347,7 +1353,7 @@ EOF;
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                it('should return a node and the inner XML as XML string', function() {
+                it('should return a node and the descendants as XML string', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('parent', true)
                                 ->appendText('parent content')

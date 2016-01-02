@@ -244,18 +244,18 @@ class FluidXml implements FluidInterface
                 }
 
                 if ($opts['stylesheet']) {
-                        $stylesheet = new \DOMProcessingInstruction('xml-stylesheet',
-                                                                    'type="text/xsl"'
-                                                                    ." encoding=\"{$opts['encoding']}\""
-                                                                    ." indent=\"yes\""
-                                                                    ." href=\"{$opts['stylesheet']}\"");
-                        $this->dom->insertBefore($stylesheet, $this->query('/*')[0]);
+                        $attrs = "type=\"text/xsl\" "
+                               . "encoding=\"{$opts['encoding']}\" "
+                               . "indent=\"yes\" "
+                               . "href=\"{$opts['stylesheet']}\"";
+                        $stylesheet = new \DOMProcessingInstruction('xml-stylesheet', $attrs);
+
+                        $this->dom->insertBefore($stylesheet, $this->dom->documentElement);
                 }
         }
 
         public function xml($strip = false)
         {
-
                 if ($strip) {
                         return $this->dom->saveXML($this->dom->documentElement);
                 }
