@@ -1,56 +1,73 @@
-1.20
-* appendXml() has been merged with
-- appendChild()
-- prependSibling()
-- appendSibling()
-which accept a new input set of:
-- DOMDocument
-- DOMNode
-- DOMNodeList
-- SimpleXMLElement
-- FluidXml
+1.9:
+wraps the FluidXML classes and functions under the FluidXml namespace.
+
+
+1.8: (2016-01-02)
+gives super powers to the manipulation APIs.
+
+* [changed] ->appendChild() has the super powers of ->appendXml().
+* [changed] ->appendSibling() has the super powers of ->appendXml().
+* [changed] ->prependSibling() has the super powers of ->appendXml().
+* [removed] ->appendXml() has been removed superseded by ->appendChild().
+
 
 1.7:
-* appendXml() is smarter than ever, supporting
-- DOMDocument/DOMNode/DOMNodeList/SimpleXMLElement/FluidXml
+improves dealing with other XML object instances.
+
+* [changed] ::load() adds support for DOMNode, DOMNodeList and FluidXml.
+* [changed] ->xml() can export any node with its descendants.
+* [changed] ->xml() accepts a boolean flag to remove the XML declaration headers.
+* [changed] ->appendXml() is smarter than ever, supporting
+  DOMDocument, DOMNode, DOMNodeList, SimpleXMLElement and FluidXml and XML strings.
+
 
 1.6.2:
-* Fixes a wrong path of the Composer autoloader.
+fixes a wrong path of the Composer autoloader.
+
 
 1.6.1:
-* Fixes a wrong path of the Composer autoloader.
+fixes a wrong path of the Composer autoloader.
+
 
 1.6:
-* PHP 5.6 is the new minimum version (it was PHP 7).
-* Internal cleanup.
+lowers the minimum PHP version to PHP 5.6 (it was PHP 7).
+
+* [internal] cleanup.
+
 
 1.5:
-* Supports for importing XML documents from:
-- String
-- File
-- DOMDocument
-- SimpleXMLElement
-* FluidXml::new(), FluidXml::load() and fluidify() are part of the family.
+introduces supports for importing XML documents from
+DOMDocument, SimpleXMLElement, XML strings and XML files.
+
+* [new] fluidify() is part of the family.
+* [new] FluidXml::new() is part of the family.
+* [new] FluidXml::load() is part of the family.
+
 
 1.4:
-* ->remove() can remove the results of a query and accepts multiple XPath strings.
+* [changed] ->remove() can remove the results of a query and accepts multiple XPath strings.
+
 
 1.3:
-* FluidXml::__construct accepts the 'root' option as first argument
+* [changed] FluidXml::__construct accepts the 'root' option as first argument.
+
 
 1.2:
-* query() supports a variable number of XPaths
-* namespace() supports a variable number of FluidNamespace instances
-* namespace() supports a namespace id, uri and mode as arguments
-* namespaces() returns all registered namespaces
-* FluidNamespace instances are read-only
-* FluidNamespace::id/uri/mode() can't mutate the instance
+* [changed] ->query() supports a variable number of XPaths.
+* [changed] ->namespace() supports a variable number of FluidNamespace instances.
+* [changed] ->namespace() supports a namespace id, uri and mode as arguments.
+* [changed] ->namespaces() returns all registered namespaces.
+* [changed] FluidNamespace instances are read-only.
+* [changed] FluidNamespace::{id/uri/mode}() can't mutate the instance.
+
 
 1.1.1:
-* Fixes a NOTICE error
+fixes a notice error.
+
 
 1.1:
-* XML namespaces support added
+introduces the XML namespaces support.
 
-1.0:
-* Initial release
+
+1.0: (2015-11-19)
+is the initial release of the XML library with the Super Cow powers.

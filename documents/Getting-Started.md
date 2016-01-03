@@ -26,6 +26,19 @@ require_once 'FluidXml.php';
 require_once 'vendor/autoload.php';
 ```
 
+Now `use` classes and functions you need.
+> Extended syntax
+> ```php
+> use \FluidXml\FluidXml;
+> use \FluidXml\FluidNamespace;
+> ```
+> Concise syntax
+> ```php
+> use function \FluidXml\fluidxml;
+> use function \FluidXml\fluidns;
+> use function \FluidXml\fluidify;
+> ```
+
 We can proceed to create our first XML document in the simplest way.
 
 > Extended syntax
@@ -118,7 +131,7 @@ echo $book->xml();
 </book>
 ```
 
-The `appendChild`/`add` method supports up to four arguments to achieve from the simplest<br/>
+The `appendChild()`/`add()` method supports up to four arguments to achieve from the simplest<br/>
 node insertion to nested trees creation.
 
 > _Public API_
@@ -338,10 +351,10 @@ Sometimes XML/XHTML comes from legacy templating systems or external sources.<br
 In those cases the raw XML string can be injected directly into the document.
 
 ```php
-$book->appendChild('cover', true)
-     ->appendXml(<<<XML
-        <h1>The Theory Of Everything</h1>
-        <img src="http://goo.gl/kO3Iov"/>
+$book->add('cover', true)
+        ->add(<<<XML
+            <h1>The Theory Of Everything</h1>
+            <img src="http://goo.gl/kO3Iov"/>
 XML
 );
 ```
@@ -349,7 +362,7 @@ XML
 
 ## Executing XPath Queries
 
-The possibilty to execute XPath queries very easily is another feature of FluidXML.
+The possibility to execute XPath queries very easily is another feature of FluidXML.
 
 ```php
 $eggs   = $food->query('//egg');
@@ -364,20 +377,20 @@ flexibility.
 > Extended syntax
 > ```php
 > $book->query('//chapter')
->      ->setAttribute('lang', 'en')
+>           ->setAttribute('lang', 'en')
 >      ->query('..')
->      ->setAttribute('lang', 'en')
+>           ->setAttribute('lang', 'en')
 >      ->query('../title')
->      ->setAttribute('lang', 'en');
+>           ->setAttribute('lang', 'en');
 > ```
 > Concise syntax
 > ```php
 > $book->query('//chapter')
->      ->attr('lang', 'en')
+>           ->attr('lang', 'en')
 >      ->query('..')
->      ->attr('lang', 'en')
+>           ->attr('lang', 'en')
 >      ->query('../title')
->      ->attr('lang', 'en');
+>           ->attr('lang', 'en');
 > ```
 
 > **Pro Tip**:<br/>
@@ -463,14 +476,14 @@ At this point you are ready to use it.
 > $book->appendChild('xhtml:h1')
 >      ->appendChild([ 'xsl:template'  => [ 'xsl:variable' ] ])
 >      ->query('//xhtml:h1')
->      ->appendChild('svg:shape');
+>           ->appendChild('svg:shape');
 > ```
 > Concise syntax
 > ```php
 > $book->add('xhtml:h1')
 >      ->add([ 'xsl:template'  => [ 'xsl:variable' ] ])
 >      ->query('//xhtml:h1')
->      ->add('svg:shape');
+>           ->add('svg:shape');
 > ```
 
 ```php
@@ -554,7 +567,7 @@ $food->query('/doc')->remove('egg');    // Removes all the eggs.
 
 ## Importing Existing Documents
 
-FluidXML provides an easy way to import existing documents from a variety of sources.
+FluidXML provides an easy way to import existing XML documents from a variety of formats.
 
 The resulting object is a `FluidXml` instance filled with the XML of the imported document.
 
@@ -613,6 +626,34 @@ The resulting object is a `FluidXml` instance filled with the XML of the importe
 > ```php
 > $doc = fluidify($simplexml);          // $simplexml is an instance of SimpleXMLElement.
 > ```
+
+> **Pro Tip**:<br/>
+> `fluidify()`/`FluidXml::load()` methods support the following input documents:
+> - XML string
+> - XML file path
+> - `FluidXml` instance
+> - `DOMDocument`/`DOMNode`/`DOMNodeList` instance
+> - `SimpleXMLElement`
+
+Existing XML documents instances can be injected in any point of the FluidXML document.
+
+```php
+$doc = fluidxml();
+
+$doc->add($dom)                     // A DOMDocument/DOMNode/DOMNodeList instance.
+    ->add($simplexml)               // A SimpleXMLElement instance.
+    ->add($fluidxml)                // A FluidXml instance.
+    ->add($fluidxml->query('//p')); // A FluidXml query instance.
+```
+
+Crazy things are possible too and I will not stop you from doing them.
+
+```php
+$doc->add([ 'aNode',
+            'domDoc' => $dom,
+            'file'   => fluidify('path/to/file.xml'),
+            'simple' => $simplexml ]);
+```
 
 
 ## Where To Go Next

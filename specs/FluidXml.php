@@ -2,6 +2,13 @@
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".common.php";
 
+use \FluidXml\FluidXml;
+use \FluidXml\FluidContext;
+use \FluidXml\FluidNamespace;
+use function \FluidXml\fluidxml;
+use function \FluidXml\fluidns;
+use function \FluidXml\fluidify;
+
 describe('fluidxml', function() {
         it('should behave like FluidXml::__construct', function() {
                 $xml   = new FluidXml();
@@ -72,6 +79,8 @@ describe('fluidns', function() {
 });
 
 describe('FluidXml', function() {
+        $stylesheet = "<?xml-stylesheet type=\"text/xsl\" encoding=\"UTF-8\" indent=\"yes\" href=\"http://servo-php.org/fluidxml\"?>";
+
         it('should be an UTF-8 XML-1.0 document with one default root element', function() {
                 $xml = new FluidXml();
 
@@ -98,14 +107,18 @@ describe('FluidXml', function() {
                 assert_equal_xml($xml, $expected);
         });
 
-        it('should be an UTF-8 XML-1.0 document with a stylesheet', function() {
+        it('should be an UTF-8 XML-1.0 document with a stylesheet and a root element', function() use ($stylesheet) {
                 $xml = new FluidXml(['stylesheet' => 'http://servo-php.org/fluidxml']);
 
-                $expected = "<?xml-stylesheet type=\"text/xsl\" encoding=\"UTF-8\" indent=\"yes\" href=\"http://servo-php.org/fluidxml\"?>\n<doc/>";
+                $expected = $stylesheet . "\n"
+                          . "<doc/>";
                 assert_equal_xml($xml, $expected);
+        });
 
+        it('should be an UTF-8 XML-1.0 document with a stylesheet and no root element', function() use ($stylesheet) {
                 $xml = new FluidXml(['root' => null, 'stylesheet' => 'http://servo-php.org/fluidxml']);
-                $expected = "<?xml-stylesheet type=\"text/xsl\" encoding=\"UTF-8\" indent=\"yes\" href=\"http://servo-php.org/fluidxml\"?>";
+
+                $expected = $stylesheet;
                 assert_equal_xml($xml, $expected);
         });
 
@@ -216,7 +229,7 @@ describe('FluidXml', function() {
         describe(':new', function() {
                 it('should behave like FluidXml::__construct', function() {
                         $xml   = new FluidXml();
-                        eval('$alias = FluidXml::new();');
+                        eval('$alias = \FluidXml\FluidXml::new();');
 
                         $actual   = $alias->xml();
                         $expected = $xml->xml();
@@ -228,7 +241,7 @@ describe('FluidXml', function() {
                                      'stylesheet' => 'stylesheet.xsl' ];
 
                         $xml   = new FluidXml($options);
-                        eval('$alias = FluidXml::new($options);');
+                        eval('$alias = \FluidXml\FluidXml::new($options);');
 
                         $actual   = $alias->xml();
                         $expected = $xml->xml();
@@ -878,6 +891,21 @@ EOF;
                         assert_equal_xml($xml, $expected);
                 });
 
+                it('should add many instances', function() use ($doc, $dom) {
+                        $fxml = FluidXml::load($dom)->query('/doc/parent');
+                        $xml  = new FluidXml();
+                        $xml->appendChild([ $fxml,
+                                            'imported' => $fxml ]);
+
+                        $expected = "<doc>\n"
+                                  . "  <parent>content</parent>\n"
+                                  . "  <imported>\n"
+                                  . "    <parent>content</parent>\n"
+                                  . "  </imported>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
                 it('should throw for not supported input', function() {
                         $xml  = new FluidXml();
                         try {
@@ -1347,7 +1375,7 @@ EOF;
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                it('should return a node and the inner XML as XML string', function() {
+                it('should return a node and the descendants as XML string', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('parent', true)
                                 ->appendText('parent content')

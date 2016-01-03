@@ -38,13 +38,20 @@
  * @license https://opensource.org/licenses/BSD-2-Clause
  */
 
-namespace {
+namespace
+{
 
 if (\version_compare(\phpversion(), '7', '<')) {
         require_once __DIR__ . \DIRECTORY_SEPARATOR . 'FluidXml.php56.php';
 } else {
         require_once __DIR__ . \DIRECTORY_SEPARATOR . 'FluidXml.php70.php';
 }
+
+} // END OF namespace global
+
+
+namespace FluidXml
+{
 
 /**
  * Constructs a new FluidXml instance.
@@ -82,6 +89,50 @@ function fluidxml(...$arguments)
 function fluidns(...$arguments)
 {
         return new FluidNamespace(...$arguments);
+}
+
+function is_an_xml_string($string)
+{
+        // Removes any empty new line at the beginning,
+        // otherwise the first character check may fail.
+        $string = \ltrim($string);
+
+        return $string[0] === '<';
+}
+
+function domdocument_to_string_without_headers(\DOMDocument $dom)
+{
+        return $dom->saveXML($dom->documentElement);
+}
+
+function domnodelist_to_string(\DOMNodeList $nodelist)
+{
+        $nodes = [];
+
+        foreach ($nodelist as $n) {
+                $nodes[] = $n;
+        }
+
+        return domnodes_to_string($nodes);
+}
+
+function domnodes_to_string(array $nodes)
+{
+        $dom = $nodes[0]->ownerDocument;
+        $xml = '';
+
+        foreach ($nodes as $n) {
+                $xml .= $dom->saveXML($n) . PHP_EOL;
+        }
+
+        return \rtrim($xml);
+}
+
+function simplexml_to_string_without_headers(\SimpleXMLElement $element)
+{
+        $dom = \dom_import_simplexml($element);
+
+        return $dom->ownerDocument->saveXML($dom->ownerDocument);
 }
 
 interface FluidInterface
@@ -159,7 +210,7 @@ trait FluidNamespaceTrait
         // it is shadowed by a facade method:
         // - in PHP 7 by a real public 'namespace' method
         // - in PHP 5 by a public __call method which understands a 'namespace' call.
-        protected function registerNamespace(...$arguments)
+        protected function namespace_(...$arguments)
         {
                 $namespaces = [];
 
@@ -244,18 +295,18 @@ class FluidXml implements FluidInterface
                 }
 
                 if ($opts['stylesheet']) {
-                        $stylesheet = new \DOMProcessingInstruction('xml-stylesheet',
-                                                                    'type="text/xsl"'
-                                                                    ." encoding=\"{$opts['encoding']}\""
-                                                                    ." indent=\"yes\""
-                                                                    ." href=\"{$opts['stylesheet']}\"");
-                        $this->dom->insertBefore($stylesheet, $this->query('/*')[0]);
+                        $attrs = "type=\"text/xsl\" "
+                               . "encoding=\"{$opts['encoding']}\" "
+                               . "indent=\"yes\" "
+                               . "href=\"{$opts['stylesheet']}\"";
+                        $stylesheet = new \DOMProcessingInstruction('xml-stylesheet', $attrs);
+
+                        $this->dom->insertBefore($stylesheet, $this->dom->documentElement);
                 }
         }
 
         public function xml($strip = false)
         {
-
                 if ($strip) {
                         return $this->dom->saveXML($this->dom->documentElement);
                 }
@@ -815,9 +866,16 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         // - [ 'element' => 'Text content.' ]
                         // - [ 'element' => [...] ]
 
-                        if (\is_array($v)) {
-                                // The user has passed a recursive structure:
-                                // [ 'element' => [...] ]
+                        if (\is_string($v)) {
+                                // The user has passed a node name and a node value:
+                                // [ 'element' => 'Text content.' ]
+
+                                $el = $this->createElement($k, $v);
+                                $this->attachElement($fn, $context, $parent, $el);
+                        } else {
+                                // The user has passed one of these two cases:
+                                // - [ 'element' => [...] ]
+                                // - [ 'element' => DOMNode|SimpleXMLElement|FluidXml ]
 
                                 $el = $this->createElement($k);
                                 $el = $this->attachElement($fn, $context, $parent, $el);
@@ -825,12 +883,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                                 // The new children elements must be created in the order
                                 // they are supplied, so 'appendChild' is the perfect operation.
                                 $this->newContext($el)->appendChild($v, ...$optionals);
-                        } else {
-                                // The user has passed a node name and a node value:
-                                // [ 'element' => 'Text content.' ]
-
-                                $el = $this->createElement($k, $v);
-                                $this->attachElement($fn, $context, $parent, $el);
                         }
                 } else {
                         // The user has passed one of these two cases:
@@ -1031,55 +1083,6 @@ class FluidNamespace
                 // Removes the last appended slash.
                 return \substr($new_xpath, 0, -1);
         }
-}
-
-} // END OF namespace {
-
-namespace FluidXml
-{
-
-function is_an_xml_string($string)
-{
-        // Removes any empty new line at the beginning,
-        // otherwise the first character check may fail.
-        $string = \ltrim($string);
-
-        return $string[0] === '<';
-}
-
-function domdocument_to_string_without_headers(\DOMDocument $dom)
-{
-        return $dom->saveXML($dom->documentElement);
-}
-
-function domnodelist_to_string(\DOMNodeList $nodelist)
-{
-        $nodes = [];
-
-        foreach ($nodelist as $n) {
-                $nodes[] = $n;
-        }
-
-        return domnodes_to_string($nodes);
-}
-
-function domnodes_to_string(array $nodes)
-{
-        $dom = $nodes[0]->ownerDocument;
-        $xml = '';
-
-        foreach ($nodes as $n) {
-                $xml .= $dom->saveXML($n) . PHP_EOL;
-        }
-
-        return \rtrim($xml);
-}
-
-function simplexml_to_string_without_headers(\SimpleXMLElement $element)
-{
-        $dom = \dom_import_simplexml($element);
-
-        return $dom->ownerDocument->saveXML($dom->ownerDocument);
 }
 
 } // END OF namespace FluidXml
