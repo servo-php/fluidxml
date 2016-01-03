@@ -1,5 +1,7 @@
 <?php
 
+namespace FluidXml;
+
 trait FluidXmlShadowTrait
 {
         public static function new(...$arguments)
@@ -12,6 +14,6 @@ trait FluidNamespaceShadowTrait
 {
         public function namespace(...$arguments)
         {
-                return $this->registerNamespace(...$arguments);
+                return $this->namespace_(...$arguments);
         }
 }

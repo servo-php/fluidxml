@@ -8,6 +8,11 @@ $source = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'source';
 
 require_once 'FluidXml.php';
 
+use \FluidXml\FluidXml;
+use \FluidXml\FluidNamespace;
+use function \FluidXml\fluidxml;
+use function \FluidXml\fluidns;
+use function \FluidXml\fluidify;
 
 /*****************************
  * Creating An XML Document. *
@@ -125,10 +130,10 @@ echo "————————————————————————�
 * Raw XML/XHTML strings che be injected at any point of the document too.
 */
 
-$book->appendChild('cover', true)
-     ->appendXml(<<<XML
-        <h1>The Theory Of Everything</h1>
-        <img src="http://goo.gl/kO3Iov"/>
+$book->add('cover', true)
+        ->add(<<<XML
+                <h1>The Theory Of Everything</h1>
+                <img src="http://goo.gl/kO3Iov"/>
 XML
 );
 
@@ -137,7 +142,7 @@ XML
 * The document can be filled with a raw XML string.
 */
 $html = fluidxml(['root' => null]);
-$html->appendXml(<<<XML
+$html->add(<<<XML
 <html>
     <head>
         <meta/>
@@ -165,6 +170,8 @@ echo "————————————————————————�
 
 $dom = new DOMDocument();
 $dom->loadXML($fluid->xml());
+$dom->formatOutput       = true;
+$dom->preserveWhiteSpace = false;
 // DOMDocument import.
 $fluid = fluidify($dom);
 echo $fluid->xml();
@@ -180,6 +187,15 @@ echo "————————————————————————�
 
 // XML file import.
 // $fluid = fluidify('path/to/file.xml');
+
+$other = fluidify($fluid->xml());
+$fluid = fluidxml();
+
+$fluid->add($other)                                     // Imports a FluidXml instance.
+      ->add([ 'query'     => $fluid->query('//meta'),   // Imports a FluidXml query.
+              'dom'       => $dom,                      // Imports a DOMDocument.
+              'domnodes'  => $dom->childNodes,          // Imports a DOMNodeList.
+              'simplexml' => $simplexml ]);             // Imports a SimpleXMLElement.
 
 
 

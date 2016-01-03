@@ -1,3 +1,7 @@
+1.9:
+wraps the FluidXML classes and functions under the FluidXml namespace.
+
+
 1.8: (2016-01-02)
 gives super powers to the manipulation APIs.
 
@@ -13,7 +17,7 @@ improves dealing with other XML object instances.
 * [changed] ::load() adds support for DOMNode, DOMNodeList and FluidXml.
 * [changed] ->xml() can export any node with its descendants.
 * [changed] ->xml() accepts a boolean flag to remove the XML declaration headers.
-* [changes] ->appendXml() is smarter than ever, supporting
+* [changed] ->appendXml() is smarter than ever, supporting
   DOMDocument, DOMNode, DOMNodeList, SimpleXMLElement and FluidXml and XML strings.
 
 

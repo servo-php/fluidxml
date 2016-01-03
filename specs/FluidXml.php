@@ -2,6 +2,13 @@
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . ".common.php";
 
+use \FluidXml\FluidXml;
+use \FluidXml\FluidContext;
+use \FluidXml\FluidNamespace;
+use function \FluidXml\fluidxml;
+use function \FluidXml\fluidns;
+use function \FluidXml\fluidify;
+
 describe('fluidxml', function() {
         it('should behave like FluidXml::__construct', function() {
                 $xml   = new FluidXml();
@@ -222,7 +229,7 @@ describe('FluidXml', function() {
         describe(':new', function() {
                 it('should behave like FluidXml::__construct', function() {
                         $xml   = new FluidXml();
-                        eval('$alias = FluidXml::new();');
+                        eval('$alias = \FluidXml\FluidXml::new();');
 
                         $actual   = $alias->xml();
                         $expected = $xml->xml();
@@ -234,7 +241,7 @@ describe('FluidXml', function() {
                                      'stylesheet' => 'stylesheet.xsl' ];
 
                         $xml   = new FluidXml($options);
-                        eval('$alias = FluidXml::new($options);');
+                        eval('$alias = \FluidXml\FluidXml::new($options);');
 
                         $actual   = $alias->xml();
                         $expected = $xml->xml();
@@ -881,6 +888,21 @@ EOF;
                         $xml->appendChild($fxml);
 
                         $expected = $doc;
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add many instances', function() use ($doc, $dom) {
+                        $fxml = FluidXml::load($dom)->query('/doc/parent');
+                        $xml  = new FluidXml();
+                        $xml->appendChild([ $fxml,
+                                            'imported' => $fxml ]);
+
+                        $expected = "<doc>\n"
+                                  . "  <parent>content</parent>\n"
+                                  . "  <imported>\n"
+                                  . "    <parent>content</parent>\n"
+                                  . "  </imported>\n"
+                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 

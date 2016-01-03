@@ -6,6 +6,7 @@ cache:
     directories:
         - sandbox/composer
 install:
+    - composer self-update
     - ./support/tools/init
 script:
     - ./support/tools/test

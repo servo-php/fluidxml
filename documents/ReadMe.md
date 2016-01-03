@@ -18,8 +18,8 @@
 # FluidXML
 <img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png" height="64px" alt="Servo-PHP Logo"/>
 
-FluidXML is a PHP library, under the Servo PHP framework umbrella ☂,<br/>
-designed to manipulate XML documents with a **concise** and **fluent** API.
+FluidXML is a PHP library designed to manipulate XML documents with a **concise**
+and **fluent** API.
 
 It leverages XPath and the fluent programming pattern to be **fun and effective**.
 
@@ -93,20 +93,19 @@ $food->add([ 'fridge' => [ 'omelette' => 'with potato',
 
 ```php
 $book->query('//chapter')
-     ->attr('status', 'read')
      ->query('..')
-     ->attr('lang', 'en')
+        ->attr('lang', 'en')
      ->query('../title')
-     ->attr('country', 'us');
+        ->attr('country', 'us');
 ```
 
 And sometimes **string templates** are the fastest way.
 
 ```php
-$book->appendChild('cover', true)
-     ->appendXml(<<<XML
-        <h1>The Theory Of Everything</h1>
-        <img src="http://goo.gl/kO3Iov"/>
+$book->add('cover', true)
+        ->add(<<<XML
+            <h1>The Theory Of Everything</h1>
+            <img src="http://goo.gl/kO3Iov"/>
 XML
 );
 ```
@@ -125,6 +124,9 @@ Existing **DOMDocument** and **SimpleXML** documents are not a problem, just imp
 
 ```php
 $fluidxml = fluidify($domdocument);
+
+$fluidxml->query('/html/body')
+         ->add($simplexmlelement);
 ```
 
 Don't be shy and tell it: **« IT'S AWESOME! »** ^\_^
@@ -167,6 +169,13 @@ require_once 'FluidXml.php';
 require_once 'vendor/autoload.php';
 ```
 
+```php
+use \FluidXml\FluidXml;
+use \FluidXml\FluidNamespace;
+use function \FluidXml\fluidxml;
+use function \FluidXml\fluidns;
+use function \FluidXml\fluidify;
+```
 See the [documentation](#documentation) to get started and become a [ninja][ninja].
 
 
@@ -194,9 +203,8 @@ your immense gratitude **♡**, donate _1cent_.
 
 
 ## Roadmap
-* [x] Porting the XML namespace implementation from the legacy FluidXML codebase
-* [ ] Expanding the APIs
 * [x] PHP 5.6 backport
+* [ ] Expanding the APIs
 * [ ] Extending the documentation
 
 <a href='https://pledgie.com/campaigns/30607'>
