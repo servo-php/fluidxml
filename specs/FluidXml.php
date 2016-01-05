@@ -8,6 +8,11 @@ use \FluidXml\FluidNamespace;
 use function \FluidXml\fluidxml;
 use function \FluidXml\fluidns;
 use function \FluidXml\fluidify;
+use function \FluidXml\is_an_xml_string;
+use function \FluidXml\domdocument_to_string_without_headers;
+use function \FluidXml\domnodelist_to_string;
+use function \FluidXml\domnodes_to_string;
+use function \FluidXml\simplexml_to_string_without_headers;
 
 describe('fluidxml', function() {
         it('should behave like FluidXml::__construct', function() {
@@ -78,50 +83,73 @@ describe('fluidns', function() {
         });
 });
 
-describe('FluidXml', function() {
-        $stylesheet = "<?xml-stylesheet type=\"text/xsl\" encoding=\"UTF-8\" indent=\"yes\" href=\"http://servo-php.org/fluidxml\"?>";
-
-        it('should be an UTF-8 XML-1.0 document with one default root element', function() {
+describe('is_an_xml_string', function() {
+        it('should understand if a string is an XML document', function() {
                 $xml = new FluidXml();
 
+                $actual   = is_an_xml_string($xml->xml());
+                $expected = true;
+                \assert($actual === $expected, __($actual, $expected));
+
+                $actual   = is_an_xml_string(" \n \n \t" . $xml->xml());
+                $expected = true;
+                \assert($actual === $expected, __($actual, $expected));
+
+                $actual   = is_an_xml_string('item');
+                $expected = false;
+                \assert($actual === $expected, __($actual, $expected));
+        });
+});
+
+describe('domdocument_to_string_without_headers', function() {
+        it('should convert a DOMDocument instance to an XML string without the XML headers (declaration and stylesheets)', function() {
+                $xml = new FluidXml();
+
+                $actual   = domdocument_to_string_without_headers($xml->dom());
                 $expected = "<doc/>";
-                assert_equal_xml($xml, $expected);
+                \assert($actual === $expected, __($actual, $expected));
+
+                $xml = new FluidXml(['stylesheet' => 'x.com/style.xsl']);
+
+                $actual   = domdocument_to_string_without_headers($xml->dom());
+                $expected = "<doc/>";
+                \assert($actual === $expected, __($actual, $expected));
         });
+});
 
-        it('should be an UTF-8 XML-1.0 document with one custom root element', function() {
-                $xml = new FluidXml('document');
+describe('domnodelist_to_string', function() {
+        it('should convert a DOMNodeList instance to an XML string', function() {
+                $xml   = new FluidXml();
+                $nodes = $xml->dom()->childNodes;
 
-                $expected = "<document/>";
-                assert_equal_xml($xml, $expected);
-
-                $xml = new FluidXml(['root' => 'document']);
-
-                $expected = "<document/>";
-                assert_equal_xml($xml, $expected);
+                $actual   = domnodelist_to_string($nodes);
+                $expected = "<doc/>";
+                \assert($actual === $expected, __($actual, $expected));
         });
+});
 
-        it('should be an UTF-8 XML-1.0 document with no root element', function() {
-                $xml = new FluidXml(['root' => null]);
+describe('domnodes_to_string', function() {
+        it('should convert an array of DOMNode instances to an XML string', function() {
+                $xml   = new FluidXml();
+                $nodes = [ $xml->dom()->documentElement ];
 
-                $expected = "";
-                assert_equal_xml($xml, $expected);
+                $actual   = domnodes_to_string($nodes);
+                $expected = "<doc/>";
+                \assert($actual === $expected, __($actual, $expected));
         });
+});
 
-        it('should be an UTF-8 XML-1.0 document with a stylesheet and a root element', function() use ($stylesheet) {
-                $xml = new FluidXml(['stylesheet' => 'http://servo-php.org/fluidxml']);
+describe('simplexml_to_string_without_headers', function() {
+        it('should convert a SimpleXMLElement instance to an XML string without the XML headers (declaration and stylesheets)', function() {
+                $xml = \simplexml_import_dom((new FluidXml())->dom());
 
-                $expected = $stylesheet . "\n"
-                          . "<doc/>";
-                assert_equal_xml($xml, $expected);
+                $actual   = simplexml_to_string_without_headers($xml);
+                $expected = "<doc/>";
+                \assert($actual === $expected, __($actual, $expected));
         });
+});
 
-        it('should be an UTF-8 XML-1.0 document with a stylesheet and no root element', function() use ($stylesheet) {
-                $xml = new FluidXml(['root' => null, 'stylesheet' => 'http://servo-php.org/fluidxml']);
-
-                $expected = $stylesheet;
-                assert_equal_xml($xml, $expected);
-        });
-
+describe('FluidXml', function() {
         describe(':load', function() {
                 $doc = "<root>\n"
                      . "  <parent>content</parent>\n"
@@ -250,8 +278,56 @@ describe('FluidXml', function() {
         });
         }
 
+        describe('()', function() {
+                $stylesheet = "<?xml-stylesheet type=\"text/xsl\" "
+                                              . "encoding=\"UTF-8\" "
+                                              . "indent=\"yes\" "
+                                              . "href=\"http://servo-php.org/fluidxml\"?>";
+
+                it('should be an UTF-8 XML-1.0 document with one default root element', function() {
+                        $xml = new FluidXml();
+
+                        $expected = "<doc/>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should be an UTF-8 XML-1.0 document with one custom root element', function() {
+                        $xml = new FluidXml('document');
+
+                        $expected = "<document/>";
+                        assert_equal_xml($xml, $expected);
+
+                        $xml = new FluidXml(['root' => 'document']);
+
+                        $expected = "<document/>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should be an UTF-8 XML-1.0 document with no root element', function() {
+                        $xml = new FluidXml(['root' => null]);
+
+                        $expected = "";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should be an UTF-8 XML-1.0 document with a stylesheet and a root element', function() use ($stylesheet) {
+                        $xml = new FluidXml(['stylesheet' => 'http://servo-php.org/fluidxml']);
+
+                        $expected = $stylesheet . "\n"
+                                  . "<doc/>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should be an UTF-8 XML-1.0 document with a stylesheet and no root element', function() use ($stylesheet) {
+                        $xml = new FluidXml(['root' => null, 'stylesheet' => 'http://servo-php.org/fluidxml']);
+
+                        $expected = $stylesheet;
+                        assert_equal_xml($xml, $expected);
+                });
+        });
+
         describe('.dom', function() {
-                it('should return the DOMDocument of the document', function() {
+                it('should return the associated DOMDocument instace', function() {
                         $xml = new FluidXml();
 
                         $actual = $xml->dom();
@@ -281,6 +357,10 @@ describe('FluidXml', function() {
         });
 
         describe('.namespace', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('namespace', 'a', 'b');
+                });
+
                 it('should accept a namespace', function() {
                         $xml   = new FluidXml();
                         $x_ns  = new FluidNamespace('x', 'x.com');
@@ -358,6 +438,10 @@ describe('FluidXml', function() {
         });
 
         describe('.query', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('query', '.');
+                });
+
                 it('should return the root nodes of the document', function() {
                         // XPATH: /*
                         $xml = new FluidXml();
@@ -572,7 +656,56 @@ describe('FluidXml', function() {
                 });
         });
 
+        describe('.each', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('each', function(){});
+                });
+
+                it('should iterate the nodes inside the context', function() {
+                        $xml = new FluidXml();
+
+                        $xml->each(function($cx, $n, $i) {
+                                assert_is_a($cx, FluidContext::class);
+                                assert_is_a($n, \DOMNode::class);
+                                $actual   = $i;
+                                $expected = 0;
+                                \assert($actual === $expected, __($actual, $expected));
+                        });
+
+                        $xml->appendChild('child1')
+                            ->appendChild('child2');
+
+                        $nodes = [];
+                        $index = 0;
+                        $xml->query('/doc/*')
+                            ->each(function($cx, $n, $i) use (&$nodes, &$index) {
+                                $cx->setText($n->nodeName);
+                                $nodes[] = $n;
+
+                                $actual   = $i;
+                                $expected = $index;
+                                \assert($actual === $expected, __($actual, $expected));
+
+                                ++$index;
+                        });
+
+                        $actual   = $nodes;
+                        $expected = $xml->query('/doc/*')->asArray();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $expected = "<doc>\n"
+                                  . "  <child1>child1</child1>\n"
+                                  . "  <child2>child2</child2>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+        });
+
         describe('.appendChild', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('appendChild', 'a');
+                });
+
                 it('should add a child', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('child1')
@@ -919,6 +1052,10 @@ EOF;
         });
 
         describe('.prependSibling', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('prependSibling', 'a');
+                });
+
                 it('should add more than one root node to a document with one root node', function() {
                         $xml = new FluidXml();
                         $xml->prependSibling('meta');
@@ -991,6 +1128,10 @@ EOF;
         });
 
         describe('.appendSibling', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('appendSibling', 'a');
+                });
+
                 it('should add more than one root node to a document with one root node', function() {
                         $xml = new FluidXml();
                         $xml->appendSibling('meta');
@@ -1063,6 +1204,10 @@ EOF;
         });
 
         describe('.setAttribute', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('setAttribute', 'a', 'b');
+                });
+
                 it('should set the attributes of the root node', function() {
                         $xml = new FluidXml();
                         $xml->setAttribute('attr1', 'Attr1 Value')
@@ -1143,105 +1288,72 @@ EOF;
         });
 
         describe('.appendText', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('appendText', 'a');
+                });
+
                 it('should add text to the root node', function() {
                         $xml = new FluidXml();
-                        $xml->appendText('Document Text First Line');
+                        $xml->appendText('First Line')
+                            ->appendText('Second Line');
 
-                        $expected = "<doc>Document Text First Line</doc>";
-                        assert_equal_xml($xml, $expected);
-
-                        $xml->appendText('Document Text Second Line');
-
-                        $expected = "<doc>Document Text First LineDocument Text Second Line</doc>";
+                        $expected = "<doc>First LineSecond Line</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
                 it('should add text to a node', function() {
                         $xml = new FluidXml();
                         $cx = $xml->appendChild('p', true);
-                        $cx->appendText('Document Text First Line');
+                        $cx->appendText('First Line')
+                           ->appendText('Second Line');
 
                         $expected = "<doc>\n"
-                                  . "  <p>Document Text First Line</p>\n"
-                                  . "</doc>";
-                        assert_equal_xml($xml, $expected);
-
-                        $cx->appendText('Document Text Second Line');
-
-                        $expected = "<doc>\n"
-                                  . "  <p>Document Text First LineDocument Text Second Line</p>\n"
+                                  . "  <p>First LineSecond Line</p>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
         });
 
         describe('.setText', function() {
-                it('should set the text of the root node', function() {
-                        $xml = new FluidXml();
-                        $xml->setText('Document Text');
+                it('should be fluid', function() {
+                        assert_is_fluid('setText', 'a');
+                });
 
-                        $expected = "<doc>Document Text</doc>";
+                it('should set/change the text of the root node', function() {
+                        $xml = new FluidXml();
+                        $xml->setText('First Text')
+                            ->setText('Second Text');
+
+                        $expected = "<doc>Second Text</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should change the text of the root node', function() {
-                        $xml = new FluidXml();
-                        $xml->setText('Document Text');
-
-                        $expected = "<doc>Document Text</doc>";
-                        assert_equal_xml($xml, $expected);
-
-                        $xml->setText('Document New Text');
-
-                        $expected = "<doc>Document New Text</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should set the text of a node', function() {
+                it('should set/change the text of a node', function() {
                         $xml = new FluidXml();
                         $cx = $xml->appendChild('p', true);
-                        $cx->setText('Document Text');
+                        $cx->setText('First Text')
+                           ->setText('Second Text');
 
                         $expected = "<doc>\n"
-                                  . "  <p>Document Text</p>\n"
-                                  . "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should change the text of a node', function() {
-                        $xml = new FluidXml();
-                        $cx = $xml->appendChild('p', true);
-                        $cx->setText('Document Text');
-
-                        $expected = "<doc>\n"
-                                  . "  <p>Document Text</p>\n"
-                                  . "</doc>";
-                        assert_equal_xml($xml, $expected);
-
-                        $cx->setText('Document New Text');
-
-                        $expected = "<doc>\n"
-                                  . "  <p>Document New Text</p>\n"
+                                  . "  <p>Second Text</p>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
         });
 
         describe('.appendCdata', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('appendCdata', 'a');
+                });
+
                 it('should add CDATA to the root node', function() {
                         $xml = new FluidXml();
-                        $xml->appendCdata('// <, > and & are characters that should be escaped in a XML context.');
+                        $xml->appendCdata('// <, > are characters that should be escaped in a XML context.')
+                            ->appendCdata('// Even & is a characters that should be escaped in a XML context.');
 
                         $expected = "<doc>"
-                                  . "<![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>"
-                                  . "</doc>";
-                        assert_equal_xml($xml, $expected);
-
-                        $xml->appendCdata('// <second &cdata section>');
-
-                        $expected = "<doc>"
-                                  . "<![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>"
-                                  . "<![CDATA[// <second &cdata section>]]>"
+                                  . "<![CDATA[// <, > are characters that should be escaped in a XML context.]]>"
+                                  . "<![CDATA[// Even & is a characters that should be escaped in a XML context.]]>"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
@@ -1249,19 +1361,41 @@ EOF;
                 it('should add CDATA to a node', function() {
                         $xml = new FluidXml();
                         $cx = $xml->appendChild('pre', true);
-                        $cx->appendCdata('// <, > and & are characters that should be escaped in a XML context.');
+                        $cx->appendCdata('// <, > are characters that should be escaped in a XML context.')
+                           ->appendCdata('// Even & is a characters that should be escaped in a XML context.');
 
                         $expected = "<doc>\n"
-                                  . "  <pre><![CDATA[// <, > and & are characters that should be escaped in a XML context.]]></pre>\n"
+                                  . "  <pre>"
+                                  . "<![CDATA[// <, > are characters that should be escaped in a XML context.]]>"
+                                  . "<![CDATA[// Even & is a characters that should be escaped in a XML context.]]>"
+                                  .    "</pre>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
+                });
+        });
 
-                        $cx->appendCdata('// <second &cdata section>');
+        describe('.setCdata', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('setCdata', 'a');
+                });
+
+                it('should set/change the CDATA of the root node', function() {
+                        $xml = new FluidXml();
+                        $xml->setCdata('First Data')
+                            ->setCdata('Second Data');
+
+                        $expected = "<doc><![CDATA[Second Data]]></doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should set/change the CDATA of a node', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild('p', true);
+                        $cx->setCdata('First Data')
+                           ->setCdata('Second Data');
 
                         $expected = "<doc>\n"
-                                  . "  <pre><![CDATA[// <, > and & are characters that should be escaped in a XML context.]]>"
-                                  .    "<![CDATA[// <second &cdata section>]]>"
-                                  .    "</pre>\n"
+                                  . "  <p><![CDATA[Second Data]]></p>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
@@ -1279,6 +1413,10 @@ EOF;
 
                         return $xml;
                 };
+
+                it('should be fluid', function() {
+                        assert_is_fluid('remove', 'a');
+                });
 
                 it('should remove the root node', function() use ($new_doc) {
                         $xml = $new_doc();
@@ -1398,6 +1536,10 @@ EOF;
         });
 
         describe('.add', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('add', 'a');
+                });
+
                 it('should behave like .appendChild', function() {
                         $xml = new FluidXml();
                         $xml->appendChild('parent', true)
@@ -1414,6 +1556,10 @@ EOF;
         });
 
         describe('.prepend', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('prepend', 'a');
+                });
+
                 it('should behave like .prependSibling', function() {
                         $xml = new FluidXml();
                         $xml->prependSibling('sibling1', true)
@@ -1430,6 +1576,10 @@ EOF;
         });
 
         describe('.insertSiblingBefore', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('insertSiblingBefore', 'a');
+                });
+
                 it('should behave like .prependSibling', function() {
                         $xml = new FluidXml();
                         $xml->prependSibling('sibling1', true)
@@ -1446,6 +1596,10 @@ EOF;
         });
 
         describe('.append', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('append', 'a');
+                });
+
                 it('should behave like .appendSibling', function() {
                         $xml = new FluidXml();
                         $xml->appendSibling('sibling1', true)
@@ -1462,6 +1616,10 @@ EOF;
         });
 
         describe('.insertSiblingAfter', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('insertSiblingAfter', 'a');
+                });
+
                 it('should behave like .appendSibling', function() {
                         $xml = new FluidXml();
                         $xml->appendSibling('sibling1', true)
@@ -1478,6 +1636,10 @@ EOF;
         });
 
         describe('.attr', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('attr', 'a', 'b');
+                });
+
                 it('should behave like .setAttribute', function() {
                         $xml = new FluidXml();
                         $xml->setAttribute('attr1', 'Attr1 Value')
@@ -1500,6 +1662,10 @@ EOF;
         });
 
         describe('.text', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('text', 'a');
+                });
+
                 it('should behave like .setText', function() {
                         $xml = new FluidXml();
                         $xml->setText('Text1')
@@ -1510,6 +1676,28 @@ EOF;
                         $alias->text('Text1')
                               ->appendChild('child', true)
                               ->text('Text2');
+
+                        $actual   = $xml->xml();
+                        $expected = $alias->xml();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.cdata', function() {
+                it('should be fluid', function() {
+                        assert_is_fluid('cdata', 'a');
+                });
+
+                it('should behave like .setCdata', function() {
+                        $xml = new FluidXml();
+                        $xml->setCdata('Text1')
+                            ->appendChild('child', true)
+                            ->setCdata('Text2');
+
+                        $alias = new FluidXml();
+                        $alias->cdata('Text1')
+                              ->appendChild('child', true)
+                              ->cdata('Text2');
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();

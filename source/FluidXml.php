@@ -132,7 +132,7 @@ function simplexml_to_string_without_headers(\SimpleXMLElement $element)
 {
         $dom = \dom_import_simplexml($element);
 
-        return $dom->ownerDocument->saveXML($dom->ownerDocument);
+        return $dom->ownerDocument->saveXML($dom);
 }
 
 interface FluidInterface
@@ -154,6 +154,8 @@ interface FluidInterface
          * @return FluidContext The context associated to the DOMNodeList.
          */
         public function query(...$xpath);
+
+        public function each(callable $fn);
 
         /**
          * Append a new node as child of the current context.
@@ -178,10 +180,11 @@ interface FluidInterface
         public function appendChild($child, ...$optionals);
         public function prependSibling($sibling, ...$optionals);
         public function appendSibling($sibling, ...$optionals);
-        public function appendText($text);
-        public function appendCdata($text);
-        public function setText($text);
         public function setAttribute(...$arguments);
+        public function setText($text);
+        public function appendText($text);
+        public function setCdata($text);
+        public function appendCdata($text);
         public function remove(...$xpath);
         public function xml($strip = false);
         // Aliases:
@@ -196,8 +199,6 @@ interface FluidInterface
 
 trait FluidNamespaceTrait
 {
-        use FluidNamespaceShadowTrait;      // For compatibility with PHP 5.6.
-
         private $namespaces = [];
 
         public function namespaces()
@@ -209,7 +210,7 @@ trait FluidNamespaceTrait
         // but for compatibility with PHP 5.6
         // it is shadowed by a facade method:
         // - in PHP 7 by a real public 'namespace' method
-        // - in PHP 5 by a public __call method which understands a 'namespace' call.
+        // - in PHP 5 by a public __call method which understands a '->namespace()' call.
         protected function namespace_(...$arguments)
         {
                 $namespaces = [];
@@ -239,7 +240,8 @@ trait FluidNamespaceTrait
 class FluidXml implements FluidInterface
 {
         use FluidNamespaceTrait,
-            FluidXmlShadowTrait;        // For compatibility with PHP 5.6.
+            FluidXmlShadowTrait,        // For compatibility with PHP 5.6.
+            FluidContextShadowTrait;    // For compatibility with PHP 5.6.
 
         const ROOT_NODE = 'doc';
 
@@ -308,7 +310,7 @@ class FluidXml implements FluidInterface
         public function xml($strip = false)
         {
                 if ($strip) {
-                        return $this->dom->saveXML($this->dom->documentElement);
+                        return domdocument_to_string_without_headers($this->dom);
                 }
 
                 return $this->dom->saveXML();
@@ -321,7 +323,12 @@ class FluidXml implements FluidInterface
 
         public function query(...$xpath)
         {
-                return $this->newContext($this->dom)->query(...$xpath);
+                return $this->newContext()->query(...$xpath);
+        }
+
+        public function each(callable $fn)
+        {
+                return $this->newContext()->each($fn);
         }
 
         public function appendChild($child, ...$optionals)
@@ -434,6 +441,19 @@ class FluidXml implements FluidInterface
                 return $this->setText($text);
         }
 
+        public function setCdata($text)
+        {
+                $this->newContext()->setCdata($text);
+
+                return $this;
+        }
+
+        // Alias of setCdata().
+        public function cdata($text)
+        {
+                return $this->setCdata($text);
+        }
+
         public function remove(...$xpath)
         {
                 $this->newContext()->remove(...$xpath);
@@ -473,7 +493,8 @@ class FluidXml implements FluidInterface
 
 class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 {
-        use FluidNamespaceTrait;
+        use FluidNamespaceTrait,
+            FluidContextShadowTrait;    // For compatibility with PHP 5.6.
 
         private $dom;
         private $nodes = [];
@@ -486,22 +507,17 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 }
 
                 foreach ($context as $n) {
-                        if ($n instanceof \DOMNodeList) {
-                                $this->dom = $n[0]->ownerDocument;
-
-                                foreach ($n as $i) {
-                                        $this->nodes[] = $i;
-                                }
-                        } else if ($n instanceof \DOMNode) {
-                                $this->dom = ($n instanceof \DOMDocument) ?
-                                                $n
-                                             :
-                                                $n->ownerDocument;
-
+                        if ($n instanceof \DOMDocument) {
+                                $this->dom     = $n;
                                 $this->nodes[] = $n;
+                        } else if ($n instanceof \DOMNode) {
+                                $this->dom     = $n->ownerDocument;
+                                $this->nodes[] = $n;
+                        } else if ($n instanceof \DOMNodeList) {
+                                $this->dom   = $n[0]->ownerDocument;
+                                $this->nodes = \iterator_to_array($n);
                         } else if ($n instanceof FluidContext) {
                                 $this->dom   = $n[0]->ownerDocument;
-
                                 $this->nodes = \array_merge($this->nodes, $n->asArray());
                         } else {
                                 throw new \Exception('Node type not recognized.');
@@ -608,13 +624,18 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                                 // Returns a DOMNodeList.
                                 $res = $domxp->query($x, $n);
 
-                                // TODO: benchmark of for vs foreach.
+                                // Algorithm 1:
+                                $results = \array_merge($results, \iterator_to_array($res));
+
+                                // Algorithm 2:
+                                // foreach ($res as $r) {
+                                //         $results[] = $r;
+                                // }
+
+                                // Algorithm 3:
                                 // for ($i = 0, $l = $res->length; $i < $l; ++$i) {
                                 //         $results[] = $res->item($i);
                                 // }
-                                foreach ($res as $r) {
-                                        $results[] = $r;
-                                }
                         }
                 }
 
@@ -638,6 +659,15 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 }
 
                 return $this->newContext($unique_results);
+        }
+
+        public function each(callable $fn)
+        {
+                foreach ($this->nodes as $k => $n) {
+                        \call_user_func($fn, $this->newContext($n), $n, $k);
+                }
+
+                return $this;
         }
 
         // appendChild($child, $value?, $attributes? = [], $switchContext? = false)
@@ -790,6 +820,22 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->setText($text);
         }
 
+        public function setCdata($text)
+        {
+                foreach ($this->nodes as $n) {
+                        $n->nodeValue = '';
+                        $n->appendChild(new \DOMCDATASection($text));
+                }
+
+                return $this;
+        }
+
+        // Alias of setCdata().
+        public function cdata($text)
+        {
+                return $this->setCdata($text);
+        }
+
         public function remove(...$xpath)
         {
                 // Arguments can be empty, a string or an array of strings.
@@ -820,6 +866,9 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function createElement($name, $value = null)
         {
+                // The DOMElement instance must be different for every node,
+                // otherwise only one element is attached to the DOM.
+
                 $uri = null;
 
                 // The node name can contain the namespace id prefix.
@@ -844,123 +893,155 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // Algorithm 2:
                 // $el = $this->dom->createElement($name, $value);
 
-                // The DOMElement instance must be different for every node,
-                // otherwise only one element is attached to the DOM.
-
                 return $el;
         }
 
-        protected function attachElement(\Closure $fn, array &$context, \DOMNode $parent, \DOMNode $element)
+        protected function processElement(callable $fn, \DOMNode $parent, $k, $v, array $optionals)
         {
-                $el = $fn($parent, $element);
+                $k_is_string = \is_string($k);
+                $v_is_string = \is_string($v);
 
-                $context[] = $el;
+                if ($k_is_string && $v_is_string) {
+                        // The user has passed a node name and a node value:
+                        // [ 'element' => 'Text content.' ]
 
-                return $el;
-        }
-
-        protected function processElement(callable $fn, array &$context, \DOMNode $parent, $k, $v, array $optionals)
-        {
-                if (\is_string($k)) {
-                        // The user has passed one of these two cases:
-                        // - [ 'element' => 'Text content.' ]
-                        // - [ 'element' => [...] ]
-
-                        if (\is_string($v)) {
-                                // The user has passed a node name and a node value:
-                                // [ 'element' => 'Text content.' ]
-
-                                $el = $this->createElement($k, $v);
-                                $this->attachElement($fn, $context, $parent, $el);
-                        } else {
-                                // The user has passed one of these two cases:
-                                // - [ 'element' => [...] ]
-                                // - [ 'element' => DOMNode|SimpleXMLElement|FluidXml ]
-
-                                $el = $this->createElement($k);
-                                $el = $this->attachElement($fn, $context, $parent, $el);
-
-                                // The new children elements must be created in the order
-                                // they are supplied, so 'appendChild' is the perfect operation.
-                                $this->newContext($el)->appendChild($v, ...$optionals);
-                        }
-                } else {
-                        // The user has passed one of these two cases:
-                        // - [ 'element', DOMNode, SimpleXMLElement, FluidXml, ... ]
-                        // - [ [...], ... ]
-
-                        if (\is_array($v)) {
-                                // The user has passed a wrapper array:
-                                // [ [...], ... ]
-
-                                foreach ($v as $kk => $vv) {
-                                        $this->processElement($fn, $context, $parent, $kk, $vv, $optionals);
-                                }
-                        } else if (\is_string($v) && ! \FluidXml\is_an_xml_string($v)) {
-                                // The user has passed a node name without a node value:
-                                // [ 'element', ... ]
-                                $el = $this->createElement($v);
-                                $this->attachElement($fn, $context, $parent, $el);
-                        } else {
-                                // The user has passed an XML document instance:
-                                // [ DOMNode, SimpleXMLElement, FluidXml, ... ]
-
-                                $nodes = [];
-
-                                if ($v instanceof \DOMDocument) {
-                                        // A DOMDocument can have multiple root nodes.
-
-                                        // Algorithm 1:
-                                        $nodes = $v->childNodes;
-
-                                        // Algorithm 2:
-                                        // $nodes = [ $v->documentElement ];
-
-                                } else if ($v instanceof \DOMNodeList) {
-                                        $nodes = $v;
-
-                                } else if ($v instanceof \DOMNode) {
-                                        $nodes = [ $v ];
-
-                                } else if ($v instanceof \SimpleXMLElement) {
-                                        $nodes = [ dom_import_simplexml($v) ];
-
-                                } else if ($v instanceof FluidXml) {
-                                        $nodes = [ $v->dom()->documentElement ];
-
-                                } else if ($v instanceof FluidContext) {
-                                        $nodes = $v->asArray();
-
-                                } else if (\is_string($v) && \FluidXml\is_an_xml_string($v)) {
-                                        $dom = new \DOMDocument();
-                                        $dom->formatOutput       = true;
-                                        $dom->preserveWhiteSpace = false;
-
-                                        $v = \ltrim($v);
-                                        if ($v[1] === '?') {
-                                                $dom->loadXML($v);
-                                                $nodes = $dom->childNodes;
-                                        } else {
-                                                // A way to import strings with multiple root nodes.
-                                                $dom->loadXML("<root>$v</root>");
-
-                                                // Algorithm 1:
-                                                $nodes = $dom->documentElement->childNodes;
-
-                                                // Algorithm 2:
-                                                // $dom_xp = new \DOMXPath($dom);
-                                                // $nodes = $dom_xp->query('/root/*');
-                                        }
-                                } else {
-                                        throw new \Exception('XML document not supported.');
-                                }
-
-                                foreach ($nodes as $e) {
-                                        $el = $this->dom->importNode($e, true);
-                                        $this->attachElement($fn, $context, $parent, $el);
-                                }
-                        }
+                        return [ $fn($parent, $this->createElement($k, $v)) ];
                 }
+
+                $v_isnt_string = ! $v_is_string;
+
+                if ($k_is_string && $v_isnt_string) {
+                        // The user has passed one of these two cases:
+                        // - [ 'element' => [...] ]
+                        // - [ 'element' => DOMNode|SimpleXMLElement|FluidXml ]
+
+                        $el = $fn($parent, $this->createElement($k));
+
+                        // The new children elements must be created in the order
+                        // they are supplied, so 'appendChild' is the perfect operation.
+                        $this->newContext($el)->appendChild($v, ...$optionals);
+
+                        return [ $el ];
+                }
+
+                $k_isnt_string = ! $k_is_string;
+                $v_is_array    = \is_array($v);
+
+                if ($k_isnt_string && $v_is_array) {
+                        // The user has passed a wrapper array:
+                        // [ [...], ... ]
+
+                        $context = [];
+
+                        foreach ($v as $kk => $vv) {
+                                $cx = $this->processElement($fn, $parent, $kk, $vv, $optionals);
+
+                                $context = \array_merge($context, $cx);
+                        }
+
+                        return $context;
+                }
+
+                $v_is_xml   = $v_is_string && is_an_xml_string($v);
+                $v_isnt_xml = ! $v_is_xml;
+
+                if ($k_isnt_string && $v_is_string && $v_isnt_xml) {
+                        // The user has passed a node name without a node value:
+                        // [ 'element', ... ]
+
+                        return [ $fn($parent, $this->createElement($v)) ];
+                }
+
+                // The user has passed an XML document instance:
+                // [ '<tag></tag>', DOMNode, SimpleXMLElement, FluidXml ]
+
+                $attach_nodes = function($nodes) use ($fn, &$context, $parent) {
+                        $context = [];
+
+                        foreach ($nodes as $e) {
+                                $context[] = $fn($parent, $this->dom->importNode($e, true));
+                        }
+
+                        return $context;
+                };
+
+                if ($k_isnt_string && $v_is_xml) {
+                        $nodes = [];
+
+                        $dom = new \DOMDocument();
+                        $dom->formatOutput       = true;
+                        $dom->preserveWhiteSpace = false;
+
+                        $v = \ltrim($v);
+                        if ($v[1] === '?') {
+                                $dom->loadXML($v);
+                                $nodes = $dom->childNodes;
+                        } else {
+                                // A way to import strings with multiple root nodes.
+                                $dom->loadXML("<root>$v</root>");
+
+                                // Algorithm 1:
+                                $nodes = $dom->documentElement->childNodes;
+
+                                // Algorithm 2:
+                                // $dom_xp = new \DOMXPath($dom);
+                                // $nodes = $dom_xp->query('/root/*');
+                        }
+
+                        return $attach_nodes($nodes);
+                }
+
+                $v_is_domdoc = $v instanceof \DOMDocument;
+
+                if ($k_isnt_string && $v_is_domdoc) {
+                        // A DOMDocument can have multiple root nodes.
+
+                        // Algorithm 1:
+                        return $attach_nodes($v->childNodes);
+
+                        // Algorithm 2:
+                        // return $attach_nodes([ $v->documentElement ]);
+                }
+
+                $v_is_domnodelist = $v instanceof \DOMNodeList;
+
+                if ($k_isnt_string && $v_is_domnodelist) {
+                        return $attach_nodes($v);
+                }
+
+                $v_is_domnode = $v instanceof \DOMNode;
+
+                if ($k_isnt_string && $v_is_domnode) {
+                        return $attach_nodes([ $v ]);
+                }
+
+                $v_is_simplexml = $v instanceof \SimpleXMLElement;
+
+                if ($k_isnt_string && $v_is_simplexml) {
+                        return $attach_nodes([ dom_import_simplexml($v) ]);
+                }
+
+                $v_is_fluidxml = $v instanceof FluidXml;
+
+                if ($k_isnt_string && $v_is_fluidxml) {
+                        return $attach_nodes([ $v->dom()->documentElement ]);
+                }
+
+                $v_is_fluidcontext = $v instanceof FluidContext;
+
+                if ($k_isnt_string && $v_is_fluidcontext) {
+                        return $attach_nodes($v->asArray());
+                }
+
+                // $v_is_instance = $v_is_domdoc
+                //               || $v_is_domnodelist
+                //               || $v_is_domnode
+                //               || $v_is_simplexml
+                //               || $v_is_fluidxml
+                //               || $v_is_fluidcontext;
+                // $v_isnt_instance = ! $v_is_instance;
+
+                throw new \Exception('XML document not supported.');
         }
 
         protected function insertElement(callable $fn, $element, ...$optionals)
@@ -989,7 +1070,9 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
                 foreach ($this->nodes as $n) {
                         foreach ($element as $k => $v) {
-                                $this->processElement($fn, $newContext, $n, $k, $v, $optionals);
+                                $cx = $this->processElement($fn, $n, $k, $v, $optionals);
+
+                                $newContext = \array_merge($newContext, $cx);
                         }
                 }
 

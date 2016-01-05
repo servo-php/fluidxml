@@ -15,6 +15,34 @@
 
 [![Build Status][travis-badge]][travis]
 
+## Changelog
+- **1.10**: _(2016-01-06)_
+    * [+] **->each()**, **->setCdata()** and **->cdata()** are part of the family.
+
+
+- **1.9**:
+ _wraps classes and functions under the **FluidXml namespace**._
+
+
+- **1.8**:
+ _gives super powers to the manipulation APIs._
+
+    * [~] **->appendChild()**, **->appendSibling()** and **->prependSibling()**<br/>
+      have the super powers of **->appendXml()**.
+    * [-] **->appendXml()** has been removed superseded by **->appendChild()**.
+
+
+- **1.7**:
+ improves dealing with other XML object instances.
+
+    * [~] **::load()** adds support for **DOMNode**, **DOMNodeList** and **FluidXml**.
+    * [~] **->xml()** can export any node with its descendants.
+    * [~] **->xml()** accepts a boolean flag to remove the XML declaration headers.
+    * [~] **->appendXml()** is smarter than ever, supporting<br/>
+      **DOMDocument**, **DOMNode**, **DOMNodeList**, **SimpleXMLElement**, **FluidXml** and **XML strings**.
+
+- **...**
+
 # FluidXML
 <img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png" height="64px" alt="Servo-PHP Logo"/>
 
@@ -69,26 +97,6 @@ echo $book->xml();
 </doc>
 ```
 
-Creating **structured documents** is so easy that you'll not believe.
-
-```php
-$food = fluidxml();
-
-// Batch insertion of nodes.
-$food->add([ 'cake'  => 'Tiramisu',
-             'pizza' => 'Margherita' ]);
-
-// A bunch of egg's all with the same attribute.
-$food->add([ ['egg'],
-             ['egg'],
-             ['egg'] ], ['price' => '0.25']);
-
-// Deep tree structures are supported too.
-$food->add([ 'fridge' => [ 'omelette' => 'with potato',
-                           'soupe'    => 'with mashrooms' ],
-             'freezer' => [ 'meat' => 'beef' ] ]);
-```
-
 **XPath** is king.
 
 ```php
@@ -99,34 +107,57 @@ $book->query('//chapter')
         ->attr('country', 'us');
 ```
 
-And sometimes **string templates** are the fastest way.
-
-```php
-$book->add('cover', true)
-        ->add(<<<XML
-            <h1>The Theory Of Everything</h1>
-            <img src="http://goo.gl/kO3Iov"/>
-XML
-);
-```
-
-**XML Namespaces** are fully covered too.
+**XML Namespaces** are fully covered.
 
 ```php
 $book->namespace('xhtml', 'http://www.w3.org/1999/xhtml')
      ->namespace('svg',   'http://www.w3.org/2000/svg')
-     ->appendChild('xhtml:h1')
-     ->appendChild('svg:shape')
+     ->add('xhtml:h1')
+     ->add('svg:shape')
      ->query('//xhtml:h1');
 ```
 
-Existing **DOMDocument** and **SimpleXML** documents are not a problem, just import them.
+And sometimes **string templates** are the fastest way.
 
 ```php
-$fluidxml = fluidify($domdocument);
+$book->add(<<<XML
+    <cover>
+        <h1>The Theory Of Everything</h1>
+        <img src="http://goo.gl/kO3Iov"/>
+    </cover>
+XML
+);
+```
 
-$fluidxml->query('/html/body')
-         ->add($simplexmlelement);
+Creating **structured documents** is so easy that you'll not believe.
+
+```php
+$food = fluidxml();
+
+// Batch insertion of nodes.
+$food->add([ 'cake'  => 'Tiramisu',
+             'pizza' => 'Margherita' ]);
+
+// A bunch of egg's all with the same attribute.
+$food->add([ ['egg'], ['egg'], ['egg'] ], ['price' => '0.25']);
+
+// Deep tree structures are supported too.
+$food->add([ 'fridge' => [ 'omelette' => 'with potato',
+                           'soupe'    => 'with mashrooms' ],
+             'freezer' => [ 'meat' => 'beef' ] ]);
+```
+
+
+Interoperability with existing **DOMDocument** and **SimpleXML** is simply magic.<br/>
+Import them or inject them in any point of the FluidXML document just like that.
+
+```php
+fluidify($domdocument)
+    ->query('/html/body')
+         ->add($simplexml);
+
+// Yes, we merged a DOMDocument with a SimpleXMLElement
+// and everything is still fluid.
 ```
 
 Don't be shy and tell it: **« IT'S AWESOME! »** ^\_^
@@ -169,9 +200,12 @@ require_once 'FluidXml.php';
 require_once 'vendor/autoload.php';
 ```
 
+`use` classes and functions as you need.
 ```php
 use \FluidXml\FluidXml;
 use \FluidXml\FluidNamespace;
+```
+```php
 use function \FluidXml\fluidxml;
 use function \FluidXml\fluidns;
 use function \FluidXml\fluidify;
@@ -204,8 +238,7 @@ your immense gratitude **♡**, donate _1cent_.
 
 ## Roadmap
 * [x] PHP 5.6 backport
-* [ ] Expanding the APIs
-* [ ] Extending the documentation
+* [ ] Expanding the APIs and the documentation
 
 <a href='https://pledgie.com/campaigns/30607'>
     <img alt='Click here to lend your support to: FluidXML and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/30607.png?skin_name=chrome' border='0' >

@@ -411,16 +411,25 @@ what is already convenient to use.
 
 To access the node content after a query we can use the DOMNode own methods.
 
+```php
+$book->query('//chapter')
+     ->each(function($fluid, $domnode, $index) {
+            $fluid->attr('uuid', random_uuid());
+
+            echo $domnode->nodeValue;
+     });
+```
+
 Accessing the query result as array or iterating it returns the DOMNode unwrapped.
 
 ```php
 $chapters = $book->query('//chapter');
 
-$l = $chapters->length();
+$last = $chapters->length() - 1;
 
-// DOMNode access.
+// Raw DOMNode access.
 $chapters[0]->setAttribute('first', '');
-$chapters[$l - 1]->setAttribute('last', '');
+$chapters[$last]->setAttribute('last', '');
 
 foreach ($chapters as $i => $chapter) {
         // $chapter is an instance of DOMNode.
@@ -439,9 +448,7 @@ foreach ($chapters as $i => $chapter) {
 ```
 
 > **Pro Tip**:<br/>
-> The `setAttribute()` method used in the previous example is the `DOMNode::setAttribute()`,<br/>
-> not the `FluidXml::setAttribute()/attr()`.<br/>
-> Many other DOMNode methods and properties are available like:
+> Many DOMNode methods and properties are available like:
 > - `hasAttribute()`
 > - `getAttribute()`
 > - `nodeValue`

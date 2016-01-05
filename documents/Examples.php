@@ -99,9 +99,7 @@ $food->add([ [ 'pasta' => 'Carbonara' ],
              [ 'pasta' => 'Matriciana' ] ]);
 
 // A bunch of egg's all with the same price.
-$food->add([ ['egg'],
-             ['egg'],
-             ['egg'] ], ['price' => '0.25']);
+$food->add([ ['egg'], ['egg'], ['egg'] ], ['price' => '0.25']);
 
 // Complex array structures are supported too.
 $food->add([ 'fridge' => [
@@ -214,20 +212,18 @@ echo "We have {$eggs->length()} eggs and {$fruits->length()} expensive fruit.\n"
 echo "————————————————————————————————————————————————————————————————————————————————\n";
 
 $book->query('//chapter')
-     ->attr('lang', 'en')
+        ->attr('lang', 'en')
      ->query('..')
-     ->attr('lang', 'en')
+        ->attr('lang', 'en')
      ->query('../title')
-     ->attr('lang', 'en');
+        ->attr('lang', 'en');
 
 /*
 * The previous code presents a repetition: all 'setAttribute' calls are identical.
 * It can be refactored taking advantage of an advanced feature of 'query'.
 */
-$book->query('//chapter',
-             '//chapters',
-             '/book/title')
-     ->attr('lang', 'en');
+$book->query('//chapter', '//chapters', '/book/title')
+        ->attr('lang', 'en');
 
 
 

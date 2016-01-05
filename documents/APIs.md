@@ -40,21 +40,21 @@ __construct($root?, array $options?);
 ->append($sibling, ...$optionals);
 ->insertSiblingAfter($sibling, ...$optionals);
 
-->appendXml($xml);
-
-->appendText($text);
-
-->appendCdata($text);
+->setAttribute(...$arguments);
 // alias:
-->cdata($text);
+->attr(...$arguments);
 
 ->setText($text);
 // alias:
 ->text($text);
 
-->setAttribute(...$arguments);
+->appendText($text);
+
+->setCdata($text);
 // alias:
-->attr(...$arguments);
+->cdata($text);
+
+->appendCdata($text);
 
 ->remove(...$xpath);
 

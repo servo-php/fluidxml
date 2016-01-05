@@ -2,15 +2,20 @@
 
 namespace FluidXml;
 
-trait FluidXmlShadowTrait
+trait FluidNewTrait
 {
         public static function new(...$arguments)
         {
-                return new FluidXml(...$arguments);
+                return new static(...$arguments);
         }
 }
 
-trait FluidNamespaceShadowTrait
+trait FluidXmlShadowTrait
+{
+        use FluidNewTrait;
+}
+
+trait FluidContextShadowTrait
 {
         public function namespace(...$arguments)
         {

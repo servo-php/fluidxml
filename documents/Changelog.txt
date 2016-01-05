@@ -1,24 +1,37 @@
+[+]: new   [~]: changed   [-]: removed   [#]: fixed   [@]: internal
+
+
+1.10: (2016-01-06)
+introduces the '->each()' method and the '->setCdata()'/'->cdata()' twins methods
+together with an internal refactoring.
+
+    * [+] ->each() is part of the family.
+    * [+] ->setCdata() is part of the family.
+    * [+] ->cdata() is part of the family.
+
+
 1.9:
-wraps the FluidXML classes and functions under the FluidXml namespace.
+wraps classes and functions under the FluidXml namespace.
 
 
-1.8: (2016-01-02)
+1.8:
 gives super powers to the manipulation APIs.
 
-* [changed] ->appendChild() has the super powers of ->appendXml().
-* [changed] ->appendSibling() has the super powers of ->appendXml().
-* [changed] ->prependSibling() has the super powers of ->appendXml().
-* [removed] ->appendXml() has been removed superseded by ->appendChild().
+    * [~] ->appendChild() has the super powers of ->appendXml().
+    * [~] ->appendSibling() has the super powers of ->appendXml().
+    * [~] ->prependSibling() has the super powers of ->appendXml().
+
+    * [-] ->appendXml() has been removed superseded by ->appendChild().
 
 
 1.7:
 improves dealing with other XML object instances.
 
-* [changed] ::load() adds support for DOMNode, DOMNodeList and FluidXml.
-* [changed] ->xml() can export any node with its descendants.
-* [changed] ->xml() accepts a boolean flag to remove the XML declaration headers.
-* [changed] ->appendXml() is smarter than ever, supporting
-  DOMDocument, DOMNode, DOMNodeList, SimpleXMLElement and FluidXml and XML strings.
+    * [~] ::load() adds support for DOMNode, DOMNodeList and FluidXml.
+    * [~] ->xml() can export any node with its descendants.
+    * [~] ->xml() accepts a boolean flag to remove the XML declaration headers.
+    * [~] ->appendXml() is smarter than ever, supporting
+      DOMDocument, DOMNode, DOMNodeList, SimpleXMLElement, FluidXml and XML strings.
 
 
 1.6.2:
@@ -32,33 +45,33 @@ fixes a wrong path of the Composer autoloader.
 1.6:
 lowers the minimum PHP version to PHP 5.6 (it was PHP 7).
 
-* [internal] cleanup.
+    * [@] cleanup.
 
 
 1.5:
-introduces supports for importing XML documents from
+introduces support for importing XML documents from
 DOMDocument, SimpleXMLElement, XML strings and XML files.
 
-* [new] fluidify() is part of the family.
-* [new] FluidXml::new() is part of the family.
-* [new] FluidXml::load() is part of the family.
+    * [+] fluidify() is part of the family.
+    * [+] FluidXml::new() is part of the family.
+    * [+] FluidXml::load() is part of the family.
 
 
 1.4:
-* [changed] ->remove() can remove the results of a query and accepts multiple XPath strings.
+    * [~] ->remove() can remove the results of a query and accepts multiple XPath strings.
 
 
 1.3:
-* [changed] FluidXml::__construct accepts the 'root' option as first argument.
+    * [~] FluidXml::__construct accepts the 'root' option as first argument.
 
 
 1.2:
-* [changed] ->query() supports a variable number of XPaths.
-* [changed] ->namespace() supports a variable number of FluidNamespace instances.
-* [changed] ->namespace() supports a namespace id, uri and mode as arguments.
-* [changed] ->namespaces() returns all registered namespaces.
-* [changed] FluidNamespace instances are read-only.
-* [changed] FluidNamespace::{id/uri/mode}() can't mutate the instance.
+    * [~] ->query() supports a variable number of XPaths.
+    * [~] ->namespace() supports a variable number of FluidNamespace instances.
+    * [~] ->namespace() supports a namespace id, uri and mode as arguments.
+    * [~] ->namespaces() returns all registered namespaces.
+    * [~] FluidNamespace instances are read-only.
+    * [~] FluidNamespace::{id/uri/mode}() can't mutate the instance.
 
 
 1.1.1:
