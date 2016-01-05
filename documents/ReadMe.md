@@ -17,7 +17,7 @@
 
 ## Changelog
 - **1.10**: _(2016-01-06)_
-    * [+] **->each()**, **->setCdata()** and **->cdata()** are part of the family.
+    * [+] `->each()`, `->setCdata()` and `->cdata()` are part of the family.
 
 
 - **1.9**:
@@ -27,19 +27,19 @@
 - **1.8**:
  _gives super powers to the manipulation APIs._
 
-    * [~] **->appendChild()**, **->appendSibling()** and **->prependSibling()**<br/>
-      have the super powers of **->appendXml()**.
-    * [-] **->appendXml()** has been removed superseded by **->appendChild()**.
+    * [~] `->appendChild()`, `->appendSibling()` and `->prependSibling()`<br/>
+      have the super powers of `->appendXml()`.
+    * [-] `->appendXml()` has been removed superseded by `->appendChild()`.
 
 
 - **1.7**:
  improves dealing with other XML object instances.
 
-    * [~] **::load()** adds support for **DOMNode**, **DOMNodeList** and **FluidXml**.
-    * [~] **->xml()** can export any node with its descendants.
-    * [~] **->xml()** accepts a boolean flag to remove the XML declaration headers.
-    * [~] **->appendXml()** is smarter than ever, supporting<br/>
-      **DOMDocument**, **DOMNode**, **DOMNodeList**, **SimpleXMLElement**, **FluidXml** and **XML strings**.
+    * [~] `::load()` adds support for _DOMNode, DOMNodeList and FluidXml_.
+    * [~] `->xml()` can export any node with its descendants.
+    * [~] `->xml()` accepts a boolean flag to remove the XML declaration headers.
+    * [~] `->appendXml()` is smarter than ever, supporting _DOMDocument, DOMNode,<br/>
+      DOMNodeList, SimpleXMLElement, FluidXml and XML strings_.
 
 - **...**
 
