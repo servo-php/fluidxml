@@ -2,8 +2,8 @@
 
 
 1.10: (2016-01-06)
-introduces the '->each()' method and the '->setCdata()'/'->cdata()' twins methods
-together with an internal refactoring.
+introduces the '->each()' method and the '->setCdata()'/'->cdata()' twins
+methods together with an internal refactoring.
 
     * [+] ->each() is part of the family.
     * [+] ->setCdata() is part of the family.
@@ -21,7 +21,6 @@ gives super powers to the manipulation APIs.
     * [~] ->appendChild() has the super powers of ->appendXml().
     * [~] ->appendSibling() has the super powers of ->appendXml().
     * [~] ->prependSibling() has the super powers of ->appendXml().
-
     * [-] ->appendXml() has been removed superseded by ->appendChild().
 
 
@@ -59,7 +58,8 @@ DOMDocument, SimpleXMLElement, XML strings and XML files.
 
 
 1.4:
-    * [~] ->remove() can remove the results of a query and accepts multiple XPath strings.
+    * [~] ->remove() can remove the results of a query and accepts multiple
+      XPath strings.
 
 
 1.3:

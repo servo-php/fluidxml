@@ -6,6 +6,7 @@
 [specs]: https://github.com/servo-php/fluidxml/blob/master/specs/FluidXml.php
 [wiki]: https://github.com/servo-php/fluidxml/wiki
 [license]: https://github.com/servo-php/fluidxml/blob/master/documents/License.txt
+[changelog]: https://github.com/servo-php/fluidxml/blob/master/documents/Changelog.txt
 [codecoverage]: https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png?nocache=1
 [ninja]: http://1.viki.io/d/1863c/8b75dc48c9.gif
 [donate-button]: https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=2
@@ -13,7 +14,7 @@
 [donate-link-alt]: https://www.paypal.me/danieleorlando
 [thankyou]: https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_corazón.svg/2000px-Heart_corazón.svg.png
 
-[![Build Status][travis-badge]][travis]
+[![Donate][donate-button]][donate-link] [![Build Status][travis-badge]][travis]
 
 ## Changelog
 - **1.10**: _(2016-01-06)_
@@ -43,6 +44,9 @@
 
 - **...**
 
+[See the full changes list.][changelog]
+
+
 # FluidXML
 <img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png" height="64px" alt="Servo-PHP Logo"/>
 
@@ -63,9 +67,7 @@ $book->appendChild('title', 'The Theory Of Everything')
      ->appendChild('author', 'S. Hawking')
      ->appendChild('chapters', true)
          ->appendChild('chapter', 'Ideas About The Universe', ['id' => 1])
-         ->appendChild('chapter', 'The Expanding Universe',   ['id' => 2])
-     ->query('//chapter')
-         ->setAttribute('lang', 'en');
+         ->appendChild('chapter', 'The Expanding Universe',   ['id' => 2]);
 ```
 
 Or, if you prefer, there is a **concise syntax**.
@@ -77,9 +79,7 @@ $book->add('title', 'The Theory Of Everything')
      ->add('author', 'S. Hawking')
      ->add('chapters', true)
          ->add('chapter', 'Ideas About The Universe', ['id' => 1])
-         ->add('chapter', 'The Expanding Universe',   ['id' => 2])
-     ->query('//chapter')
-         ->attr('lang', 'en');
+         ->add('chapter', 'The Expanding Universe',   ['id' => 2]);
 ```
 
 ```php
@@ -91,8 +91,8 @@ echo $book->xml();
   <title>The Theory Of Everything</title>
   <author>S. Hawking</author>
   <chapters>
-    <chapter id="1" lang="en">Ideas About The Universe</chapter>
-    <chapter id="2" lang="en">The Expanding Universe</chapter>
+    <chapter id="1">Ideas About The Universe</chapter>
+    <chapter id="2">The Expanding Universe</chapter>
   </chapters>
 </doc>
 ```
@@ -129,26 +129,32 @@ XML
 );
 ```
 
-Creating **structured documents** is so easy that you'll not believe.
+Creating **structured documents** is so easy that you will not believe.
 
 ```php
 $food = fluidxml();
 
-// Batch insertion of nodes.
 $food->add([ 'cake'  => 'Tiramisu',
              'pizza' => 'Margherita' ]);
 
-// A bunch of egg's all with the same attribute.
 $food->add([ ['egg'], ['egg'], ['egg'] ], ['price' => '0.25']);
 
-// Deep tree structures are supported too.
-$food->add([ 'fridge' => [ 'omelette' => 'with potato',
-                           'soupe'    => 'with mashrooms' ],
-             'freezer' => [ 'meat' => 'beef' ] ]);
+$food->add([ 'vegetarian' => [
+                    'cooked' => [
+                        'spaghetti' => 'with tomato',
+                        'rise'      => 'with mashrooms' ]]);
 ```
 
+**->each()** doesn't need introduction.
 
-Interoperability with existing **DOMDocument** and **SimpleXML** is simply magic.<br/>
+```php
+$food->query('//egg')
+     ->each(function($egg, $_, $index) {
+         $egg->attr('id', $index);
+     });
+```
+
+And interoperability with existing **DOMDocument** and **SimpleXML** is simply magic.<br/>
 Import them or inject them in any point of the FluidXML document just like that.
 
 ```php
