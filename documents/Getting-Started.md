@@ -631,7 +631,7 @@ FluidXML provides an easy way to import existing XML documents from a variety of
 The resulting object is a `FluidXml` instance filled with the XML of the imported document.
 
 * **XML String**<br/>
-```php
+  ```php
 $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <html>
