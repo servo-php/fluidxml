@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+
+cd "$(dirname "$0")"
+. ".common.sh"
+cd ../..
+
+clear
+
+if ! chkcmd 'git'; then
+        echo ' error: "git" command not found.'
+        exit 1
+fi
+
+versions='1.0 1.6 1.10'
+
+test_dir='sandbox/codevelox'
+test_php="$test_dir/speedtest.php"
+
+mkdir -p "$test_dir"
+cp -f 'support/Codevelox.php' "$test_dir/"
+cp -f 'support/speedtest.php' "$test_dir/"
+
+for v in $versions; do
+        git checkout $v
+        mkdir -p "$test_dir/$v"
+        cp -rf "source/"* "$test_dir/$v/"
+done
+
+cd "$test_dir"
+
+for v in $versions; do
+        echo "Testing version $v";
+        php speedtest.php "$v"
+done
