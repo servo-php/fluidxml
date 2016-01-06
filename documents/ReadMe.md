@@ -134,18 +134,17 @@ Creating **structured documents** is so easy that you will not believe.
 ```php
 $food = fluidxml();
 
-$food->add([ 'cake'  => 'Tiramisu',
-             'pizza' => 'Margherita' ]);
+$food->add([ 'cake'  => 'tiramisu',
+             'pizza' => 'margherita' ]);
 
-$food->add([ ['egg'], ['egg'], ['egg'] ], ['price' => '0.25']);
+$food->add([ ['egg'], ['egg'] ], ['price' => '0.25']);
 
 $food->add([ 'vegetarian' => [
-                    'cooked' => [
-                        'spaghetti' => 'with tomato',
-                        'rise'      => 'with mashrooms' ]]);
+                    'pasta' => [
+                        'spaghetti' => 'with tomato' ]]);
 ```
 
-**->each()** doesn't need introduction.
+Everything is fluid, even **iterations**.
 
 ```php
 $food->query('//egg')
@@ -167,6 +166,20 @@ fluidify($domdocument)
 ```
 
 Don't be shy and tell it: **« IT'S AWESOME! »** ^\_^
+
+Many other [APIs][apis] are available:
+- `load()`
+- `remove()`
+- `appendSibling()`/`append()`
+- `prependSibling()`/`prepend()`
+- `appendText()`
+- `setText()`/`text()`
+- `appendCdata()`
+- `setCdata()`/`cdata()`
+- `length()`
+- `asArray()`
+
+and others to come.
 
 
 ## Still doubts?

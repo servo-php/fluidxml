@@ -99,7 +99,6 @@ Our XML document now has a root node called `<book/>`.
 > ```
 
 
-
 ## Adding Nodes
 
 Adding a node is super easy. Because FluidXML implements the fluid OOP pattern, multiple<br/>
@@ -147,16 +146,16 @@ boolean value returns the new node instead of the current one.
 > Extended syntax
 > ```php
 > $book->appendChild('chapters', true)
->      ->appendChild('chapter', 'Ideas About The Universe')
->      ->appendChild('chapter', 'The Expanding Universe');
+>          ->appendChild('chapter', 'Ideas About The Universe')
+>          ->appendChild('chapter', 'The Expanding Universe');
 >
 > // true asks to return the 'chapters' node instead of the 'book' node.
 > ```
 > Concise syntax
 > ```php
 > $book->add('chapters', true)
->      ->add('chapter', 'Ideas About The Universe')
->      ->add('chapter', 'The Expanding Universe');
+>          ->add('chapter', 'Ideas About The Universe')
+>          ->add('chapter', 'The Expanding Universe');
 >
 > // true asks to return the 'chapters' node instead of the 'book' node.
 > ```
@@ -246,33 +245,29 @@ of a node contextually to its creation.
 > // which is identical to
 >
 > $food->appendChild('fruit', 'apple', true)        // Remember, passing 'true' returns the created node.
->      ->setAttribute([ 'price' => 'expensive',
->                       'color' => 'red' ]);
+>          ->setAttribute([ 'price' => 'expensive',
+>                           'color' => 'red' ]);
 >
 > // The advantage comes when multiple nodes have the same attributes.
 >
 > // A bunch of eggs all with the same price.
-> $food->appendChild([ ['egg'],
->                      ['egg'],
->                      ['egg'] ], ['price' => '0.25']);
+> $food->appendChild([ ['egg'], ['egg'], ['egg'] ], ['price' => '0.25']);
 > ```
 > Concise syntax
 > ```php
-> $food->add('fruit', 'apple', [ 'price' => 'expensive',
+> $food->add('fruit', 'apple', [ 'price'=> 'expensive',
 >                                'color' => 'red' ]);
 >
 > // which is identical to
 >
 > $food->add('fruit', 'apple', true)        // Remember, passing 'true' returns the created node.
->      ->attr([ 'price' => 'expensive',
->               'color' => 'red' ]);
+>          ->attr([ 'price' => 'expensive',
+>                   'color' => 'red' ]);
 >
 > // The advantage comes when multiple nodes have the same attributes.
 >
 > // A bunch of eggs all with the same price.
-> $food->add([ ['egg'],
->              ['egg'],
->              ['egg'] ], ['price' => '0.25']);
+> $food->add([ ['egg'], ['egg'], ['egg'] ], ['price' => '0.25']);
 > ```
 
 Creating arbitrarily complex structures is possible too nesting arrays.
@@ -397,11 +392,68 @@ flexibility.
 > `query()` supports quering multiple XPaths. The previous example can be refactored<br/>
 > using this feature.
 > ```php
-> $book->query('//chapter',
->              '//chapters',
->              '/book/title')
->      ->attr('lang', 'en');
+> $book->query('//chapter', '//chapters','/book/title')
+>          ->attr('lang', 'en');
 > ```
+
+
+## Exporting The Document
+
+The document can be exported as XML string.
+
+```php
+$xml = $book->xml();
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+  <title>The Theory Of Everything</title>
+  <author>S. Hawking</author>
+  <description/>
+  <chapters>
+    <chapter>Ideas About The Universe</chapter>
+    <chapter>The Expanding Universe</chapter>
+  </chapters>
+  <cover>
+    <h1>The Theory Of Everything</h1>
+    <img src="http://goo.gl/kO3Iov"/>
+  </cover>
+</book>
+```
+
+The XML declaration can be removed from the output string too.
+```php
+$xml = $book->xml(true);
+```
+
+```xml
+<book>
+  <title>The Theory Of Everything</title>
+  <author>S. Hawking</author>
+  <description/>
+  <chapters>
+    <chapter>Ideas About The Universe</chapter>
+    <chapter>The Expanding Universe</chapter>
+  </chapters>
+  <cover>
+    <h1>The Theory Of Everything</h1>
+    <img src="http://goo.gl/kO3Iov"/>
+  </cover>
+</book>
+```
+
+Not only the entire document but even only specific nodes (with their content)<br/>
+can be exported.
+
+```php
+$xml = $book->query('//chapter')->xml();
+```
+
+```xml
+<chapter>Ideas About The Universe</chapter>
+<chapter>The Expanding Universe</chapter>
+```
 
 
 ## Accessing The Node Content
@@ -579,28 +631,21 @@ FluidXML provides an easy way to import existing XML documents from a variety of
 The resulting object is a `FluidXml` instance filled with the XML of the imported document.
 
 * **XML String**<br/>
+```php
+$xml = <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<html>
+    <head/>
+    <body/>
+</html>
+XML;
+```
 > Extended syntax
 > ```php
-> $xml = <<<XML
-> <?xml version="1.0" encoding="UTF-8"?>
-> <html>
->     <head/>
->     <body/>
-> </html>
-> XML;
->
 > $doc = FluidXml::load($xml);
 > ```
 > Concise syntax
 > ```php
-> $xml = <<<XML
-> <?xml version="1.0" encoding="UTF-8"?>
-> <html>
->     <head/>
->     <body/>
-> </html>
-> XML;
->
 > $doc = fluidify($xml);
 > ```
 
@@ -640,7 +685,8 @@ The resulting object is a `FluidXml` instance filled with the XML of the importe
 > - XML file path
 > - `FluidXml` instance
 > - `DOMDocument`/`DOMNode`/`DOMNodeList` instance
-> - `SimpleXMLElement`
+> - `SimpleXMLElement` instance
+> - `FluidXml` instance
 
 Existing XML documents instances can be injected in any point of the FluidXML document.
 

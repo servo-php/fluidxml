@@ -856,7 +856,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         public function xml($strip = false)
         {
-                return \FluidXml\domnodes_to_string($this->nodes);
+                return domnodes_to_string($this->nodes);
         }
 
         protected function newContext($context)
