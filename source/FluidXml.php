@@ -902,10 +902,32 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 $v_is_string = \is_string($v);
 
                 if ($k_is_string && $v_is_string) {
-                        // The user has passed a node name and a node value:
-                        // [ 'element' => 'Text content.' ]
+                        // The user has passed a node name and a node value
+                        // or an attribute name and an attribute value
+                        // or a node text content:
+                        // [ 'element'    => 'Text content.' ]
+                        // [ '@attribute' => 'Attribute content.' ]
+                        // [ '@'          => 'Text content.' ]
 
-                        return [ $fn($parent, $this->createElement($k, $v)) ];
+                        if ($k === '@') {
+                                // Algorithm 1:
+                                $this->newContext($parent)->appendText($v);
+
+                                // Algorithm 2:
+                                // $this->setText($v);
+
+                                // The user can specify multiple '@' special elements
+                                // so Algorithm 1 is the right choice.
+
+                                return [];
+                        } else if ($k[0] === '@') {
+                                $attr = \substr($k, 1);
+                                $this->newContext($parent)->setAttribute($attr, $v);
+
+                                return [];
+                        } else {
+                                return [ $fn($parent, $this->createElement($k, $v)) ];
+                        }
                 }
 
                 $v_isnt_string = ! $v_is_string;
@@ -924,10 +946,10 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         return [ $el ];
                 }
 
-                $k_isnt_string = ! $k_is_string;
-                $v_is_array    = \is_array($v);
+                $k_is_int   = \is_int($k);
+                $v_is_array = \is_array($v);
 
-                if ($k_isnt_string && $v_is_array) {
+                if ($k_is_int && $v_is_array) {
                         // The user has passed a wrapper array:
                         // [ [...], ... ]
 
@@ -945,7 +967,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 $v_is_xml   = $v_is_string && is_an_xml_string($v);
                 $v_isnt_xml = ! $v_is_xml;
 
-                if ($k_isnt_string && $v_is_string && $v_isnt_xml) {
+                if ($k_is_int && $v_is_string && $v_isnt_xml) {
                         // The user has passed a node name without a node value:
                         // [ 'element', ... ]
 
@@ -965,7 +987,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         return $context;
                 };
 
-                if ($k_isnt_string && $v_is_xml) {
+                if ($k_is_int && $v_is_xml) {
                         $nodes = [];
 
                         $dom = new \DOMDocument();
@@ -993,7 +1015,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
                 $v_is_domdoc = $v instanceof \DOMDocument;
 
-                if ($k_isnt_string && $v_is_domdoc) {
+                if ($k_is_int && $v_is_domdoc) {
                         // A DOMDocument can have multiple root nodes.
 
                         // Algorithm 1:
@@ -1005,31 +1027,31 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
                 $v_is_domnodelist = $v instanceof \DOMNodeList;
 
-                if ($k_isnt_string && $v_is_domnodelist) {
+                if ($k_is_int && $v_is_domnodelist) {
                         return $attach_nodes($v);
                 }
 
                 $v_is_domnode = $v instanceof \DOMNode;
 
-                if ($k_isnt_string && $v_is_domnode) {
+                if ($k_is_int && $v_is_domnode) {
                         return $attach_nodes([ $v ]);
                 }
 
                 $v_is_simplexml = $v instanceof \SimpleXMLElement;
 
-                if ($k_isnt_string && $v_is_simplexml) {
+                if ($k_is_int && $v_is_simplexml) {
                         return $attach_nodes([ dom_import_simplexml($v) ]);
                 }
 
                 $v_is_fluidxml = $v instanceof FluidXml;
 
-                if ($k_isnt_string && $v_is_fluidxml) {
+                if ($k_is_int && $v_is_fluidxml) {
                         return $attach_nodes([ $v->dom()->documentElement ]);
                 }
 
                 $v_is_fluidcontext = $v instanceof FluidContext;
 
-                if ($k_isnt_string && $v_is_fluidcontext) {
+                if ($k_is_int && $v_is_fluidcontext) {
                         return $attach_nodes($v->asArray());
                 }
 
@@ -1056,11 +1078,15 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 foreach ($optionals as $opt) {
                         if (\is_array($opt)) {
                                 $attributes = $opt;
+
                         } else if (\is_bool($opt)){
                                 $switchContext = $opt;
+
                         } else if (\is_string($opt)) {
                                 $e = \array_pop($element);
+
                                 $element[$e] = $opt;
+
                         } else {
                                 throw new \Exception("Optional argument '$opt' not recognized.");
                         }

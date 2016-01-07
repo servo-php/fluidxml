@@ -17,7 +17,12 @@
 [![Donate][donate-button]][donate-link] [![Build Status][travis-badge]][travis]
 
 ## Changelog
-- **1.10**: _(2016-01-06)_
+- **1.11**: _(2016-01-07)_
+    * [~] `->appendChild()`, `->prependSibling()` and `->appendSibling()` support<br/>
+    the `@<attribute>` and `@` special syntax.
+
+
+- **1.10**:
     * [+] `->each()`, `->setCdata()` and `->cdata()` are part of the family.
 
 
@@ -129,7 +134,7 @@ XML
 );
 ```
 
-Creating **structured documents** is so easy that you will not believe.
+Creating **XML from Arrays** is so easy that you will not believe.
 
 ```php
 $food = fluidxml();
@@ -139,9 +144,16 @@ $food->add([ 'cake'  => 'tiramisu',
 
 $food->add([ ['egg'], ['egg'] ], ['price' => '0.25']);
 
-$food->add([ 'vegetarian' => [
-                    'pasta' => [
-                        'spaghetti' => 'with tomato' ]]);
+$food->add([ 'menu' => [
+                'pasta' => [
+                    'spaghetti' => [
+                        '@id'      => '123',
+                        '@country' => 'Italy',
+                        '@'        => 'Spaghetti are an Italian dish...',
+
+                        'variants' => [
+                            'tomato' => [ '@type' => 'vegan' ],
+                            'egg'    => [ '@type' => 'vegetarian' ] ]]]]]);
 ```
 
 Everything is fluid, even **iterations**.

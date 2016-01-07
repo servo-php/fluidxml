@@ -11,24 +11,30 @@ if ! chkcmd 'git'; then
         exit 1
 fi
 
-versions='1.0 1.6 1.10'
+versions='1.0 1.10 ORIG_HEAD HEAD'
 
-test_dir='sandbox/codevelox'
+test_dir="sandbox/codevelox"
+repo_dir="$test_dir/checkout"
 test_php="$test_dir/speedtest.php"
 
+mkdir -p "$repo_dir"
 mkdir -p "$test_dir"
+
 cp -f 'support/Codevelox.php' "$test_dir/"
 cp -f 'support/speedtest.php' "$test_dir/"
 
 for v in $versions; do
-        git checkout $v
+        git --git-dir ".git" --work-tree "$repo_dir" checkout $v
+
         mkdir -p "$test_dir/$v"
-        cp -rf "source/"* "$test_dir/$v/"
+
+        cp -rf "$repo_dir/source/"* "$test_dir/$v/"
 done
 
 cd "$test_dir"
 
 for v in $versions; do
         echo "Testing version $v";
+
         php speedtest.php "$v"
 done

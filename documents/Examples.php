@@ -102,18 +102,16 @@ $food->add([ [ 'pasta' => 'Carbonara' ],
 $food->add([ ['egg'], ['egg'], ['egg'] ], ['price' => '0.25']);
 
 // Complex array structures are supported too.
-$food->add([ 'fridge' => [
-                 'firstFloor' => [
-                     'omelette' => 'with potato' ],
-                 'secondFloor' => [
-                     'soupe' => 'with mashrooms' ]
-             ],
-             'freezer' => [
-                 'firstFloor' => [
-                     'meat' => 'beef' ],
-                 'secondFloor' => [
-                     'fish' => 'tuna' ],
-             ] ]);
+$food->add([ 'menu' => [
+                 'pasta' => [
+                     'spaghetti' => [
+                         '@id'      => '123',
+                         '@country' => 'Italy',
+                         '@'        => 'Spaghetti are an Italian dish...',
+
+                         'variants' => [
+                             'tomato' => [ '@type' => 'vegan' ],
+                             'egg'    => [ '@type' => 'vegetarian' ] ]]]]]);
 
 echo $food->xml();
 echo "————————————————————————————————————————————————————————————————————————————————\n";

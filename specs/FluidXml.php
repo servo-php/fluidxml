@@ -858,7 +858,7 @@ EOF;
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should add many children with some attributes both', function() {
+                it('should add many children with some attributes', function() {
                         $xml = new FluidXml();
                         $xml->appendChild(['child1', 'child2'], ['class' => 'Class attr', 'id' => 'Id attr1'])
                             ->appendChild('parent', true)
@@ -871,6 +871,25 @@ EOF;
                                   . "    <child3 class=\"Class attr\" id=\"Id attr2\"/>\n"
                                   . "    <child4 class=\"Class attr\" id=\"Id attr2\"/>\n"
                                   . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add children with some attributes and text using the @ syntax', function() {
+                        $xml = new FluidXml();
+                        $attrs = [ '@class' => 'Class attr',
+                                   '@'      => 'Text content',
+                                   '@id'    => 'Id attr' ];
+                        $xml->appendChild(['child1' => $attrs ])
+                            ->appendChild(['child2' => $attrs ], true)
+                                ->appendChild(['child3' => $attrs ]);
+
+                        $expected = "<doc>\n"
+                                  . "  <child1 class=\"Class attr\" id=\"Id attr\">Text content</child1>\n"
+                                  . "  <child2 class=\"Class attr\" id=\"Id attr\">"
+                                  .      "Text content"
+                                  .      "<child3 class=\"Class attr\" id=\"Id attr\">Text content</child3>"
+                                  .    "</child2>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });

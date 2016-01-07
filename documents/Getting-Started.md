@@ -239,69 +239,71 @@ of a node contextually to its creation.
 
 > Extended syntax
 > ```php
-> $food->appendChild('fruit', 'apple', [ 'price' => 'expensive',
->                                        'color' => 'red' ]);
->
-> // which is identical to
->
-> $food->appendChild('fruit', 'apple', true)        // Remember, passing 'true' returns the created node.
->          ->setAttribute([ 'price' => 'expensive',
->                           'color' => 'red' ]);
->
-> // The advantage comes when multiple nodes have the same attributes.
->
-> // A bunch of eggs all with the same price.
-> $food->appendChild([ ['egg'], ['egg'], ['egg'] ], ['price' => '0.25']);
+> $food->appendChild('fruit', 'apple', ['color' => 'red']);
 > ```
 > Concise syntax
 > ```php
-> $food->add('fruit', 'apple', [ 'price'=> 'expensive',
->                                'color' => 'red' ]);
->
-> // which is identical to
->
-> $food->add('fruit', 'apple', true)        // Remember, passing 'true' returns the created node.
->          ->attr([ 'price' => 'expensive',
->                   'color' => 'red' ]);
->
-> // The advantage comes when multiple nodes have the same attributes.
->
-> // A bunch of eggs all with the same price.
-> $food->add([ ['egg'], ['egg'], ['egg'] ], ['price' => '0.25']);
+> $food->add('fruit', 'apple', ['color' => 'red']);
 > ```
 
-Creating arbitrarily complex structures is possible too nesting arrays.
+Which is identical to
 
 > Extended syntax
 > ```php
-> $food->appendChild([ 'fridge' => [
->                          'firstFloor' => [
->                              'omelette' => 'with potato' ],
->                          'secondFloor' => [
->                              'soupe' => 'with mashrooms' ]
->                      ],
->                      'freezer' => [
->                          'firstFloor' => [
->                              'meat' => 'beef' ],
->                          'secondFloor' => [
->                              'fish' => 'tuna' ],
->                      ] ]);
+> $food->appendChild('fruit', 'apple', true)        // Remember, passing 'true' returns the created node.
+>          ->setAttribute([ 'color' => 'red' ]);
 > ```
 > Concise syntax
 > ```php
-> $food->add([ 'fridge' => [
->                  'firstFloor' => [
->                      'omelette' => 'with potato' ],
->                  'secondFloor' => [
->                      'soupe' => 'with mashrooms' ]
->              ],
->              'freezer' => [
->                  'firstFloor' => [
->                      'meat' => 'beef' ],
->                  'secondFloor' => [
->                      'fish' => 'tuna' ],
->              ] ]);
+> $food->add('fruit', 'apple', true)        // Remember, passing 'true' returns the created node.
+>          ->attr([ 'color' => 'red' ]);
 > ```
+
+The advantage comes when multiple nodes have the same attributes.
+
+> Extended syntax
+> ```php
+> $food->appendChild([ ['egg'], ['egg'] ], ['price' => '0.25']);
+>
+> // A bunch of eggs all with the same price.
+> ```
+> Concise syntax
+> ```php
+> $food->add([ ['egg'], ['egg'] ], ['price' => '0.25']);
+>
+> // A bunch of eggs all with the same price.
+> ```
+
+Creating arbitrarily complex structures is possible too nesting arrays and using<br/>
+the `@` special syntax. An array key starting with an '@' is interpreted as an attribute<br/>
+identifier and an array key equel to '@' is interpreted as the text content.
+
+> Extended syntax
+> ```php
+> $food->appendChild([ 'menu' => [
+>                         'pasta' => [
+>                             'spaghetti' => [
+>                                 '@id'      => '123',
+>                                 '@country' => 'Italy',
+>                                 '@'        => 'Spaghetti are an Italian dish...',
+>
+>                                 'variants' => [
+>                                     'tomato' => [ '@type' => 'vegan' ],
+>                                     'egg'    => [ '@type' => 'vegetarian' ] ]]]]]);
+> ```
+> Concise syntax
+> ```php
+> $food->add([ 'menu' => [
+>                  'pasta' => [
+>                      'spaghetti' => [
+>                          '@id'      => '123',
+>                          '@country' => 'Italy',
+>                          '@'        => 'Spaghetti are an Italian dish...',
+>
+>                          'variants' => [
+>                              'tomato' => [ '@type' => 'vegan' ],
+>                              'egg'    => [ '@type' => 'vegetarian' ] ]]]]]);
+```
 
 ```php
 echo $food->xml();
@@ -312,30 +314,24 @@ echo $food->xml();
 <food>
   <fruit/>
   <fruit>orange</fruit>
-  <fruit price="expensive" color="red">apple</fruit>
   <cake>Tiramisu</cake>
   <pizza>Margherita</pizza>
   <pasta>Carbonara</pasta>
   <pasta>Matriciana</pasta>
+  <fruit color="red">apple</fruit>
   <egg price="0.25"/>
   <egg price="0.25"/>
-  <egg price="0.25"/>
-  <fridge>
-    <firstFloor>
-      <omelette>with potato</omelette>
-    </firstFloor>
-    <secondFloor>
-      <soupe>with mashrooms</soupe>
-    </secondFloor>
-  </fridge>
-  <freezer>
-    <firstFloor>
-      <meat>beef</meat>
-    </firstFloor>
-    <secondFloor>
-      <fish>tuna</fish>
-    </secondFloor>
-  </freezer>
+  <menu>
+      <pasta>
+        <spaghetti id="123" country="Italy">
+            Spaghetti are an Italian dish...
+            <variants>
+                <tomato type="vegan"/>
+                <egg type="vegetarian"/>
+            </variants>
+        </spaghetti>
+      </pasta>
+    </menu>
 </food>
 ```
 
@@ -399,7 +395,13 @@ flexibility.
 
 ## Exporting The Document
 
-The document can be exported as XML string.
+The document can be exported as `DOMDocument`.
+
+```php
+$dom = $book->dom();
+```
+
+Or as XML string.
 
 ```php
 $xml = $book->xml();

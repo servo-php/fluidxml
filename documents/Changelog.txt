@@ -1,7 +1,16 @@
 [+]: new   [~]: changed   [-]: removed   [#]: fixed   [@]: internal
 
 
-1.10: (2016-01-06)
+1.11: (2016-01-07)
+supports the special syntax '@<attribute>' and '@' for setting attributes and
+text content when adding elements using an array.
+
+    * [~] ->appendChild() supports '@<attribute>' and '@' special syntax.
+    * [~] ->appendSibling() supports '@<attribute>' and '@' special syntax.
+    * [~] ->prependSibling() supports '@<attribute>' and '@' special syntax.
+
+
+1.10:
 introduces the '->each()' method and the '->setCdata()'/'->cdata()' twins
 methods together with an internal refactoring.
 

@@ -62,6 +62,8 @@ __construct($root?, array $options?);
 
 ->length();     // Available after a query or a node insertion with context switch.
 
+->dom();
+
 ->xml($strip = false);
 ```
 
