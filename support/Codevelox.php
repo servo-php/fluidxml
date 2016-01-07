@@ -63,7 +63,7 @@ class Codevelox
 
         public function message($index, $desc, $time)
         {
-                return "Task {$index} took $time ('$desc')\n";
+                return "Task {$index} took $time ($desc)\n";
         }
 
         public function run_and_show()

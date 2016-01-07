@@ -24,17 +24,19 @@ cp -f 'support/Codevelox.php' "$test_dir/"
 cp -f 'support/speedtest.php' "$test_dir/"
 
 for v in $versions; do
-        git --git-dir ".git" --work-tree "$repo_dir" checkout $v
+        git --git-dir ".git" --work-tree "$repo_dir" checkout -f $v > /dev/null 2>&1
 
         mkdir -p "$test_dir/$v"
 
         cp -rf "$repo_dir/source/"* "$test_dir/$v/"
 done
 
+git checkout master > /dev/null 2>&1
+
 cd "$test_dir"
 
 for v in $versions; do
-        echo "Testing version $v";
+        echo " => Testing version $v";
 
         php speedtest.php "$v"
 done

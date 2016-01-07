@@ -688,7 +688,6 @@ XML;
 > - `FluidXml` instance
 > - `DOMDocument`/`DOMNode`/`DOMNodeList` instance
 > - `SimpleXMLElement` instance
-> - `FluidXml` instance
 
 Existing XML documents instances can be injected in any point of the FluidXML document.
 
