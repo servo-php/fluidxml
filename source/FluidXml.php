@@ -38,7 +38,7 @@
  * @license https://opensource.org/licenses/BSD-2-Clause
  */
 
-namespace
+namespace FluidXml
 {
 
 if (\version_compare(\phpversion(), '7', '<')) {
@@ -46,12 +46,6 @@ if (\version_compare(\phpversion(), '7', '<')) {
 } else {
         require_once __DIR__ . \DIRECTORY_SEPARATOR . 'FluidXml.php70.php';
 }
-
-} // END OF namespace global
-
-
-namespace FluidXml
-{
 
 /**
  * Constructs a new FluidXml instance.
@@ -154,7 +148,7 @@ interface FluidInterface
          * @return FluidContext The context associated to the DOMNodeList.
          */
         public function query(...$xpath);
-
+        public function times($times, callable $fn = null);
         public function each(callable $fn);
 
         /**
@@ -324,6 +318,11 @@ class FluidXml implements FluidInterface
         public function query(...$xpath)
         {
                 return $this->newContext()->query(...$xpath);
+        }
+
+        public function times($times, callable $fn = null)
+        {
+                return $this->newContext()->times($times, $fn);
         }
 
         public function each(callable $fn)
@@ -661,6 +660,19 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->newContext($unique_results);
         }
 
+        public function times($times, callable $fn = null)
+        {
+                if ($fn === null) {
+                        return new FluidRepeater($this, $times);
+                }
+
+                for ($i = 0; $i < $times; ++$i) {
+                        \call_user_func($fn, $this, $i);
+                }
+
+                return $this;
+        }
+
         public function each(callable $fn)
         {
                 foreach ($this->nodes as $k => $n) {
@@ -896,7 +908,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $el;
         }
 
-        protected function processElement(callable $fn, \DOMNode $parent, $k, $v, array $optionals)
+        protected function processElement(\Closure $fn, \DOMNode $parent, $k, $v, array $optionals)
         {
                 $k_is_string = \is_string($k);
                 $v_is_string = \is_string($v);
@@ -1066,7 +1078,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 throw new \Exception('XML document not supported.');
         }
 
-        protected function insertElement(callable $fn, $element, ...$optionals)
+        protected function insertElement(\Closure $fn, $element, ...$optionals)
         {
                 if (! \is_array($element)) {
                         $element = [ $element ];
@@ -1191,6 +1203,33 @@ class FluidNamespace
 
                 // Removes the last appended slash.
                 return \substr($new_xpath, 0, -1);
+        }
+}
+
+class FluidRepeater
+{
+        protected $context;
+        protected $times;
+
+        public function __construct($context, $times)
+        {
+                $this->context = $context;
+                $this->times   = $times;
+        }
+
+        public function __call($method, $arguments)
+        {
+                $new_context = [];
+
+                for ($i = 0, $l = $this->times; $i < $l; ++$i) {
+                        $new_context[] = $this->context->$method(...$arguments);
+                }
+
+                if ($new_context[0] !== $this->context) {
+                        return new FluidContext($new_context, $this->context->namespaces());
+                }
+
+                return $this->context;
         }
 }
 

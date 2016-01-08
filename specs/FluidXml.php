@@ -5,6 +5,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . ".common.php";
 use \FluidXml\FluidXml;
 use \FluidXml\FluidContext;
 use \FluidXml\FluidNamespace;
+use \FluidXml\FluidRepeater;
 use function \FluidXml\fluidxml;
 use function \FluidXml\fluidns;
 use function \FluidXml\fluidify;
@@ -696,6 +697,68 @@ describe('FluidXml', function() {
                         $expected = "<doc>\n"
                                   . "  <child1>child1</child1>\n"
                                   . "  <child2>child2</child2>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+        });
+
+        describe('.times', function() {
+                it('should be fluid', function() {
+                        assert_is_a((new FluidXml())->times(4), FluidRepeater::class);
+                        assert_is_fluid('times', 4, function() {});
+                });
+
+                it('should repeat the following one method call (if no callable is passed)', function() {
+                        $xml = new FluidXml();
+
+                        $xml->times(2)
+                                ->add('child')
+                            ->add('lastchild');
+
+                        $expected = "<doc>\n"
+                                  . "  <child/>\n"
+                                  . "  <child/>\n"
+                                  . "  <lastchild/>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should switch context', function() {
+                        $xml = new FluidXml();
+
+                        $xml->times(2)
+                                ->add('child', true)
+                                        ->add('subchild');
+
+                        $expected = "<doc>\n"
+                                  . "  <child>\n"
+                                  . "    <subchild/>\n"
+                                  . "  </child>\n"
+                                  . "  <child>\n"
+                                  . "    <subchild/>\n"
+                                  . "  </child>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should repeat a callable without repeating the following method call', function() {
+                        $xml = new FluidXml();
+
+                        $xml->add('parent', true)
+                                ->times(2, function($parent, $i) {
+                                        $parent->add("child{$i}");
+                                        $parent->add('sep');
+                                })
+                                ->add('lastchild');
+
+                        $expected = "<doc>\n"
+                                  . "  <parent>\n"
+                                  . "    <child0/>\n"
+                                  . "    <sep/>\n"
+                                  . "    <child1/>\n"
+                                  . "    <sep/>\n"
+                                  . "    <lastchild/>\n"
+                                  . "  </parent>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });

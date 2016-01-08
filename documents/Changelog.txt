@@ -1,7 +1,13 @@
 [+]: new   [~]: changed   [-]: removed   [#]: fixed   [@]: internal
 
 
-1.11: (2016-01-07)
+1.12: (2016-01-08)
+introduces the '->times()' method.
+
+    * [+] ->times() is part of the family.
+
+
+1.11:
 supports the special syntax '@<attribute>' and '@' for setting attributes and
 text content when adding elements using an array.
 

@@ -5,6 +5,7 @@
 [examples]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples.php
 [specs]: https://github.com/servo-php/fluidxml/blob/master/specs/FluidXml.php
 [wiki]: https://github.com/servo-php/fluidxml/wiki
+[bsd]: https://opensource.org/licenses/BSD-2-Clause
 [license]: https://github.com/servo-php/fluidxml/blob/master/documents/License.txt
 [changelog]: https://github.com/servo-php/fluidxml/blob/master/documents/Changelog.txt
 [codecoverage]: https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png?nocache=1
@@ -14,40 +15,50 @@
 [donate-link-alt]: https://www.paypal.me/danieleorlando
 [thankyou]: https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_corazón.svg/2000px-Heart_corazón.svg.png
 
-[![Donate][donate-button]][donate-link] [![Build Status][travis-badge]][travis]
+[![Build Status][travis-badge]][travis]
+
+[![Donate][donate-button]][donate-link]
 
 ## Changelog
-- **1.11**: _(2016-01-07)_
-    * [~] `->appendChild()`, `->prependSibling()` and `->appendSibling()` support<br/>
-    the `@<attribute>` and `@` special syntax.
+
+**1.12** (2016-01-08):
+_introduces the `->times()` method._
+
+* `->times()` is part of the family.
 
 
-- **1.10**:
-    * [+] `->each()`, `->setCdata()` and `->cdata()` are part of the family.
+**1.11**:
+_introduces the `@`/`@<attribute>` special syntax._
+
+* `->appendChild()`, `->prependSibling()` and `->appendSibling()` support the `@`/`@<attribute>` special syntax.
 
 
-- **1.9**:
- _wraps classes and functions under the **FluidXml namespace**._
+**1.10**:
+_adds a fluid style for iterations and completes the CDATA APIs._
+
+* `->each()`, `->setCdata()` and `->cdata()` are part of the family.
 
 
-- **1.8**:
- _gives super powers to the manipulation APIs._
-
-    * [~] `->appendChild()`, `->appendSibling()` and `->prependSibling()`<br/>
-      have the super powers of `->appendXml()`.
-    * [-] `->appendXml()` has been removed superseded by `->appendChild()`.
+**1.9**:
+_wraps classes and functions under the **FluidXml namespace**._
 
 
-- **1.7**:
- improves dealing with other XML object instances.
+**1.8**:
+_gives super powers to the manipulation APIs._
 
-    * [~] `::load()` adds support for _DOMNode, DOMNodeList and FluidXml_.
-    * [~] `->xml()` can export any node with its descendants.
-    * [~] `->xml()` accepts a boolean flag to remove the XML declaration headers.
-    * [~] `->appendXml()` is smarter than ever, supporting _DOMDocument, DOMNode,<br/>
-      DOMNodeList, SimpleXMLElement, FluidXml and XML strings_.
+* `->appendChild()`, `->appendSibling()` and `->prependSibling()` have the super powers of `->appendXml()`.
+* `->appendXml()` has been removed superseded by `->appendChild()`.
 
-- **...**
+
+**1.7**:
+_improves dealing with other XML object instances._
+
+* `::load()` adds support for _DOMNode, DOMNodeList and FluidXml_.
+* `->xml()` can export any node with its descendants.
+* `->xml()` accepts a boolean flag to remove the XML declaration headers.
+* `->appendXml()` is smarter than ever, supporting _DOMDocument, DOMNode, DOMNodeList, SimpleXMLElement, FluidXml and XML strings_.
+
+**...**
 
 [See the full changes list.][changelog]
 
@@ -87,9 +98,25 @@ $book->add('title', 'The Theory Of Everything')
          ->add('chapter', 'The Expanding Universe',   ['id' => 2]);
 ```
 
+Do you love **PHP Arrays**? Take a look at this. :D
+
+```php
+$book->add([ 'title'  => 'The Theory Of Everything',
+             'author' => 'S. Hawking',
+             'chapters' => [
+                    [ 'chapter' => [
+                            '@id' => '1',
+                            '@'   => 'Ideas About The Universe' ] ],
+                    [ 'chapter' => [
+                            '@id' => '2',
+                            '@'   => 'The Expanding Universe' ] ],
+           ]]);
+```
+
 ```php
 echo $book->xml();
 ```
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <doc>
@@ -102,23 +129,18 @@ echo $book->xml();
 </doc>
 ```
 
-**XPath** is king.
+**XPath** is king. One method to rule them all.
 
 ```php
-$book->query('//chapter')
-     ->query('..')
-        ->attr('lang', 'en')
-     ->query('../title')
-        ->attr('country', 'us');
+$book->query('//title', '//author', '//chapter')
+        ->attr('lang', 'en');
 ```
 
 **XML Namespaces** are fully covered.
 
 ```php
 $book->namespace('xhtml', 'http://www.w3.org/1999/xhtml')
-     ->namespace('svg',   'http://www.w3.org/2000/svg')
      ->add('xhtml:h1')
-     ->add('svg:shape')
      ->query('//xhtml:h1');
 ```
 
@@ -134,35 +156,23 @@ XML
 );
 ```
 
-Creating **XML from Arrays** is so easy that you will not believe.
-
-```php
-$food = fluidxml();
-
-$food->add([ 'cake'  => 'tiramisu',
-             'pizza' => 'margherita' ]);
-
-$food->add([ ['egg'], ['egg'] ], ['price' => '0.25']);
-
-$food->add([ 'menu' => [
-                'pasta' => [
-                    'spaghetti' => [
-                        '@id'      => '123',
-                        '@country' => 'Italy',
-                        '@'        => 'Spaghetti are an Italian dish...',
-
-                        'variants' => [
-                            'tomato' => [ '@type' => 'vegan' ],
-                            'egg'    => [ '@type' => 'vegetarian' ] ]]]]]);
-```
-
 Everything is fluid, even **iterations**.
 
 ```php
-$food->query('//egg')
-     ->each(function($egg, $_, $index) {
-         $egg->attr('id', $index);
+$book->query('//chapter')
+     ->each(function($chapter, $_, $index) {
+         $chapter->attr('idx', $index);
      });
+```
+
+```php
+$book->query('//chapters')
+        ->times(3)
+            ->add('chapter')
+        ->times(4, function($chapters, $index) {
+            $chapters->add('chapter');
+            $chapters->add('illustration');
+        });
 ```
 
 And interoperability with existing **DOMDocument** and **SimpleXML** is simply magic.<br/>
@@ -281,6 +291,6 @@ Daniele Orlando  [&lt;fluidxml@danieleorlando.com&gt;](mailto:fluidxml@danieleor
 
 
 ## License
-FluidXML is licensed under the BSD 2-Clause License.
+FluidXML is licensed under the [BSD 2-Clause License][bsd].
 
 See [`documents/License.txt`][license] for the details.

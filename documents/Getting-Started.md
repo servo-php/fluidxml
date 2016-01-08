@@ -393,68 +393,35 @@ flexibility.
 > ```
 
 
-## Exporting The Document
+## Iterating
 
-The document can be exported as `DOMDocument`.
+Iterations can be performed without interrupting the fluid flow.
 
-```php
-$dom = $book->dom();
-```
-
-Or as XML string.
+`->each()` iterates the results of a query or of an insertion method.
 
 ```php
-$xml = $book->xml();
+$book->query('//chapter')
+     ->each(function($chapter, $domnode, $index) {
+            $chapter->attr('id', $index + 1);
+
+            echo $domnode->nodeValue;
+     });
 ```
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<book>
-  <title>The Theory Of Everything</title>
-  <author>S. Hawking</author>
-  <description/>
-  <chapters>
-    <chapter>Ideas About The Universe</chapter>
-    <chapter>The Expanding Universe</chapter>
-  </chapters>
-  <cover>
-    <h1>The Theory Of Everything</h1>
-    <img src="http://goo.gl/kO3Iov"/>
-  </cover>
-</book>
-```
-
-The XML declaration can be removed from the output string too.
-```php
-$xml = $book->xml(true);
-```
-
-```xml
-<book>
-  <title>The Theory Of Everything</title>
-  <author>S. Hawking</author>
-  <description/>
-  <chapters>
-    <chapter>Ideas About The Universe</chapter>
-    <chapter>The Expanding Universe</chapter>
-  </chapters>
-  <cover>
-    <h1>The Theory Of Everything</h1>
-    <img src="http://goo.gl/kO3Iov"/>
-  </cover>
-</book>
-```
-
-Not only the entire document but even only specific nodes (with their content)<br/>
-can be exported.
+`->times($n)` repeats the following method call `$n` times. If a callable is<br/>
+passed as second argument, the callable is called `$n` times.
 
 ```php
-$xml = $book->query('//chapter')->xml();
+$book->query('//chapters')
+        ->times(2)
+            ->add('chapter');
 ```
 
-```xml
-<chapter>Ideas About The Universe</chapter>
-<chapter>The Expanding Universe</chapter>
+```php
+$book->query('//chapters')
+        ->times(2, function($chapters, $index) {
+            $chapters->add('chapter', [ 'id' => $index + 5 ]);
+        });
 ```
 
 
@@ -464,15 +431,6 @@ FluidXML wraps the DOMNode native APIs extending them but without reimplementing
 what is already convenient to use.
 
 To access the node content after a query we can use the DOMNode own methods.
-
-```php
-$book->query('//chapter')
-     ->each(function($fluid, $domnode, $index) {
-            $fluid->attr('uuid', random_uuid());
-
-            echo $domnode->nodeValue;
-     });
-```
 
 Accessing the query result as array or iterating it returns the DOMNode unwrapped.
 
@@ -553,19 +511,8 @@ echo $book->xml();
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<book type="science">
-  <title lang="en">The Theory Of Everything</title>
-  <author>S. Hawking</author>
-  <chapters lang="en">
-    <chapter id="123" first="" lang="en">Ideas About The Universe</chapter>
-    <chapter id="321" lang="en">The Expanding Universe</chapter>
-    <chapter id="432" lang="en">Black Holes</chapter>
-    <chapter id="234" lang="en" last="">Black Holes Ain't So Black</chapter>
-  </chapters>
-  <cover>
-    <h1>The Theory Of Everything</h1>
-    <img src="http://goo.gl/kO3Iov"/>
-  </cover>
+<book>
+  ...
   <xhtml:h1 xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <svg:shape xmlns:svg="http://www.w3.org/2000/svg"/>
   </xhtml:h1>
@@ -612,7 +559,7 @@ Which is the same of
 $food->query('//egg')->remove();        // Removes all the eggs.
 ```
 
-Quering and removing with relative XPath can be used too.
+Querying and removing with relative XPath can be done too.
 
 ```php
 $food->query('/doc')->remove('egg');    // Removes all the eggs.
@@ -624,6 +571,52 @@ $food->query('/doc')->remove('egg');    // Removes all the eggs.
 > ```php
 > $food->remove('//fruit', '//pasta', '//pizza');
 > ```
+
+
+## Exporting The Document
+
+The document can be exported as `DOMDocument`.
+
+```php
+$dom = $book->dom();
+```
+
+Or as XML string.
+
+```php
+$xml = $book->xml();
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+  ...
+</book>
+```
+
+The XML declaration can be removed from the output string too.
+
+```php
+$xml = $book->xml(true);
+```
+
+```xml
+<book>
+  ...
+</book>
+```
+
+Not only the entire document but even only specific nodes (with their content)<br/>
+can be exported.
+
+```php
+$xml = $book->query('//chapter')->xml();
+```
+
+```xml
+<chapter lang="en" first="">Ideas About The Universe</chapter>
+<chapter lang="en" last="">The Expanding Universe</chapter>
+```
 
 
 ## Importing Existing Documents
@@ -700,13 +693,12 @@ $doc->add($dom)                     // A DOMDocument/DOMNode/DOMNodeList instanc
     ->add($fluidxml->query('//p')); // A FluidXml query instance.
 ```
 
-Crazy things are possible too and I will not stop you from doing them.
+Crazy things are possible too using arrays and I will not stop you from doing them.
 
 ```php
-$doc->add([ 'aNode',
-            'domDoc' => $dom,
-            'file'   => fluidify('path/to/file.xml'),
-            'simple' => $simplexml ]);
+$doc->add([ 'dom'    => $dom,
+            'simple' => $simplexml,
+            'file'   => fluidify('path/to/file.xml') ]);
 ```
 
 
