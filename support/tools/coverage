@@ -40,4 +40,7 @@ else
 fi
 
 coverage_index="code-coverage-report/index.html"
-test -f "$coverage_index" && chkcmd 'open' && open "$coverage_index"
+
+if test -f "$coverage_index" && chkcmd 'open'; then
+        open "$coverage_index"
+fi
