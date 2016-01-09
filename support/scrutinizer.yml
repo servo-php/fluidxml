@@ -5,10 +5,7 @@ build:
     tests:
         override:
             -
-                command:
-                    - ./support/tools/init
-                    - ./support/tools/test
-                    - ./support/tools/coverage clover-code-coverage
+                command: ./support/tools/init && ./support/tools/test && ./support/tools/coverage clover-code-coverage
                 coverage:
                     file: 'sandbox/code-coverage-report/clover.xml'
                     format: 'php-clover'
