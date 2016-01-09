@@ -4,7 +4,7 @@ php:
     - '7.0'
 cache:
     directories:
-        - sandbox/composer
+        - sandbox/composer/
 install:
     - composer self-update
     - ./support/tools/init
