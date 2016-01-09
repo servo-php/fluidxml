@@ -1,5 +1,7 @@
 [travis]: https://travis-ci.org/servo-php/fluidxml
 [travis-badge]: https://travis-ci.org/servo-php/fluidxml.svg?branch=master
+[scrutinizer]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
+[scrutinizer-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/quality-score.png?b=master
 [apis]: https://github.com/servo-php/fluidxml/blob/master/documents/APIs.md
 [gettingstarted]: https://github.com/servo-php/fluidxml/blob/master/documents/Getting-Started.md
 [examples]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples.php
@@ -16,8 +18,10 @@
 [thankyou]: https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_corazón.svg/2000px-Heart_corazón.svg.png
 
 [![Build Status][travis-badge]][travis]
+[![Scrutinizer][scrutinizer-badge]][scrutinizer]
 
 [![Donate][donate-button]][donate-link]
+
 
 ## Changelog
 

@@ -14,18 +14,29 @@ fi
 
 cd sandbox
 
-peridot_arguments='-c "../support/peridot.php" -r html-code-coverage -g "*.php" "../specs/"'
+reporter=html-code-coverage
 
-if chkcmd 'phpdbg'; then
+if test $# -eq 1; then
+        reporter=$1
+fi
+
+peridot_arguments="-c \"../support/peridot.php\" -r $reporter -g \"*.php\" \"../specs/\""
+
+if php -m | grep -i 'xdebug' > /dev/null; then
+        echo ' info: using Xdebug.'
+
+        eval "peridot $peridot_arguments"
+elif chkcmd 'phpdbg'; then
+        echo ' info: using phpdbg.'
+        echo
         echo ' type: run'
         echo '       quit'
         echo
 
         eval "phpdbg -e \"$(which peridot)\" $peridot_arguments"
 else
-        echo ' info: "phpdbg" command not found.'
-
-        eval "peridot $peridot_arguments"
+        echo ' error: no profiling tool found.'
+        exit 1
 fi
 
 chkcmd 'open' && open "code-coverage-report/index.html"
