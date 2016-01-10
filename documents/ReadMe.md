@@ -1,9 +1,11 @@
-[travis]: https://travis-ci.org/servo-php/fluidxml
-[travis-badge]: https://travis-ci.org/servo-php/fluidxml.svg?branch=master
+[build]: https://travis-ci.org/servo-php/fluidxml
+[build-badge]: https://travis-ci.org/servo-php/fluidxml.svg?branch=master
+[coverage]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
+[coverage-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/coverage.png?b=master
+[quality]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
+[quality-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/quality-score.png?b=master
 [coveralls]: https://coveralls.io/github/servo-php/fluidxml?branch=master
 [coveralls-badge]: https://coveralls.io/repos/servo-php/fluidxml/badge.svg?branch=master&service=github
-[scrutinizer]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
-[scrutinizer-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/quality-score.png?b=master
 [apis]: https://github.com/servo-php/fluidxml/blob/master/documents/APIs.md
 [gettingstarted]: https://github.com/servo-php/fluidxml/blob/master/documents/Getting-Started.md
 [examples]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples.php
@@ -19,8 +21,9 @@
 [donate-link-alt]: https://www.paypal.me/danieleorlando
 [thankyou]: https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_corazón.svg/2000px-Heart_corazón.svg.png
 
-[![Travis][travis-badge]][travis]
-[![Scrutinizer][scrutinizer-badge]][scrutinizer]
+[![Build][build-badge]][build]
+[![Coverage][coverage-badge]][coverage]
+[![Quality][quality-badge]][quality]
 
 [![Donate][donate-button]][donate-link]
 

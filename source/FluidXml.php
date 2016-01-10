@@ -1,6 +1,6 @@
 <?php
 
-// Copyright (c) 2015, Daniele Orlando <fluidxml(at)danieleorlando.com>
+// Copyright (c) 2016, Daniele Orlando <fluidxml(at)danieleorlando.com>
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -38,14 +38,7 @@
  * @license https://opensource.org/licenses/BSD-2-Clause
  */
 
-namespace FluidXml
-{
-
-if (\version_compare(\phpversion(), '7', '<')) {
-        require_once __DIR__ . \DIRECTORY_SEPARATOR . 'FluidXml.php56.php';
-} else {
-        require_once __DIR__ . \DIRECTORY_SEPARATOR . 'FluidXml.php70.php';
-}
+namespace FluidXml;
 
 /**
  * Constructs a new FluidXml instance.
@@ -191,6 +184,45 @@ interface FluidInterface
         public function text($text);
 }
 
+trait ReservedCallTrait
+{
+        public function __call($method, $arguments)
+        {
+                $m = "{$method}_";
+
+                if (\method_exists($this, $m)) {
+                        return $this->$m(...$arguments);
+                }
+
+                throw new \Exception("Method '$method' not found.");
+        }
+}
+
+trait ReservedCallStaticTrait
+{
+        public static function __callStatic($method, $arguments)
+        {
+                $m = "{$method}_";
+
+                if (\method_exists(static::class, $m)) {
+                        return static::$m(...$arguments);
+                }
+
+                throw new \Exception("Method '$method' not found.");
+        }
+}
+
+trait NewableTrait
+{
+        // This method should be called 'new',
+        // but for compatibility with PHP 5.6
+        // it is shadowed by the __callStatic() method.
+        public static function new_(...$arguments)
+        {
+                return new static(...$arguments);
+        }
+}
+
 trait FluidNamespaceTrait
 {
         private $namespaces = [];
@@ -202,9 +234,7 @@ trait FluidNamespaceTrait
 
         // This method should be called 'namespace',
         // but for compatibility with PHP 5.6
-        // it is shadowed by a facade method:
-        // - in PHP 7 by a real public 'namespace' method
-        // - in PHP 5 by a public __call method which understands a '->namespace()' call.
+        // it is shadowed by the __call() method.
         protected function namespace_(...$arguments)
         {
                 $namespaces = [];
@@ -234,8 +264,9 @@ trait FluidNamespaceTrait
 class FluidXml implements FluidInterface
 {
         use FluidNamespaceTrait,
-            FluidXmlShadowTrait,        // For compatibility with PHP 5.6.
-            FluidContextShadowTrait;    // For compatibility with PHP 5.6.
+            NewableTrait,
+            ReservedCallTrait,          // For compatibility with PHP 5.6.
+            ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
 
         const ROOT_NODE = 'doc';
 
@@ -291,9 +322,9 @@ class FluidXml implements FluidInterface
                 }
 
                 if ($opts['stylesheet']) {
-                        $attrs = "type=\"text/xsl\" "
+                        $attrs = 'type="text/xsl" '
                                . "encoding=\"{$opts['encoding']}\" "
-                               . "indent=\"yes\" "
+                               . 'indent="yes" '
                                . "href=\"{$opts['stylesheet']}\"";
                         $stylesheet = new \DOMProcessingInstruction('xml-stylesheet', $attrs);
 
@@ -493,7 +524,9 @@ class FluidXml implements FluidInterface
 class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 {
         use FluidNamespaceTrait,
-            FluidContextShadowTrait;    // For compatibility with PHP 5.6.
+            NewableTrait,
+            ReservedCallTrait,          // For compatibility with PHP 5.6.
+            ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
 
         private $dom;
         private $nodes = [];
@@ -1091,7 +1124,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         if (\is_array($opt)) {
                                 $attributes = $opt;
 
-                        } else if (\is_bool($opt)){
+                        } else if (\is_bool($opt)) {
                                 $switchContext = $opt;
 
                         } else if (\is_string($opt)) {
@@ -1120,7 +1153,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // offers to the user and is the same of:
                 // 1. appending a child switching the context
                 // 2. setting the attributes over the new context.
-                if ($attributes) {
+                if (! empty($attributes)) {
                         $context->setAttribute($attributes);
                 }
 
@@ -1232,5 +1265,3 @@ class FluidRepeater
                 return $this->context;
         }
 }
-
-} // END OF namespace FluidXml
