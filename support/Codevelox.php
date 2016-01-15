@@ -65,6 +65,7 @@ class Codevelox
 
         public function message($index, $desc, $time)
         {
+                $time = \sprintf('%.2f', $time);
                 return "Task {$index} took $time ($desc)\n";
         }
 
