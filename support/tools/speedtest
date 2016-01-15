@@ -17,11 +17,16 @@ if test $# -gt 0; then
         versions="$@"
 fi
 
-test_dir="sandbox/codevelox"
+test_dir="$(pwd)/sandbox/codevelox"
 repo_dir="$test_dir/checkout"
 test_php="$test_dir/speedtest.php"
 
-git_args="--git-dir .git --work-tree $repo_dir"
+git_branch=$(git branch | grep "\*" | cut -d ' ' -f 2)
+
+ggit()
+{
+        git --work-tree "$repo_dir" "$@"
+}
 
 mkdir -p "$repo_dir"
 mkdir -p "$test_dir"
@@ -30,14 +35,14 @@ cp -f 'support/Codevelox.php' "$test_dir/"
 cp -f 'support/speedtest.php' "$test_dir/"
 
 for v in $versions; do
-        git $git_args checkout -f $v
+        ggit checkout -f $v
 
         mkdir -p "$test_dir/$v"
 
         cp -rf "$repo_dir/source/"* "$test_dir/$v/"
 done
 
-git $git_args checkout master
+ggit checkout $git_branch
 
 cd "$test_dir"
 
