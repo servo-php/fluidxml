@@ -11,7 +11,7 @@ if ! chkcmd 'git'; then
         exit 1
 fi
 
-versions='1.0 1.10 ORIG_HEAD HEAD'
+versions='ORIG_HEAD master'
 
 if test $# -gt 0; then
         versions="$@"
