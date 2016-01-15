@@ -365,10 +365,10 @@ class FluidXml implements FluidInterface
         {
                 // If the user has requested ['root' => null] at construction time
                 // 'newContext()' promotes DOMDocument as root node.
-                $context    = $this->newContext();
-                $newContext = $context->appendChild($child, ...$optionals);
+                $context     = $this->newContext();
+                $new_context = $context->appendChild($child, ...$optionals);
 
-                return $this->chooseContext($context, $newContext);
+                return $this->chooseContext($context, $new_context);
         }
 
         // Alias of appendChild().
@@ -386,10 +386,10 @@ class FluidXml implements FluidInterface
                         return $this->appendChild($sibling, ...$optionals);
                 }
 
-                $context    = $this->newContext();
-                $newContext = $context->prependSibling($sibling, ...$optionals);
+                $context     = $this->newContext();
+                $new_context = $context->prependSibling($sibling, ...$optionals);
 
-                return $this->chooseContext($context, $newContext);
+                return $this->chooseContext($context, $new_context);
         }
 
         // Alias of prependSibling().
@@ -413,10 +413,10 @@ class FluidXml implements FluidInterface
                         return $this->appendChild($sibling, ...$optionals);
                 }
 
-                $context    = $this->newContext();
-                $newContext = $context->appendSibling($sibling, ...$optionals);
+                $context     = $this->newContext();
+                $new_context = $context->appendSibling($sibling, ...$optionals);
 
-                return $this->chooseContext($context, $newContext);
+                return $this->chooseContext($context, $new_context);
         }
 
         // Alias of appendSibling().
@@ -509,12 +509,12 @@ class FluidXml implements FluidInterface
                 return new FluidContext($context, $this->namespaces);
         }
 
-        protected function chooseContext($helpContext, $newContext)
+        protected function chooseContext($help_context, $new_context)
         {
                 // If the two contextes are diffent, the user has requested
                 // a switch of the context and we have to return it.
-                if ($helpContext !== $newContext) {
-                        return $newContext;
+                if ($help_context !== $new_context) {
+                        return $new_context;
                 }
 
                 return $this;
@@ -903,30 +903,21 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return new FluidContext($context, $this->namespaces);
         }
 
-        protected function processElement(\DOMNode $parent, $k, $v, array $optionals, callable $fn)
-        {
-                // I give up, it's a too complex job for only one method like me.
-
-                $handler = new ElementHandler($parent, $k, $v, $optionals, $fn, $this->dom, $this->namespaces());
-
-                return $handler();
-        }
-
         protected function insertElement($element, array $optionals, callable $fn)
         {
                 if (! \is_array($element)) {
                         $element = [ $element ];
                 }
 
-                $switchContext = false;
-                $attributes = [];
+                $switch_context = false;
+                $attributes     = [];
 
                 foreach ($optionals as $opt) {
                         if (\is_array($opt)) {
                                 $attributes = $opt;
 
                         } else if (\is_bool($opt)) {
-                                $switchContext = $opt;
+                                $switch_context = $opt;
 
                         } else if (\is_string($opt)) {
                                 $e = \array_pop($element);
@@ -938,17 +929,18 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         }
                 }
 
-                $newContext = [];
+                $new_context = [];
 
                 foreach ($this->nodes as $n) {
                         foreach ($element as $k => $v) {
-                                $cx = $this->processElement($n, $k, $v, $optionals, $fn);
+                                // I give up, it's a too complex job for only one method like me.
+                                $cx = InsertionHandler::insert($n, $k, $v, $optionals, $fn, $this->dom, $this->namespaces);
 
-                                $newContext = \array_merge($newContext, $cx);
+                                $new_context = \array_merge($new_context, $cx);
                         }
                 }
 
-                $context = $this->newContext($newContext);
+                $context = $this->newContext($new_context);
 
                 // Setting the attributes is an help that the appendChild method
                 // offers to the user and is the same of:
@@ -958,7 +950,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         $context->setAttribute($attributes);
                 }
 
-                if ($switchContext) {
+                if ($switch_context) {
                         return $context;
                 }
 
@@ -1040,113 +1032,7 @@ class FluidNamespace
         }
 }
 
-class ElementOracle
-{
-        private $value;
-        private $truth = [];
-
-        public function __construct($value)
-        {
-                $this->value = $value;
-        }
-
-        public function __call($fact, $_)
-        {
-                $negate = false;
-
-                // Without 'is';
-                $fact = \substr($fact, 2);
-
-                if (\substr($fact, 0, 3) === 'Not') {
-                        $negate = true;
-
-                        // Without 'Not';
-                        $fact   = \substr($fact, 3);
-                }
-
-                if (! isset($this->truth[$fact])) {
-                        // Methods begin lowercase.
-                        $check = \lcfirst("{$fact}Check");
-
-                        $this->truth[$fact] = $this->$check();
-                }
-
-                $truth = $this->truth[$fact];
-
-                if ($negate) {
-                        return ! $truth;
-                }
-
-                return $truth;
-        }
-
-        public function get()
-        {
-                return $this->value;
-        }
-
-        protected function stringCheck()
-        {
-                return \is_string($this->value);
-        }
-
-        protected function specialContentCheck()
-        {
-                return $this->isString() && $this->value === '@';
-        }
-
-        protected function specialAttributeCheck()
-        {
-                return $this->isString() && $this->value[0] === '@';
-        }
-
-        protected function integerCheck()
-        {
-                return \is_int($this->value);
-        }
-
-        protected function arrayCheck()
-        {
-                return \is_array($this->value);
-        }
-
-        protected function xmlCheck()
-        {
-                return $this->isString() && is_an_xml_string($this->value);
-        }
-
-        protected function domdocumentCheck()
-        {
-                return $this->value instanceof \DOMDocument;
-        }
-
-        protected function domnodelistCheck()
-        {
-                return $this->value instanceof \DOMNodeList;
-        }
-
-        protected function domnodeCheck()
-        {
-                return $this->value instanceof \DOMNode;
-        }
-
-        protected function simplexmlCheck()
-        {
-                return $this->value instanceof \SimpleXMLElement;
-        }
-
-        protected function fluidxmlCheck()
-        {
-                return $this->value instanceof FluidXml;
-        }
-
-        protected function fluidcontextCheck()
-        {
-                return $this->value instanceof FluidContext;
-        }
-}
-
-class ElementHandler
+class InsertionHandler
 {
         private $parent;
         private $key;
@@ -1157,29 +1043,20 @@ class ElementHandler
         private $dom;
         private $namespaces;
 
-        private $checkSequence = [ 'specialContentHandler',
-                                   'specialAttributeHandler',
-                                   'stringStringHandler',
-                                   'stringMixedHandler',
-                                   'integerArrayHandler',
-                                   'integerStringNotXmlHandler',
-                                   'integerXmlHandler',
-                                   'integerDomdocumentHandler',
-                                   'integerDomnodelistHandler',
-                                   'integerDomnodeHandler',
-                                   'integerSimplexmlHandler',
-                                   'integerFluidxmlHandler',
-                                   'integerFluidcontextHandler',
-                                   'alienHandler' ];
+        public static function insert(...$arguments)
+        {
+                $handler = new static(...$arguments);
 
+                return $handler();
+        }
 
         // TODO
         // remove the dependency from namespaces and dom.
-        public function __construct(\DOMNode $parent, $key, $val, array $optionals, callable $insert, \DOMDocument $dom, array $namespaces)
+        public function __construct(\DOMNode $parent, &$key, &$val, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
                 $this->parent    = $parent;
-                $this->key       = new ElementOracle($key);
-                $this->val       = new ElementOracle($val);
+                $this->key       = $key;
+                $this->val       = $val;
                 $this->optionals = $optionals;
                 $this->insert    = $insert;
                 $this->dom       = $dom;
@@ -1188,13 +1065,29 @@ class ElementHandler
 
         public function __invoke()
         {
-                foreach ($this->checkSequence as $check) {
+                $check_sequence = [ 'specialContentHandler',
+                                    'specialAttributeHandler',
+                                    'stringStringHandler',
+                                    'stringMixedHandler',
+                                    'integerArrayHandler',
+                                    'integerStringNotXmlHandler',
+                                    'integerXmlHandler',
+                                    'integerDomdocumentHandler',
+                                    'integerDomnodelistHandler',
+                                    'integerDomnodeHandler',
+                                    'integerSimplexmlHandler',
+                                    'integerFluidxmlHandler',
+                                    'integerFluidcontextHandler' ];
+
+                foreach ($check_sequence as $check) {
                         $ret = $this->$check();
 
                         if ($ret !== false) {
                                 return $ret;
                         }
                 }
+
+                throw new \Exception('XML document not supported.');
         }
 
         protected function createElement($name, $value = null)
@@ -1252,18 +1145,21 @@ class ElementHandler
 
         protected function specialContentHandler()
         {
-                if ($this->key->isNotSpecialContent() || $this->val->isNotString()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_string($k) || $k !== '@'|| ! \is_string($v)) {
                         return false;
                 }
 
                 // The user has passed an element text content:
-                // [ '@'          => 'Element content.' ]
+                // [ '@' => 'Element content.' ]
 
                 // Algorithm 1:
-                $this->newContext($this->parent)->appendText($this->val->get());
+                $this->newContext($this->parent)->appendText($v);
 
                 // Algorithm 2:
-                // $this->setText($this->val);
+                // $this->setText($v);
 
                 // The user can specify multiple '@' special elements
                 // so Algorithm 1 is the right choice.
@@ -1273,29 +1169,35 @@ class ElementHandler
 
         protected function specialAttributeHandler()
         {
-                if ($this->key->isNotSpecialAttribute() || $this->val->isNotString()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_string($k) || $k[0] !== '@' || ! \is_string($v)) {
                         return false;
                 }
 
                 // The user has passed an attribute name and an attribute value:
                 // [ '@attribute' => 'Attribute content' ]
 
-                $attr = \substr($this->key->get(), 1);
-                $this->newContext($this->parent)->setAttribute($attr, $this->val->get());
+                $attr = \substr($k, 1);
+                $this->newContext($this->parent)->setAttribute($attr, $v);
 
                 return [];
         }
 
         protected function stringStringHandler()
         {
-                if ($this->key->isNotString() || $this->val->isNotString()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_string($k) || ! \is_string($v)) {
                         return false;
                 }
 
                 // The user has passed an element name and an element value:
                 // [ 'element' => 'Element content' ]
 
-                $el = $this->createElement($this->key->get(), $this->val->get());
+                $el = $this->createElement($k, $v);
                 $el = \call_user_func($this->insert, $this->parent, $el);
 
                 return [ $el ];
@@ -1303,7 +1205,10 @@ class ElementHandler
 
         protected function stringMixedHandler()
         {
-                if ($this->key->isNotString() || $this->val->isString()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_string($k) || \is_string($v)) {
                         return false;
                 }
 
@@ -1311,19 +1216,22 @@ class ElementHandler
                 // - [ 'element' => [...] ]
                 // - [ 'element' => DOMNode|SimpleXMLElement|FluidXml ]
 
-                $el = $this->createElement($this->key->get());
+                $el = $this->createElement($k);
                 $el = \call_user_func($this->insert, $this->parent, $el);
 
                 // The new children elements must be created in the order
                 // they are supplied, so 'appendChild' is the perfect operation.
-                $this->newContext($el)->appendChild($this->val->get(), ...$this->optionals);
+                $this->newContext($el)->appendChild($v, ...$this->optionals);
 
                 return [ $el ];
         }
 
         protected function integerArrayHandler()
         {
-                if ($this->key->isNotInteger() || $this->val->isNotArray()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_int($k) || ! \is_array($v)) {
                         return false;
                 }
 
@@ -1332,10 +1240,8 @@ class ElementHandler
 
                 $context = [];
 
-                foreach ($this->val->get() as $kk => $vv) {
-                        $handler = new ElementHandler($this->parent, $kk, $vv, $this->optionals, $this->insert, $this->dom, $this->namespaces);
-
-                        $cx = $handler();
+                foreach ($v as $kk => $vv) {
+                        $cx = InsertionHandler::insert($this->parent, $kk, $vv, $this->optionals, $this->insert, $this->dom, $this->namespaces);
 
                         $context = \array_merge($context, $cx);
                 }
@@ -1345,14 +1251,17 @@ class ElementHandler
 
         protected function integerStringNotXmlHandler()
         {
-                if ($this->key->isNotInteger() || $this->val->isNotString() || $this->val->isXml()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_int($k) || ! \is_string($v) || is_an_xml_string($v)) {
                         return false;
                 }
 
                 // The user has passed a node name without a node value:
                 // [ 'element', ... ]
 
-                $el = $this->createElement($this->val->get());
+                $el = $this->createElement($v);
                 $el = \call_user_func($this->insert, $this->parent, $el);
 
                 return [ $el ];
@@ -1360,7 +1269,10 @@ class ElementHandler
 
         protected function integerXmlHandler()
         {
-                if ($this->key->isNotInteger() || $this->val->isNotXml()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_int($k) || ! is_an_xml_string($v)) {
                         return false;
                 }
 
@@ -1373,7 +1285,7 @@ class ElementHandler
                 $dom->formatOutput       = true;
                 $dom->preserveWhiteSpace = false;
 
-                $v = \ltrim($this->val->get());
+                $v = \ltrim($v);
                 if ($v[1] === '?') {
                         $dom->loadXML($v);
                         $nodes = $dom->childNodes;
@@ -1394,67 +1306,80 @@ class ElementHandler
 
         protected function integerDomdocumentHandler()
         {
-                if ($this->key->isNotInteger() || $this->val->isNotDomdocument()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_int($k) || ! $v instanceof \DOMDocument) {
                         return false;
                 }
 
                 // A DOMDocument can have multiple root nodes.
 
                 // Algorithm 1:
-                return $this->attachNodes($this->val->get()->childNodes);
+                return $this->attachNodes($v->childNodes);
 
                 // Algorithm 2:
-                // return $this->attachNodes($this->val->get()->documentElement);
+                // return $this->attachNodes($v->documentElement);
         }
 
         protected function integerDomnodelistHandler()
         {
-                if ($this->key->isNotInteger() || $this->val->isNotDomnodelist()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_int($k) || ! $v instanceof \DOMNodeList) {
                         return false;
                 }
 
-                return $this->attachNodes($this->val->get());
+                return $this->attachNodes($v);
         }
 
         protected function integerDomnodeHandler()
         {
-                if ($this->key->isNotInteger() || $this->val->isNotDomnode()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_int($k) || ! $v instanceof \DOMNode) {
                         return false;
                 }
 
-                return $this->attachNodes($this->val->get());
+                return $this->attachNodes($v);
         }
 
         protected function integerSimplexmlHandler()
         {
-                if ($this->key->isNotInteger() || $this->val->isNotSimplexml()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_int($k) || ! $v instanceof \SimpleXMLElement) {
                         return false;
                 }
 
-                return $this->attachNodes(\dom_import_simplexml($this->val->get()));
+                return $this->attachNodes(\dom_import_simplexml($v));
         }
 
         protected function integerFluidxmlHandler()
         {
-                if ($this->key->isNotInteger() || $this->val->isNotFluidxml()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_int($k) || ! $v instanceof FluidXml) {
                         return false;
                 }
 
-                return $this->attachNodes($this->val->get()->dom()->documentElement);
+                return $this->attachNodes($v->dom()->documentElement);
         }
 
         protected function integerFluidcontextHandler()
         {
-                if ($this->key->isNotInteger() || $this->val->isNotFluidcontext()) {
+                $k = $this->key;
+                $v = $this->val;
+
+                if (! \is_int($k) || ! $v instanceof FluidContext) {
                         return false;
                 }
 
-                return $this->attachNodes($this->val->get()->asArray());
-        }
-
-        protected function alienHandler()
-        {
-                throw new \Exception('XML document not supported.');
+                return $this->attachNodes($v->asArray());
         }
 }
 

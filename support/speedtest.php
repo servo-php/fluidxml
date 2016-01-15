@@ -14,12 +14,16 @@ if (! function_exists($fluidxml)) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+$machine->add('fluidxml()', function($data) use ($fluidxml) {
+        $fluidxml();
+});
+
 $machine->add('add()', function($data) use ($fluidxml) {
-        $xml = $fluidxml()->add('el');
+        $fluidxml()->add('el');
 });
 
 $machine->add('add(true)->add()', function($data) use ($fluidxml) {
-        $xml = $fluidxml()->add('el', true)->add('el');
+        $fluidxml()->add('el', true)->add('el');
 });
 
 $machine->add('add()+query()+add()', function($data) use ($fluidxml) {
@@ -27,9 +31,8 @@ $machine->add('add()+query()+add()', function($data) use ($fluidxml) {
 });
 
 $machine->add('add([...])->add([...])', function($data) use ($fluidxml) {
-        $xml = $fluidxml()->add([ 'el' => 'el' ])
-                          ->add([ 'el' => [ 'el'  => 'el' ] ]);
-
+        $fluidxml()->add([ 'el' => 'el' ])
+                   ->add([ 'el' => [ 'el'  => 'el' ] ]);
 });
 
 ////////////////////////////////////////////////////////////////////////////////
