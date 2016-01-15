@@ -12,4 +12,10 @@ if ! chkcmd 'peridot'; then
         exit 1
 fi
 
-peridot -g "*.php" "./specs/"
+phpdbg=
+
+if (test $# -ge 1) && (test $1 = 'debug') && chkcmd 'phpdbg'; then
+        phpdbg=phpdbg
+fi
+
+$phpdbg $(which peridot) -g "*.php" "./specs/"
