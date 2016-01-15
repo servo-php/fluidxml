@@ -1045,26 +1045,6 @@ class InsertionHandler
 
         public static function insert(...$arguments)
         {
-                $handler = new static(...$arguments);
-
-                return $handler();
-        }
-
-        // TODO
-        // remove the dependency from namespaces and dom.
-        public function __construct(\DOMNode $parent, &$key, &$val, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
-        {
-                $this->parent    = $parent;
-                $this->key       = $key;
-                $this->val       = $val;
-                $this->optionals = $optionals;
-                $this->insert    = $insert;
-                $this->dom       = $dom;
-                $this->namespaces= $namespaces;
-        }
-
-        public function __invoke()
-        {
                 $check_sequence = [ 'specialContentHandler',
                                     'specialAttributeHandler',
                                     'stringStringHandler',
@@ -1080,7 +1060,7 @@ class InsertionHandler
                                     'integerFluidcontextHandler' ];
 
                 foreach ($check_sequence as $check) {
-                        $ret = $this->$check();
+                        $ret = static::$check(...$arguments);
 
                         if ($ret !== false) {
                                 return $ret;
@@ -1090,7 +1070,7 @@ class InsertionHandler
                 throw new \Exception('XML document not supported.');
         }
 
-        protected function createElement($name, $value = null)
+        protected static function createElement(array &$namespaces, $name, $value = null)
         {
                 // The DOMElement instance must be different for every node,
                 // otherwise only one element is attached to the DOM.
@@ -1105,7 +1085,7 @@ class InsertionHandler
                 $id   = \array_pop($name_parts);
 
                 if ($id) {
-                        $ns  = $this->namespaces[$id];
+                        $ns  = $namespaces[$id];
                         $uri = $ns->uri();
 
                         if ($ns->mode() === FluidNamespace::MODE_EXPLICIT) {
@@ -1117,12 +1097,12 @@ class InsertionHandler
                 $el = new \DOMElement($name, $value, $uri);
 
                 // Algorithm 2:
-                // $el = $this->dom->createElement($name, $value);
+                // $el = $dom->createElement($name, $value);
 
                 return $el;
         }
 
-        protected function attachNodes($nodes)
+        protected static function attachNodes($dom, $parent, $insert, $nodes)
         {
                 if (! \is_array($nodes) && ! $nodes instanceof \Traversable) {
                         $nodes = [ $nodes ];
@@ -1131,23 +1111,20 @@ class InsertionHandler
                 $context = [];
 
                 foreach ($nodes as $el) {
-                        $el        = $this->dom->importNode($el, true);
-                        $context[] = $this->insert->__invoke($this->parent, $el);
+                        $el        = $dom->importNode($el, true);
+                        $context[] = \call_user_func($insert, $parent, $el);
                 }
 
                 return $context;
         }
 
-        protected function newContext($context)
+        protected static function newContext($context, $namespaces)
         {
-                return new FluidContext($context, $this->namespaces);
+                return new FluidContext($context, $namespaces);
         }
 
-        protected function specialContentHandler()
+        protected static function specialContentHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_string($k) || $k !== '@'|| ! \is_string($v)) {
                         return false;
                 }
@@ -1156,7 +1133,7 @@ class InsertionHandler
                 // [ '@' => 'Element content.' ]
 
                 // Algorithm 1:
-                $this->newContext($this->parent)->appendText($v);
+                static::newContext($parent, $namespaces)->appendText($v);
 
                 // Algorithm 2:
                 // $this->setText($v);
@@ -1167,11 +1144,8 @@ class InsertionHandler
                 return [];
         }
 
-        protected function specialAttributeHandler()
+        protected static function specialAttributeHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_string($k) || $k[0] !== '@' || ! \is_string($v)) {
                         return false;
                 }
@@ -1180,16 +1154,13 @@ class InsertionHandler
                 // [ '@attribute' => 'Attribute content' ]
 
                 $attr = \substr($k, 1);
-                $this->newContext($this->parent)->setAttribute($attr, $v);
+                static::newContext($parent, $namespaces)->setAttribute($attr, $v);
 
                 return [];
         }
 
-        protected function stringStringHandler()
+        protected static function stringStringHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_string($k) || ! \is_string($v)) {
                         return false;
                 }
@@ -1197,17 +1168,14 @@ class InsertionHandler
                 // The user has passed an element name and an element value:
                 // [ 'element' => 'Element content' ]
 
-                $el = $this->createElement($k, $v);
-                $el = \call_user_func($this->insert, $this->parent, $el);
+                $el = static::createElement($namespaces, $k, $v);
+                $el = \call_user_func($insert, $parent, $el);
 
                 return [ $el ];
         }
 
-        protected function stringMixedHandler()
+        protected static function stringMixedHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_string($k) || \is_string($v)) {
                         return false;
                 }
@@ -1216,21 +1184,18 @@ class InsertionHandler
                 // - [ 'element' => [...] ]
                 // - [ 'element' => DOMNode|SimpleXMLElement|FluidXml ]
 
-                $el = $this->createElement($k);
-                $el = \call_user_func($this->insert, $this->parent, $el);
+                $el = static::createElement($namespaces, $k);
+                $el = \call_user_func($insert, $parent, $el);
 
                 // The new children elements must be created in the order
                 // they are supplied, so 'appendChild' is the perfect operation.
-                $this->newContext($el)->appendChild($v, ...$this->optionals);
+                static::newContext($el, $namespaces)->appendChild($v, ...$optionals);
 
                 return [ $el ];
         }
 
-        protected function integerArrayHandler()
+        protected static function integerArrayHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_int($k) || ! \is_array($v)) {
                         return false;
                 }
@@ -1241,7 +1206,7 @@ class InsertionHandler
                 $context = [];
 
                 foreach ($v as $kk => $vv) {
-                        $cx = InsertionHandler::insert($this->parent, $kk, $vv, $this->optionals, $this->insert, $this->dom, $this->namespaces);
+                        $cx = InsertionHandler::insert($parent, $kk, $vv, $optionals, $insert, $dom, $namespaces);
 
                         $context = \array_merge($context, $cx);
                 }
@@ -1249,11 +1214,8 @@ class InsertionHandler
                 return $context;
         }
 
-        protected function integerStringNotXmlHandler()
+        protected static function integerStringNotXmlHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_int($k) || ! \is_string($v) || is_an_xml_string($v)) {
                         return false;
                 }
@@ -1261,17 +1223,14 @@ class InsertionHandler
                 // The user has passed a node name without a node value:
                 // [ 'element', ... ]
 
-                $el = $this->createElement($v);
-                $el = \call_user_func($this->insert, $this->parent, $el);
+                $el = static::createElement($namespaces, $v);
+                $el = \call_user_func($insert, $parent, $el);
 
                 return [ $el ];
         }
 
-        protected function integerXmlHandler()
+        protected static function integerXmlHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_int($k) || ! is_an_xml_string($v)) {
                         return false;
                 }
@@ -1281,34 +1240,31 @@ class InsertionHandler
 
                 $nodes = [];
 
-                $dom = new \DOMDocument();
-                $dom->formatOutput       = true;
-                $dom->preserveWhiteSpace = false;
+                $wrapper = new \DOMDocument();
+                $wrapper->formatOutput       = true;
+                $wrapper->preserveWhiteSpace = false;
 
-                $v = \ltrim($v);
-                if ($v[1] === '?') {
-                        $dom->loadXML($v);
-                        $nodes = $dom->childNodes;
+                $vv = \ltrim($v);
+                if ($vv[1] === '?') {
+                        $wrapper->loadXML($vv);
+                        $nodes = $wrapper->childNodes;
                 } else {
                         // A way to import strings with multiple root nodes.
-                        $dom->loadXML("<root>$v</root>");
+                        $wrapper->loadXML("<root>$vv</root>");
 
                         // Algorithm 1:
-                        $nodes = $dom->documentElement->childNodes;
+                        $nodes = $wrapper->documentElement->childNodes;
 
                         // Algorithm 2:
                         // $dom_xp = new \DOMXPath($dom);
                         // $nodes = $dom_xp->query('/root/*');
                 }
 
-                return $this->attachNodes($nodes);
+                return static::attachNodes($dom, $parent, $insert, $nodes);
         }
 
-        protected function integerDomdocumentHandler()
+        protected static function integerDomdocumentHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_int($k) || ! $v instanceof \DOMDocument) {
                         return false;
                 }
@@ -1316,70 +1272,55 @@ class InsertionHandler
                 // A DOMDocument can have multiple root nodes.
 
                 // Algorithm 1:
-                return $this->attachNodes($v->childNodes);
+                return static::attachNodes($dom, $parent, $insert, $v->childNodes);
 
                 // Algorithm 2:
-                // return $this->attachNodes($v->documentElement);
+                // return static::attachNodes($v->documentElement);
         }
 
-        protected function integerDomnodelistHandler()
+        protected static function integerDomnodelistHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_int($k) || ! $v instanceof \DOMNodeList) {
                         return false;
                 }
 
-                return $this->attachNodes($v);
+                return static::attachNodes($dom, $parent, $insert, $v);
         }
 
-        protected function integerDomnodeHandler()
+        protected static function integerDomnodeHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_int($k) || ! $v instanceof \DOMNode) {
                         return false;
                 }
 
-                return $this->attachNodes($v);
+                return static::attachNodes($dom, $parent, $insert, $v);
         }
 
-        protected function integerSimplexmlHandler()
+        protected static function integerSimplexmlHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_int($k) || ! $v instanceof \SimpleXMLElement) {
                         return false;
                 }
 
-                return $this->attachNodes(\dom_import_simplexml($v));
+                return static::attachNodes($dom, $parent, $insert, \dom_import_simplexml($v));
         }
 
-        protected function integerFluidxmlHandler()
+        protected static function integerFluidxmlHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_int($k) || ! $v instanceof FluidXml) {
                         return false;
                 }
 
-                return $this->attachNodes($v->dom()->documentElement);
+                return static::attachNodes($dom, $parent, $insert, $v->dom()->documentElement);
         }
 
-        protected function integerFluidcontextHandler()
+        protected static function integerFluidcontextHandler(\DOMNode $parent, &$k, &$v, array &$optionals, callable $insert, \DOMDocument $dom, array &$namespaces)
         {
-                $k = $this->key;
-                $v = $this->val;
-
                 if (! \is_int($k) || ! $v instanceof FluidContext) {
                         return false;
                 }
 
-                return $this->attachNodes($v->asArray());
+                return static::attachNodes($dom, $parent, $insert, $v->asArray());
         }
 }
 
