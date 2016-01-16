@@ -966,7 +966,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function handleInsertion(...$arguments)
+        protected function handleInsertion(...$arguments)
         {
                 $check_sequence = [ 'specialContentHandler',
                                     'specialAttributeHandler',
@@ -1041,7 +1041,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $context;
         }
 
-        protected function specialContentHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function specialContentHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_string($k) || $k !== '@'|| ! \is_string($v)) {
                         return false;
@@ -1062,7 +1062,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [];
         }
 
-        protected function specialAttributeHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function specialAttributeHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_string($k) || $k[0] !== '@' || ! \is_string($v)) {
                         return false;
@@ -1077,7 +1077,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [];
         }
 
-        protected function stringStringHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function stringStringHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_string($k) || ! \is_string($v)) {
                         return false;
@@ -1092,7 +1092,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [ $el ];
         }
 
-        protected function stringMixedHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function stringMixedHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_string($k) || \is_string($v)) {
                         return false;
@@ -1112,7 +1112,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [ $el ];
         }
 
-        protected function integerArrayHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function integerArrayHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_int($k) || ! \is_array($v)) {
                         return false;
@@ -1132,7 +1132,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $context;
         }
 
-        protected function integerStringNotXmlHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function integerStringNotXmlHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_int($k) || ! \is_string($v) || is_an_xml_string($v)) {
                         return false;
@@ -1147,7 +1147,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [ $el ];
         }
 
-        protected function integerXmlHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function integerXmlHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_int($k) || ! is_an_xml_string($v)) {
                         return false;
@@ -1181,7 +1181,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->attachNodes($parent, $nodes, $fn);
         }
 
-        protected function integerDomdocumentHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function integerDomdocumentHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_int($k) || ! $v instanceof \DOMDocument) {
                         return false;
@@ -1196,7 +1196,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // return $this->attachNodes($parent, $v->documentElement, $fn);
         }
 
-        protected function integerDomnodelistHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function integerDomnodelistHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_int($k) || ! $v instanceof \DOMNodeList) {
                         return false;
@@ -1205,7 +1205,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->attachNodes($parent, $v, $fn);
         }
 
-        protected function integerDomnodeHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function integerDomnodeHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_int($k) || ! $v instanceof \DOMNode) {
                         return false;
@@ -1214,7 +1214,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->attachNodes($parent, $v, $fn);
         }
 
-        protected function integerSimplexmlHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function integerSimplexmlHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_int($k) || ! $v instanceof \SimpleXMLElement) {
                         return false;
@@ -1223,7 +1223,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->attachNodes($parent, \dom_import_simplexml($v), $fn);
         }
 
-        protected function integerFluidxmlHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function integerFluidxmlHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_int($k) || ! $v instanceof FluidXml) {
                         return false;
@@ -1232,7 +1232,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->attachNodes($parent, $v->dom()->documentElement, $fn);
         }
 
-        protected function integerFluidcontextHandler($parent, &$k, &$v, &$optionals, $fn)
+        protected function integerFluidcontextHandler($parent, $k, $v, $optionals, $fn)
         {
                 if (! \is_int($k) || ! $v instanceof FluidContext) {
                         return false;
