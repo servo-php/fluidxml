@@ -33,8 +33,6 @@
 **1.12** (2016-01-08):
 _introduces the `->times()` method._
 
-* `->times()` is part of the family.
-
 
 **1.11**:
 _introduces the `@`/`@<attribute>` special syntax._
@@ -208,6 +206,7 @@ Many other [APIs][apis] are available:
 - `appendCdata()`
 - `setCdata()`/`cdata()`
 - `length()`
+- `dom()`
 - `asArray()`
 
 and others to come.

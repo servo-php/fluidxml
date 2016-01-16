@@ -5,7 +5,7 @@ $v = isset($argv[1]) ? $argv[1] : '1.0';
 require_once 'Codevelox.php';
 require_once "$v/FluidXml.php";
 
-$machine = new Codevelox();
+$machine = new Codevelox(10000);
 
 $fluidxml = 'fluidxml';
 if (! function_exists($fluidxml)) {
@@ -14,12 +14,25 @@ if (! function_exists($fluidxml)) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-$machine->add('add()', function($data) use ($fluidxml) {
-        $xml = $fluidxml()->add('pippo');
+$machine->add('fluidxml()', function($data) use ($fluidxml) {
+        $fluidxml();
 });
 
-$machine->add('query+add()', function($data) use ($fluidxml) {
-        $fluidxml()->add('pippo')->query('//pippo')->add('pluto');
+$machine->add('add()', function($data) use ($fluidxml) {
+        $fluidxml()->add('el');
+});
+
+$machine->add('add(true)->add()', function($data) use ($fluidxml) {
+        $fluidxml()->add('el', true)->add('el');
+});
+
+$machine->add('add()+query()+add()', function($data) use ($fluidxml) {
+        $fluidxml()->add('el')->query('//el')->add('el');
+});
+
+$machine->add('add([...])->add([...])', function($data) use ($fluidxml) {
+        $fluidxml()->add([ 'el' => 'el' ])
+                   ->add([ 'el' => [ 'el'  => 'el' ] ]);
 });
 
 ////////////////////////////////////////////////////////////////////////////////

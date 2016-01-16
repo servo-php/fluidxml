@@ -58,11 +58,14 @@ class Codevelox
                         yield $g => $elapsed;
                 }
 
-                return $results;
+                // PHP 5.6 doesn't support returning from a generator.
+                // PHP 7.0 does.
+                // return $results;
         }
 
         public function message($index, $desc, $time)
         {
+                $time = \sprintf('%.2f', $time);
                 return "Task {$index} took $time ($desc)\n";
         }
 
