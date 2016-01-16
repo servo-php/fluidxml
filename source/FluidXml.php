@@ -227,54 +227,22 @@ trait NewableTrait
         }
 }
 
-trait FluidNamespaceTrait
+class FluidDocument
 {
-        private $namespaces = [];
-
-        public function namespaces()
-        {
-                return $this->namespaces;
-        }
-
-        // This method should be called 'namespace',
-        // but for compatibility with PHP 5.6
-        // it is shadowed by the __call() method.
-        protected function namespace_(...$arguments)
-        {
-                $namespaces = [];
-
-                if (\is_string($arguments[0])) {
-                        $args = [ $arguments[0], $arguments[1] ];
-
-                        if (isset($arguments[2])) {
-                                $args[] = $arguments[2];
-                        }
-
-                        $namespaces[] = new FluidNamespace(...$args);
-                } else if (\is_array($arguments[0])) {
-                        $namespaces = $arguments[0];
-                } else {
-                        $namespaces = $arguments;
-                }
-
-                foreach ($namespaces as $n) {
-                        $this->namespaces[$n->id()] = $n;
-                }
-
-                return $this;
-        }
+        public $dom;
+        public $xpath;
+        public $namespaces = [];
 }
 
 class FluidXml implements FluidInterface
 {
-        use FluidNamespaceTrait,
-            NewableTrait,
+        use NewableTrait,
             ReservedCallTrait,          // For compatibility with PHP 5.6.
             ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
 
         const ROOT_NODE = 'doc';
 
-        private $dom;
+        private $document;
 
         public static function load($document)
         {
@@ -300,6 +268,8 @@ class FluidXml implements FluidInterface
 
         public function __construct($root = null, $options = [])
         {
+                $this->document = new FluidDocument();
+
                 $defaults = [ 'root'       => self::ROOT_NODE,
                               'version'    => '1.0',
                               'encoding'   => 'UTF-8',
@@ -317,37 +287,73 @@ class FluidXml implements FluidInterface
 
                 $opts = \array_merge($defaults, $options);
 
-                $this->dom = new \DOMDocument($opts['version'], $opts['encoding']);
-                $this->dom->formatOutput       = true;
-                $this->dom->preserveWhiteSpace = false;
+                $this->document->dom = new \DOMDocument($opts['version'], $opts['encoding']);
+                $this->document->dom->formatOutput       = true;
+                $this->document->dom->preserveWhiteSpace = false;
 
-                if ($opts['root']) {
+                $this->document->xpath = new \DOMXPath($this->document->dom);
+
+                if (! empty($opts['root'])) {
                         $this->appendSibling($opts['root']);
                 }
 
-                if ($opts['stylesheet']) {
+                if (! empty($opts['stylesheet'])) {
                         $attrs = 'type="text/xsl" '
                                . "encoding=\"{$opts['encoding']}\" "
                                . 'indent="yes" '
                                . "href=\"{$opts['stylesheet']}\"";
                         $stylesheet = new \DOMProcessingInstruction('xml-stylesheet', $attrs);
 
-                        $this->dom->insertBefore($stylesheet, $this->dom->documentElement);
+                        $this->document->dom->insertBefore($stylesheet, $this->document->dom->documentElement);
                 }
         }
 
         public function xml($strip = false)
         {
                 if ($strip) {
-                        return domdocument_to_string_without_headers($this->dom);
+                        return domdocument_to_string_without_headers($this->document->dom);
                 }
 
-                return $this->dom->saveXML();
+                return $this->document->dom->saveXML();
         }
 
         public function dom()
         {
-                return $this->dom;
+                return $this->document->dom;
+        }
+
+        public function namespaces()
+        {
+                return $this->document->namespaces;
+        }
+
+        // This method should be called 'namespace',
+        // but for compatibility with PHP 5.6
+        // it is shadowed by the __call() method.
+        protected function namespace_(...$arguments)
+        {
+                $namespaces = [];
+
+                if (\is_string($arguments[0])) {
+                        $args = [ $arguments[0], $arguments[1] ];
+
+                        if (isset($arguments[2])) {
+                                $args[] = $arguments[2];
+                        }
+
+                        $namespaces[] = new FluidNamespace(...$args);
+                } else if (\is_array($arguments[0])) {
+                        $namespaces = $arguments[0];
+                } else {
+                        $namespaces = $arguments;
+                }
+
+                foreach ($namespaces as $n) {
+                        $this->document->namespaces[$n->id()] = $n;
+                        $this->document->xpath->registerNamespace($n->id(), $n->uri());
+                }
+
+                return $this;
         }
 
         public function query(...$xpath)
@@ -383,7 +389,7 @@ class FluidXml implements FluidInterface
 
         public function prependSibling($sibling, ...$optionals)
         {
-                if ($this->dom->documentElement === null) {
+                if ($this->document->dom->documentElement === null) {
                         // If the document doesn't have at least one root node,
                         // the sibling creation fails. In this case we replace
                         // the sibling creation with the creation of a generic node.
@@ -410,7 +416,7 @@ class FluidXml implements FluidInterface
 
         public function appendSibling($sibling, ...$optionals)
         {
-                if ($this->dom->documentElement === null) {
+                if ($this->document->dom->documentElement === null) {
                         // If the document doesn't have at least one root node,
                         // the sibling creation fails. In this case we replace
                         // the sibling creation with the creation of a generic node.
@@ -498,7 +504,7 @@ class FluidXml implements FluidInterface
         protected function newContext($context = null)
         {
                 if (! $context) {
-                        $context = $this->dom->documentElement;
+                        $context = $this->document->dom->documentElement;
                 }
 
                 // If the user has requested ['root' => null] at construction time
@@ -507,10 +513,10 @@ class FluidXml implements FluidInterface
                 if (! $context) {
                         // Whether there is not a root node, the DOMDocument is
                         // promoted as root node.
-                        $context = $this->dom;
+                        $context = $this->document->dom;
                 }
 
-                return new FluidContext($context, $this->namespaces);
+                return new FluidContext($this->document, $context);
         }
 
         protected function chooseContext($help_context, $new_context)
@@ -527,41 +533,30 @@ class FluidXml implements FluidInterface
 
 class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 {
-        use FluidNamespaceTrait,
-            NewableTrait,
+        use NewableTrait,
             ReservedCallTrait,          // For compatibility with PHP 5.6.
             ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
 
-        private $dom;
+        private $document;
         private $nodes = [];
         private $seek = 0;
 
-        public function __construct($context, array $namespaces = [])
+        public function __construct($document, $context)
         {
-                if (! \is_array($context)) {
+                $this->document = $document;
+
+                if (! \is_array($context) && ! $context instanceof \Traversable) {
+                        // DOMDocument, DOMElement and DOMNode are not iterable.
+                        // DOMNodeList and FluidContext are iterable.
                         $context = [ $context ];
                 }
 
                 foreach ($context as $n) {
-                        if ($n instanceof \DOMDocument) {
-                                $this->dom     = $n;
-                                $this->nodes[] = $n;
-                        } else if ($n instanceof \DOMNode) {
-                                $this->dom     = $n->ownerDocument;
-                                $this->nodes[] = $n;
-                        } else if ($n instanceof \DOMNodeList) {
-                                $this->dom   = $n[0]->ownerDocument;
-                                $this->nodes = \iterator_to_array($n);
-                        } else if ($n instanceof FluidContext) {
-                                $this->dom   = $n[0]->ownerDocument;
-                                $this->nodes = \array_merge($this->nodes, $n->asArray());
-                        } else {
+                        if (! $n instanceof \DOMNode) {
                                 throw new \Exception('Node type not recognized.');
                         }
-                }
 
-                if (! empty($namespaces)) {
-                        $this->namespace(...\array_values($namespaces));
+                        $this->nodes[] = $n;
                 }
         }
 
@@ -647,18 +642,12 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         $xpaths = $xpath[0];
                 }
 
-                $domxp = new \DOMXPath($this->dom);
-
-                foreach ($this->namespaces as $n) {
-                        $domxp->registerNamespace($n->id(), $n->uri());
-                }
-
                 $results = [];
 
                 foreach ($this->nodes as $n) {
                         foreach ($xpaths as $x) {
                                 // Returns a DOMNodeList.
-                                $res = $domxp->query($x, $n);
+                                $res = $this->document->xpath->query($x, $n);
 
                                 // Algorithm 1:
                                 $results = \array_merge($results, \iterator_to_array($res));
@@ -700,7 +689,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         public function times($times, callable $fn = null)
         {
                 if ($fn === null) {
-                        return new FluidRepeater($this, $times);
+                        return new FluidRepeater($this->document, $this, $times);
                 }
 
                 for ($i = 0; $i < $times; ++$i) {
@@ -930,7 +919,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function newContext($context)
         {
-                return new FluidContext($context, $this->namespaces);
+                return new FluidContext($this->document, $context);
         }
 
         protected function handleOptionals($element, array $optionals)
@@ -966,29 +955,29 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         {
                 list($element, $attributes, $switch_context) = $this->handleOptionals($element, $optionals);
 
-                $new_context = [];
+                $nodes = [];
 
                 foreach ($this->nodes as $n) {
                         foreach ($element as $k => $v) {
                                 // I give up, it's a too complex job for only one method like me.
-                                $cx = $this->handleInsertion($n, $k, $v, $fn, $optionals);
+                                $cx    = $this->handleInsertion($n, $k, $v, $fn, $optionals);
 
-                                $new_context = \array_merge($new_context, $cx);
+                                $nodes = \array_merge($nodes, $cx);
                         }
                 }
 
-                $context = $this->newContext($new_context);
+                $new_context = $this->newContext($nodes);
 
                 // Setting the attributes is an help that the appendChild method
                 // offers to the user and is the same of:
                 // 1. appending a child switching the context
                 // 2. setting the attributes over the new context.
                 if (! empty($attributes)) {
-                        $context->setAttribute($attributes);
+                        $new_context->setAttribute($attributes);
                 }
 
                 if ($switch_context) {
-                        return $context;
+                        return $new_context;
                 }
 
                 return $this;
@@ -1036,7 +1025,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 $id   = \array_pop($name_parts);
 
                 if ($id) {
-                        $ns  = $this->namespaces[$id];
+                        $ns  = $this->document->namespaces[$id];
                         $uri = $ns->uri();
 
                         if ($ns->mode() === FluidNamespace::MODE_EXPLICIT) {
@@ -1062,7 +1051,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 $context = [];
 
                 foreach ($nodes as $el) {
-                        $el        = $this->dom->importNode($el, true);
+                        $el        = $this->document->dom->importNode($el, true);
                         $context[] = \call_user_func($fn, $parent, $el);
                 }
 
@@ -1345,25 +1334,29 @@ class FluidNamespace
 
 class FluidRepeater
 {
+        private $document;
         private $context;
         private $times;
 
-        public function __construct($context, $times)
+        public function __construct($document, $context, $times)
         {
-                $this->context = $context;
-                $this->times   = $times;
+                $this->document = $document;
+                $this->context  = $context;
+                $this->times    = $times;
         }
 
         public function __call($method, $arguments)
         {
-                $new_context = [];
+                $nodes = [];
+                $new_context = $this->context;
 
                 for ($i = 0, $l = $this->times; $i < $l; ++$i) {
-                        $new_context[] = $this->context->$method(...$arguments);
+                        $new_context = $this->context->$method(...$arguments);
+                        $nodes       = \array_merge($nodes, $new_context->asArray());
                 }
 
-                if ($new_context[0] !== $this->context) {
-                        return new FluidContext($new_context, $this->context->namespaces());
+                if ($new_context !== $this->context) {
+                        return new FluidContext($this->document, $nodes);
                 }
 
                 return $this->context;

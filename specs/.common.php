@@ -38,13 +38,17 @@ function assert_is_fluid($method, ...$args)
 {
         $instance = new \FluidXml\FluidXml();
 
-        $actual   = \call_user_func([$instance, $method], ...$args);
-        $expected = \FluidXml\FluidInterface::class;
-        assert_is_a($actual, $expected);
+        if (\method_exists($instance, $method)) {
+                $actual   = \call_user_func([$instance, $method], ...$args);
+                $expected = \FluidXml\FluidInterface::class;
+                assert_is_a($actual, $expected);
+        }
 
         $instance = $instance->query('/*');
 
-        $actual   = \call_user_func([$instance, $method], ...$args);
-        $expected = \FluidXml\FluidInterface::class;
-        assert_is_a($actual, $expected);
+        if (\method_exists($instance, $method)) {
+                $actual   = \call_user_func([$instance, $method], ...$args);
+                $expected = \FluidXml\FluidInterface::class;
+                assert_is_a($actual, $expected);
+        }
 }
