@@ -732,7 +732,8 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->appendChild($child, ...$optionals);
         }
 
-        public static function doPrependSibling($sibling, $element) {
+        public static function doPrependSibling($sibling, $element)
+        {
                 return $sibling->parentNode->insertBefore($element, $sibling);
         }
 

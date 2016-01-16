@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . ".common.php";
+require_once __DIR__ . DIRECTORY_SEPARATOR . '.common.php';
 
 use \FluidXml\FluidXml;
 use \FluidXml\FluidContext;
