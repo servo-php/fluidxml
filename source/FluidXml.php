@@ -80,6 +80,10 @@ function fluidns(...$arguments)
 
 function is_an_xml_string($string)
 {
+        if (! \is_string($string)) {
+                return false;
+        }
+
         // Removes any empty new line at the beginning,
         // otherwise the first character check may fail.
         $string = \ltrim($string);
@@ -274,7 +278,7 @@ class FluidXml implements FluidInterface
 
         public static function load($document)
         {
-                if (\is_string($document) && ! \FluidXml\is_an_xml_string($document)) {
+                if (\is_string($document) && ! is_an_xml_string($document)) {
                         // Removes any empty new line at the beginning,
                         // otherwise the first character check fails.
 
@@ -700,7 +704,15 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 }
 
                 for ($i = 0; $i < $times; ++$i) {
-                        \call_user_func($fn, $this, $i);
+                        $args = [$this, $i];
+
+                        if ($fn instanceof \Closure) {
+                                $fn = $fn->bindTo($this);
+
+                                \array_shift($args);
+                        }
+
+                        \call_user_func($fn, ...$args);
                 }
 
                 return $this;
@@ -708,8 +720,17 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         public function each(callable $fn)
         {
-                foreach ($this->nodes as $k => $n) {
-                        \call_user_func($fn, $this->newContext($n), $n, $k);
+                foreach ($this->nodes as $i => $n) {
+                        $cx   = $this->newContext($n);
+                        $args = [$cx, $i, $n];
+
+                        if ($fn instanceof \Closure) {
+                                $fn = $fn->bindTo($cx);
+
+                                \array_shift($args);
+                        }
+
+                        \call_user_func($fn, ...$args);
                 }
 
                 return $this;

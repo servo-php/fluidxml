@@ -167,18 +167,18 @@ Everything is fluid, even **iterations**.
 
 ```php
 $book->query('//chapter')
-     ->each(function($chapter, $_, $index) {
-         $chapter->attr('idx', $index);
-     });
+        ->each(function($idx) {
+             $this->attr('id', $idx);
+        });
 ```
 
 ```php
 $book->query('//chapters')
         ->times(3)
             ->add('chapter')
-        ->times(4, function($chapters, $index) {
-            $chapters->add('chapter');
-            $chapters->add('illustration');
+        ->times(4, function($idx) {
+            $this->add('chapter');
+            $this->add('illustration');
         });
 ```
 

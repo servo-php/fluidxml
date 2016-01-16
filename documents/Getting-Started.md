@@ -401,15 +401,28 @@ Iterations can be performed without interrupting the fluid flow.
 
 ```php
 $book->query('//chapter')
-     ->each(function($chapter, $domnode, $index) {
-            $chapter->attr('id', $index + 1);
+        ->each(function($idx, $domnode) {
+                $this->attr('id', $idx + 1);
 
-            echo $domnode->nodeValue;
+                echo $domnode->nodeValue;
      });
 ```
 
-`->times($n)` repeats the following method call `$n` times. If a callable is<br/>
-passed as second argument, the callable is called `$n` times.
+Any valid callable is accepted, not only closures.
+
+```php
+function setattr($chapter, $idx, $domnode)
+{
+    $chapter->attr('id', $idx + 1);
+
+    echo $domnode->nodeValue;
+}
+
+$book->query('//chapter')
+        ->each('setattr');
+```
+
+`->times($n)` repeats the following method call `$n` times.
 
 ```php
 $book->query('//chapters')
@@ -417,11 +430,25 @@ $book->query('//chapters')
             ->add('chapter');
 ```
 
+If a callable is passed as second argument, the callable is called `$n` times.
+
 ```php
 $book->query('//chapters')
-        ->times(2, function($chapters, $index) {
-            $chapters->add('chapter', [ 'id' => $index + 5 ]);
+        ->times(2, function($idx) {
+            $this->add('chapter', [ 'id' => $idx + 5 ]);
         });
+```
+
+Any valid callable is accepted, not only closures.
+
+```php
+function addchapter($chapters, $idx)
+{
+        $chapters->add('chapter', [ 'id' => $idx + 5 ]);
+}
+
+$book->query('//chapters')
+        ->times(2, 'addchapter');
 ```
 
 

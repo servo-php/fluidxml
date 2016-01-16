@@ -1,7 +1,14 @@
 [+]: new   [~]: changed   [-]: removed   [#]: fixed   [@]: internal
 
 
-1.12: (2016-01-08)
+1.12.1: (2016-01-16)
+'->times()' and '->each()' are bound to the context. $this behaves as expected.
+
+	* [@] internal refactoring. Performances are worst but code is much
+	better.
+
+
+1.12:
 introduces the '->times()' method.
 
     * [+] ->times() is part of the family.

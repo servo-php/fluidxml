@@ -665,13 +665,25 @@ describe('FluidXml', function() {
                 it('should iterate the nodes inside the context', function() {
                         $xml = new FluidXml();
 
-                        $xml->each(function($cx, $n, $i) {
-                                assert_is_a($cx, FluidContext::class);
+                        $xml->each(function($i, $n) {
+                                assert_is_a($this, FluidContext::class);
                                 assert_is_a($n, \DOMNode::class);
                                 $actual   = $i;
                                 $expected = 0;
                                 \assert($actual === $expected, __($actual, $expected));
                         });
+
+                        function eachassert($cx, $i, $n)
+                        {
+                                assert_is_a($cx, FluidContext::class);
+                                assert_is_a($n,  \DOMNode::class);
+                                $actual   = $i;
+                                $expected = 0;
+                                \assert($actual === $expected, __($actual, $expected));
+                        }
+
+                        $xml->each('eachassert');
+
 
                         $xml->appendChild('child1')
                             ->appendChild('child2');
@@ -679,8 +691,8 @@ describe('FluidXml', function() {
                         $nodes = [];
                         $index = 0;
                         $xml->query('/doc/*')
-                            ->each(function($cx, $n, $i) use (&$nodes, &$index) {
-                                $cx->setText($n->nodeName);
+                            ->each(function($i, $n) use (&$nodes, &$index) {
+                                $this->setText($n->nodeName);
                                 $nodes[] = $n;
 
                                 $actual   = $i;
@@ -741,22 +753,56 @@ describe('FluidXml', function() {
                         assert_equal_xml($xml, $expected);
                 });
 
+                it('should repeat a closure bound to $this of the context', function() {
+                        $xml = new FluidXml();
+
+                        $xml->add('parent', true)
+                                ->times(2, function($i) {
+                                        $this->add("child{$i}");
+                                });
+
+                        $expected = "<doc>\n"
+                                  . "  <parent>\n"
+                                  . "    <child0/>\n"
+                                  . "    <child1/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should repeat a callable', function() {
+                        $xml = new FluidXml();
+
+                        function addchild($parent, $i)
+                        {
+                                $parent->add("child{$i}");
+                        }
+
+                        $xml->add('parent', true)
+                                ->times(2, 'addchild');
+
+                        $expected = "<doc>\n"
+                                  . "  <parent>\n"
+                                  . "    <child0/>\n"
+                                  . "    <child1/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
                 it('should repeat a callable without repeating the following method call', function() {
                         $xml = new FluidXml();
 
                         $xml->add('parent', true)
-                                ->times(2, function($parent, $i) {
-                                        $parent->add("child{$i}");
-                                        $parent->add('sep');
+                                ->times(2, function($i) {
+                                        $this->add("child{$i}");
                                 })
                                 ->add('lastchild');
 
                         $expected = "<doc>\n"
                                   . "  <parent>\n"
                                   . "    <child0/>\n"
-                                  . "    <sep/>\n"
                                   . "    <child1/>\n"
-                                  . "    <sep/>\n"
                                   . "    <lastchild/>\n"
                                   . "  </parent>\n"
                                   . "</doc>";
