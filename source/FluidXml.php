@@ -735,15 +735,12 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public static function doAppendChild($parent, $element)
-        {
-                return $parent->appendChild($element);
-        }
-
         // appendChild($child, $value?, $attributes? = [], $switchContext? = false)
         public function appendChild($child, ...$optionals)
         {
-                return $this->insertElement($child, $optionals, [ static::class, 'doAppendChild' ]);
+                return $this->insertElement($child, $optionals, function($parent, $element) {
+                        return $parent->appendChild($element);
+                });
         }
 
         // Alias of appendChild().
@@ -752,14 +749,11 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->appendChild($child, ...$optionals);
         }
 
-        public static function doPrependSibling($sibling, $element)
-        {
-                return $sibling->parentNode->insertBefore($element, $sibling);
-        }
-
         public function prependSibling($sibling, ...$optionals)
         {
-                return $this->insertElement($sibling, $optionals, [ static::class, 'doPrependSibling' ]);
+                return $this->insertElement($sibling, $optionals, function($sibling, $element) {
+                        return $sibling->parentNode->insertBefore($element, $sibling);
+                });
         }
 
         // Alias of prependSibling().
@@ -774,15 +768,12 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->prependSibling($sibling, ...$optionals);
         }
 
-        public static function doAppendSibling($sibling, $element)
-        {
-                // If ->nextSibling is null, $element is simply appended as last sibling.
-                return $sibling->parentNode->insertBefore($element, $sibling->nextSibling);
-        }
-
         public function appendSibling($sibling, ...$optionals)
         {
-                return $this->insertElement($sibling, $optionals, [ static::class, 'doAppendSibling' ]);
+                return $this->insertElement($sibling, $optionals, function($sibling, $element) {
+                        // If ->nextSibling is null, $element is simply appended as last sibling.
+                        return $sibling->parentNode->insertBefore($element, $sibling->nextSibling);
+                });
         }
 
         // Alias of appendSibling().
@@ -993,128 +984,83 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        protected static function is_string($value, $oracle)
-        {
-                if (! isset($oracle['is_string'])) {
-                        $oracle['is_string'] = \is_string($value);
-                }
-
-                return $oracle['is_string'];
-        }
-
-        protected static function is_not_string($value, $oracle)
-        {
-                return ! self::is_string($value, $oracle);
-        }
-
-        protected static function is_integer($value, $oracle)
-        {
-                if (! isset($oracle['is_integer'])) {
-                        $oracle['is_integer'] = \is_integer($value);
-                }
-
-                return $oracle['is_integer'];
-        }
-
-        protected static function is_at($value)
-        {
-                return $value === '@';
-        }
-
-        protected static function is_almost_at($value)
-        {
-                return $value[0] === '@' && $value !== '@';
-        }
-
-        protected static function has_not_at($value)
-        {
-                return $value[0] !== '@';
-        }
-
-        protected static function is_xml($value, $oracle)
-        {
-                if (! isset($oracle['is_xml'])) {
-                        $oracle['is_xml'] = is_an_xml_string($value);
-                }
-
-                return $oracle['is_xml'];
-        }
-
-        protected static function is_not_xml($value, $oracle)
-        {
-                return ! self::is_xml($value, $oracle);
-        }
-
-        protected static function is_a($instance, $class)
-        {
-                return \is_a($instance, $class);
-        }
-
         protected function handleInsertion($parent, $k, $v, $fn, $optionals)
         {
-                $kk = new \ArrayObject();
-                $vv = new \ArrayObject();
+                // This is an highly optimized method.
+                // Good code design would split this method in many different handlers
+                // each one with its own checks. But it is too much expensive in terms
+                // of performances for a core method like this, so this implementation
+                // is prefered to collapse many identical checks to one.
 
+                $k_is_string      = \is_string($k);
+                $k_is_integer     = \is_integer($k);
+                $v_is_string      = \is_string($v);
+                $k_is_special     = $v_is_string  && $k[0] === '@';
+                $k_is_special_c   = $k_is_special && $k === '@';
+                $k_is_special_a   = $k_is_special && ! $k_is_special_c;
+                $v_is_xml         = is_an_xml_string($v);
+                $v_is_array       = \is_array($v);
+                $v_is_dom         = $v instanceof \DOMDocument;
+                $v_is_domnodelist = $v instanceof \DOMNodeList;
+                $v_is_domnode     = $v instanceof \DOMNode;
+                $v_is_simplexml   = $v instanceof \SimpleXMLElement;
+                $v_is_fluidxml    = $v instanceof FluidXml;
+                $v_is_fluidcx     = $v instanceof FluidContext;
 
-                $checks = [ 'integerStringNotXmlHandler' => [ [[self::class, 'is_integer'],    [$k, $kk]],
-                                                              [[self::class, 'is_string'],     [$v, $vv]],
-                                                              [[self::class, 'is_not_xml'],    [$v, $vv]] ],
+                $v_isnt_string    = ! $v_is_string;
+                $k_isnt_special   = ! $k_is_special;
+                $v_isnt_xml       = ! $v_is_xml;
 
-                            'integerArrayHandler'        => [ [[self::class, 'is_integer'],    [$k, $kk]],
-                                                              ['\is_array',    [$v]] ],
+                if ($k_is_integer && $v_is_string && $v_isnt_xml) {
+                        return $this->integerStringNotXmlHandler(...\func_get_args());
+                }
 
-                            'stringStringHandler'        => [ [[self::class, 'is_string'],     [$k, $kk]],
-                                                              [[self::class, 'has_not_at'],    [$k, $kk]],
-                                                              [[self::class, 'is_string'],     [$v, $vv]] ],
+                if ($k_is_integer && $v_is_array) {
+                        return $this->integerArrayHandler(...\func_get_args());
+                }
 
-                            'stringNotStringHandler'     => [ [[self::class, 'is_string'],     [$k, $kk]],
-                                                              [[self::class, 'is_not_string'], [$v, $vv]] ],
+                if ($k_is_string && $v_is_string && $k_isnt_special) {
+                        return $this->stringStringHandler(...\func_get_args());
+                }
 
-                            'specialContentHandler'      => [ [[self::class, 'is_string'],     [$k, $kk]],
-                                                              [[self::class, 'is_string'],     [$v, $vv]],
-                                                              [[self::class, 'is_at'],         [$k, $kk]] ],
+                if ($k_is_string && $v_isnt_string) {
+                        return $this->stringNotStringHandler(...\func_get_args());
+                }
 
-                            'specialAttributeHandler'    => [ [[self::class, 'is_string'],     [$k, $kk]],
-                                                              [[self::class, 'is_string'],     [$v, $vv]],
-                                                              [[self::class, 'is_almost_at'],  [$k, $kk]] ],
+                if ($k_is_special_c && $v_is_string) {
+                        return $this->specialContentHandler(...\func_get_args());
+                }
 
-                            'integerXmlHandler'          => [ [[self::class, 'is_integer'],    [$k, $kk]],
-                                                              [[self::class, 'is_xml'],        [$v, $vv]] ],
+                if ($k_is_special_a && $v_is_string) {
+                        return $this->specialAttributeHandler(...\func_get_args());
+                }
 
-                            'integerDomdocumentHandler'  => [ [[self::class, 'is_integer'],    [$k, $kk]],
-                                                              [[self::class, 'is_a'],          [$v, \DOMDocument::class]]      ],
+                if ($k_is_integer && $v_is_xml) {
+                        return $this->integerXmlHandler(...\func_get_args());
+                }
 
-                            'integerDomnodelistHandler'  => [ [[self::class, 'is_integer'],    [$k, $kk]],
-                                                              [[self::class, 'is_a'],          [$v, \DOMNodeList::class]]      ],
+                if ($k_is_integer && $v_is_dom) {
+                        return $this->integerDomdocumentHandler(...\func_get_args());
+                }
 
-                            'integerDomnodeHandler'      => [ [[self::class, 'is_integer'],    [$k, $kk]],
-                                                              [[self::class, 'is_a'],          [$v, \DOMNode::class]]          ],
+                if ($k_is_integer && $v_is_domnodelist) {
+                        return $this->integerDomnodelistHandler(...\func_get_args());
+                }
 
-                            'integerSimplexmlHandler'    => [ [[self::class, 'is_integer'],    [$k, $kk]],
-                                                              [[self::class, 'is_a'],          [$v, \SimpleXMLElement::class]] ],
+                if ($k_is_integer && ! $v_is_dom && $v_is_domnode) {
+                        return $this->integerDomnodeHandler(...\func_get_args());
+                }
 
-                            'integerFluidxmlHandler'     => [ [[self::class, 'is_integer'],    [$k, $kk]],
-                                                              [[self::class, 'is_a'],          [$v, FluidXml::class]]          ],
+                if ($k_is_integer && $v_is_simplexml) {
+                        return $this->integerSimplexmlHandler(...\func_get_args());
+                }
 
-                            'integerFluidcontextHandler' => [ [[self::class, 'is_integer'],    [$k, $kk]],
-                                                              [[self::class, 'is_a'],          [$v, FluidContext::class]]      ]
-                ];
+                if ($k_is_integer && $v_is_fluidxml) {
+                        return $this->integerFluidxmlHandler(...\func_get_args());
+                }
 
-                foreach ($checks as $check => $conditions) {
-                        $satisfied = false;
-
-                        foreach ($conditions as $c) {
-
-                                $satisfied = \call_user_func($c[0], ...$c[1]);
-
-                                if (! $satisfied) {
-                                        break;
-                                }
-                        }
-
-                        if ($satisfied) {
-                                return $this->$check($parent, $k, $v, $fn, $optionals);
-                        }
+                if ($k_is_integer && $v_is_fluidcx) {
+                        return $this->integerFluidcontextHandler(...\func_get_args());
                 }
 
                 throw new \Exception('XML document not supported.');
