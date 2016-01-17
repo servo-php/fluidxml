@@ -1147,7 +1147,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
                 foreach ($nodes as $el) {
                         $el        = $this->document->dom->importNode($el, true);
-                        $context[] = \call_user_func($fn, $parent, $el);
+                        $context[] = $fn( $parent, $el);
                 }
 
                 return $context;
@@ -1187,7 +1187,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // [ 'element' => 'Element content' ]
 
                 $el = $this->createElement($k, $v);
-                $el = \call_user_func($fn, $parent, $el);
+                $el = $fn($parent, $el);
 
                 return [ $el ];
         }
@@ -1199,7 +1199,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // - [ 'element' => DOMNode|SimpleXMLElement|FluidXml ]
 
                 $el = $this->createElement($k);
-                $el = \call_user_func($fn, $parent, $el);
+                $el = $fn($parent, $el);
 
                 // The new children elements must be created in the order
                 // they are supplied, so 'appendChild' is the perfect operation.
@@ -1230,7 +1230,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // [ 'element', ... ]
 
                 $el = $this->createElement($v);
-                $el = \call_user_func($fn, $parent, $el);
+                $el = $fn($parent, $el);
 
                 return [ $el ];
         }
