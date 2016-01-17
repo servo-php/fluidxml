@@ -358,24 +358,24 @@ class FluidXml implements FluidInterface
 
         public function query(...$xpath)
         {
-                return $this->newContext()->query(...$xpath);
+                return $this->context()->query(...$xpath);
         }
 
         public function times($times, callable $fn = null)
         {
-                return $this->newContext()->times($times, $fn);
+                return $this->context()->times($times, $fn);
         }
 
         public function each(callable $fn)
         {
-                return $this->newContext()->each($fn);
+                return $this->context()->each($fn);
         }
 
         public function appendChild($child, ...$optionals)
         {
                 // If the user has requested ['root' => null] at construction time
-                // 'newContext()' promotes DOMDocument as root node.
-                $context     = $this->newContext();
+                // 'context()' promotes DOMDocument as root node.
+                $context     = $this->context();
                 $new_context = $context->appendChild($child, ...$optionals);
 
                 return $this->chooseContext($context, $new_context);
@@ -396,7 +396,7 @@ class FluidXml implements FluidInterface
                         return $this->appendChild($sibling, ...$optionals);
                 }
 
-                $context     = $this->newContext();
+                $context     = $this->context();
                 $new_context = $context->prependSibling($sibling, ...$optionals);
 
                 return $this->chooseContext($context, $new_context);
@@ -423,7 +423,7 @@ class FluidXml implements FluidInterface
                         return $this->appendChild($sibling, ...$optionals);
                 }
 
-                $context     = $this->newContext();
+                $context     = $this->context();
                 $new_context = $context->appendSibling($sibling, ...$optionals);
 
                 return $this->chooseContext($context, $new_context);
@@ -443,7 +443,7 @@ class FluidXml implements FluidInterface
 
         public function setAttribute(...$arguments)
         {
-                $this->newContext()->setAttribute(...$arguments);
+                $this->context()->setAttribute(...$arguments);
 
                 return $this;
         }
@@ -456,21 +456,21 @@ class FluidXml implements FluidInterface
 
         public function appendText($text)
         {
-                $this->newContext()->appendText($text);
+                $this->context()->appendText($text);
 
                 return $this;
         }
 
         public function appendCdata($text)
         {
-                $this->newContext()->appendCdata($text);
+                $this->context()->appendCdata($text);
 
                 return $this;
         }
 
         public function setText($text)
         {
-                $this->newContext()->setText($text);
+                $this->context()->setText($text);
 
                 return $this;
         }
@@ -483,7 +483,7 @@ class FluidXml implements FluidInterface
 
         public function setCdata($text)
         {
-                $this->newContext()->setCdata($text);
+                $this->context()->setCdata($text);
 
                 return $this;
         }
@@ -496,27 +496,37 @@ class FluidXml implements FluidInterface
 
         public function remove(...$xpath)
         {
-                $this->newContext()->remove(...$xpath);
+                $this->context()->remove(...$xpath);
 
                 return $this;
         }
 
-        protected function newContext($context = null)
+        private $context;
+        private $contextEl;
+
+        protected function context()
         {
-                if (! $context) {
-                        $context = $this->document->dom->documentElement;
+                if ($this->document->dom->documentElement === null) {
+                        // If the user has requested ['root' => null] at construction time
+                        // the 'documentElement' property is null because we have not created
+                        // a root node yet. Whether there is not a root node, the DOMDocument
+                        // is promoted as root node.
+                        if ($this->context === null) {
+                                $this->context = new FluidContext($this->document, $this->document->dom);
+                        }
+
+                        return $this->context;
                 }
 
-                // If the user has requested ['root' => null] at construction time
-                // the 'documentElement' property is null because we have not created
-                // a root node yet.
-                if (! $context) {
-                        // Whether there is not a root node, the DOMDocument is
-                        // promoted as root node.
-                        $context = $this->document->dom;
+
+                if ($this->contextEl === null || $this->contextEl !== $this->document->dom->documentElement) {
+                        // The user can prepend a root node to the current root node.
+                        // In this case we have to update the context with the new first root node.
+                        $this->context = new FluidContext($this->document, $this->document->dom->documentElement);
+                        $this->contextEl = $this->document->dom->documentElement;
                 }
 
-                return new FluidContext($this->document, $context);
+                return $this->context;
         }
 
         protected function chooseContext($help_context, $new_context)
@@ -1015,14 +1025,17 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // The DOMElement instance must be different for every node,
                 // otherwise only one element is attached to the DOM.
 
+                $id  = null;
                 $uri = null;
 
                 // The node name can contain the namespace id prefix.
                 // Example: xsl:template
-                $name_parts = \explode(':', $name, 2);
+                $colon_pos = \strpos($name, ':');
 
-                $name = \array_pop($name_parts);
-                $id   = \array_pop($name_parts);
+                if ($colon_pos !== false) {
+                        $id   = \substr($name, 0, $colon_pos);
+                        $name = \substr($name, $colon_pos + 1);
+                }
 
                 if ($id) {
                         $ns  = $this->document->namespaces[$id];
