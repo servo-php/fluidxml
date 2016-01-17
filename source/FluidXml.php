@@ -80,10 +80,6 @@ function fluidns(...$arguments)
 
 function is_an_xml_string($string)
 {
-        if (! \is_string($string)) {
-                return false;
-        }
-
         // Removes any empty new line at the beginning,
         // otherwise the first character check may fail.
         $string = \ltrim($string);
@@ -992,75 +988,115 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // of performances for a core method like this, so this implementation
                 // is prefered to collapse many identical checks to one.
 
-                $k_is_string      = \is_string($k);
-                $k_is_integer     = \is_integer($k);
-                $v_is_string      = \is_string($v);
-                $k_is_special     = $v_is_string  && $k[0] === '@';
-                $k_is_special_c   = $k_is_special && $k === '@';
-                $k_is_special_a   = $k_is_special && ! $k_is_special_c;
-                $v_is_xml         = is_an_xml_string($v);
-                $v_is_array       = \is_array($v);
-                $v_is_dom         = $v instanceof \DOMDocument;
-                $v_is_domnodelist = $v instanceof \DOMNodeList;
-                $v_is_domnode     = $v instanceof \DOMNode;
-                $v_is_simplexml   = $v instanceof \SimpleXMLElement;
-                $v_is_fluidxml    = $v instanceof FluidXml;
-                $v_is_fluidcx     = $v instanceof FluidContext;
+                //////////////////////
+                // Key is a string. //
+                //////////////////////
 
-                $v_isnt_string    = ! $v_is_string;
-                $k_isnt_special   = ! $k_is_special;
-                $v_isnt_xml       = ! $v_is_xml;
+                ///////////////////////////////////////////////////////
+                $k_is_string    = \is_string($k);
+                $v_is_string    = \is_string($v);
+                $v_is_xml       = $v_is_string && is_an_xml_string($v);
+                $k_is_special   = $k_is_string && $k[0] === '@';
+                $k_isnt_special = ! $k_is_special;
+                $v_isnt_string  = ! $v_is_string;
+                $v_isnt_xml     = ! $v_is_xml;
+                ///////////////////////////////////////////////////////
 
-                if ($k_is_integer && $v_is_string && $v_isnt_xml) {
-                        return $this->integerStringNotXmlHandler(...\func_get_args());
+                if ($k_is_string && $k_isnt_special && $v_is_string && $v_isnt_xml) {
+                        return $this->insertStringString($parent, $k, $v, $fn, $optionals);
                 }
 
-                if ($k_is_integer && $v_is_array) {
-                        return $this->integerArrayHandler(...\func_get_args());
+                if ($k_is_string && $k_isnt_special && $v_is_string && $v_is_xml) {
+                        // TODO
                 }
 
-                if ($k_is_string && $v_is_string && $k_isnt_special) {
-                        return $this->stringStringHandler(...\func_get_args());
+                //////////////////////////////////////////////
+                $k_is_special_c = $k_is_special && $k === '@';
+                //////////////////////////////////////////////
+
+                if ($k_is_special_c && $v_is_string) {
+                        return $this->insertSpecialContent($parent, $k, $v, $fn, $optionals);
+                }
+
+                /////////////////////////////////////////////////////
+                $k_is_special_a = $k_is_special && ! $k_is_special_c;
+                /////////////////////////////////////////////////////
+
+                if ($k_is_special_a && $v_is_string) {
+                        return $this->insertSpecialAttribute($parent, $k, $v, $fn, $optionals);
                 }
 
                 if ($k_is_string && $v_isnt_string) {
-                        return $this->stringNotStringHandler(...\func_get_args());
+                        return $this->insertStringMixed($parent, $k, $v, $fn, $optionals);
                 }
 
-                if ($k_is_special_c && $v_is_string) {
-                        return $this->specialContentHandler(...\func_get_args());
+                ////////////////////////
+                // Key is an integer. //
+                ////////////////////////
+
+                ////////////////////////////////
+                $k_is_integer = \is_integer($k);
+                $v_is_array   = \is_array($v);
+                ////////////////////////////////
+
+                if ($k_is_integer && $v_is_array) {
+                        return $this->insertIntegerArray($parent, $k, $v, $fn, $optionals);
                 }
 
-                if ($k_is_special_a && $v_is_string) {
-                        return $this->specialAttributeHandler(...\func_get_args());
+                if ($k_is_integer && $v_is_string && $v_isnt_xml) {
+                        return $this->insertIntegerString($parent, $k, $v, $fn, $optionals);
                 }
 
-                if ($k_is_integer && $v_is_xml) {
-                        return $this->integerXmlHandler(...\func_get_args());
+                if ($k_is_integer && $v_is_string && $v_is_xml) {
+                        return $this->insertIntegerXml($parent, $k, $v, $fn, $optionals);
                 }
 
-                if ($k_is_integer && $v_is_dom) {
-                        return $this->integerDomdocumentHandler(...\func_get_args());
+                //////////////////////////////////////////
+                $v_is_domdoc = $v instanceof \DOMDocument;
+                //////////////////////////////////////////
+
+                if ($k_is_integer && $v_is_domdoc) {
+                        return $this->insertIntegerDomdocument($parent, $k, $v, $fn, $optionals);
                 }
+
+                ///////////////////////////////////////////////
+                $v_is_domnodelist = $v instanceof \DOMNodeList;
+                ///////////////////////////////////////////////
 
                 if ($k_is_integer && $v_is_domnodelist) {
-                        return $this->integerDomnodelistHandler(...\func_get_args());
+                        return $this->insertIntegerDomnodelist($parent, $k, $v, $fn, $optionals);
                 }
 
-                if ($k_is_integer && ! $v_is_dom && $v_is_domnode) {
-                        return $this->integerDomnodeHandler(...\func_get_args());
+                ///////////////////////////////////////
+                $v_is_domnode = $v instanceof \DOMNode;
+                ///////////////////////////////////////
+
+                if ($k_is_integer && ! $v_is_domdoc && $v_is_domnode) {
+                        return $this->insertIntegerDomnode($parent, $k, $v, $fn, $optionals);
                 }
+
+                //////////////////////////////////////////////////
+                $v_is_simplexml = $v instanceof \SimpleXMLElement;
+                //////////////////////////////////////////////////
 
                 if ($k_is_integer && $v_is_simplexml) {
-                        return $this->integerSimplexmlHandler(...\func_get_args());
+                        return $this->insertIntegerSimplexml($parent, $k, $v, $fn, $optionals);
                 }
+
+                ////////////////////////////////////////
+                $v_is_fluidxml = $v instanceof FluidXml;
+                ////////////////////////////////////////
 
                 if ($k_is_integer && $v_is_fluidxml) {
-                        return $this->integerFluidxmlHandler(...\func_get_args());
+                        return $this->insertIntegerFluidxml($parent, $k, $v, $fn, $optionals);
                 }
 
+                ///////////////////////////////////////////
+                $v_is_fluidcx = $v instanceof FluidContext;
+                ///////////////////////////////////////////
+
                 if ($k_is_integer && $v_is_fluidcx) {
-                        return $this->integerFluidcontextHandler(...\func_get_args());
+                        return $this->insertIntegerFluidcontext($parent, $k, $v, $fn, $optionals);
                 }
 
                 throw new \Exception('XML document not supported.');
@@ -1117,7 +1153,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $context;
         }
 
-        protected function specialContentHandler($parent, $k, $v)
+        protected function insertSpecialContent($parent, $k, $v)
         {
                 // The user has passed an element text content:
                 // [ '@' => 'Element content.' ]
@@ -1134,7 +1170,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [];
         }
 
-        protected function specialAttributeHandler($parent, $k, $v)
+        protected function insertSpecialAttribute($parent, $k, $v)
         {
                 // The user has passed an attribute name and an attribute value:
                 // [ '@attribute' => 'Attribute content' ]
@@ -1145,7 +1181,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [];
         }
 
-        protected function stringStringHandler($parent, $k, $v, $fn)
+        protected function insertStringString($parent, $k, $v, $fn)
         {
                 // The user has passed an element name and an element value:
                 // [ 'element' => 'Element content' ]
@@ -1156,7 +1192,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [ $el ];
         }
 
-        protected function stringNotStringHandler($parent, $k, $v, $fn, $optionals)
+        protected function insertStringMixed($parent, $k, $v, $fn, $optionals)
         {
                 // The user has passed one of these two cases:
                 // - [ 'element' => [...] ]
@@ -1172,7 +1208,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [ $el ];
         }
 
-        protected function integerArrayHandler($parent, $k, $v, $fn, $optionals)
+        protected function insertIntegerArray($parent, $k, $v, $fn, $optionals)
         {
                 // The user has passed a wrapper array:
                 // [ [...], ... ]
@@ -1188,7 +1224,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $context;
         }
 
-        protected function integerStringNotXmlHandler($parent, $k, $v, $fn)
+        protected function insertIntegerString($parent, $k, $v, $fn)
         {
                 // The user has passed a node name without a node value:
                 // [ 'element', ... ]
@@ -1199,7 +1235,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [ $el ];
         }
 
-        protected function integerXmlHandler($parent, $k, $v, $fn)
+        protected function insertIntegerXml($parent, $k, $v, $fn)
         {
                 // The user has passed an XML document instance:
                 // [ '<tag></tag>', DOMNode, SimpleXMLElement, FluidXml ]
@@ -1228,7 +1264,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->attachNodes($parent, $nodes, $fn);
         }
 
-        protected function integerDomdocumentHandler($parent, $k, $v, $fn)
+        protected function insertIntegerDomdocument($parent, $k, $v, $fn)
         {
                 // A DOMDocument can have multiple root nodes.
 
@@ -1239,27 +1275,27 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // return $this->attachNodes($parent, $v->documentElement, $fn);
         }
 
-        protected function integerDomnodelistHandler($parent, $k, $v, $fn)
+        protected function insertIntegerDomnodelist($parent, $k, $v, $fn)
         {
                 return $this->attachNodes($parent, $v, $fn);
         }
 
-        protected function integerDomnodeHandler($parent, $k, $v, $fn)
+        protected function insertIntegerDomnode($parent, $k, $v, $fn)
         {
                 return $this->attachNodes($parent, $v, $fn);
         }
 
-        protected function integerSimplexmlHandler($parent, $k, $v, $fn)
+        protected function insertIntegerSimplexml($parent, $k, $v, $fn)
         {
                 return $this->attachNodes($parent, \dom_import_simplexml($v), $fn);
         }
 
-        protected function integerFluidxmlHandler($parent, $k, $v, $fn)
+        protected function insertIntegerFluidxml($parent, $k, $v, $fn)
         {
                 return $this->attachNodes($parent, $v->dom()->documentElement, $fn);
         }
 
-        protected function integerFluidcontextHandler($parent, $k, $v, $fn)
+        protected function insertIntegerFluidcontext($parent, $k, $v, $fn)
         {
                 return $this->attachNodes($parent, $v->asArray(), $fn);
         }
