@@ -993,101 +993,111 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
+        protected static function is_string($value, $oracle)
+        {
+                if (! isset($oracle['is_string'])) {
+                        $oracle['is_string'] = \is_string($value);
+                }
+
+                return $oracle['is_string'];
+        }
+
+        protected static function is_not_string($value, $oracle)
+        {
+                return ! self::is_string($value, $oracle);
+        }
+
+        protected static function is_integer($value, $oracle)
+        {
+                if (! isset($oracle['is_integer'])) {
+                        $oracle['is_integer'] = \is_integer($value);
+                }
+
+                return $oracle['is_integer'];
+        }
+
+        protected static function is_at($value)
+        {
+                return $value === '@';
+        }
+
+        protected static function is_almost_at($value)
+        {
+                return $value[0] === '@' && $value !== '@';
+        }
+
+        protected static function has_not_at($value)
+        {
+                return $value[0] !== '@';
+        }
+
+        protected static function is_xml($value, $oracle)
+        {
+                if (! isset($oracle['is_xml'])) {
+                        $oracle['is_xml'] = is_an_xml_string($value);
+                }
+
+                return $oracle['is_xml'];
+        }
+
+        protected static function is_not_xml($value, $oracle)
+        {
+                return ! self::is_xml($value, $oracle);
+        }
+
+        protected static function is_a($instance, $class)
+        {
+                return \is_a($instance, $class);
+        }
+
         protected function handleInsertion($parent, $k, $v, $fn, $optionals)
         {
                 $kk = new \ArrayObject();
                 $vv = new \ArrayObject();
 
-                $is_string = function($value, $oracle) {
-                        if (! isset($oracle['is_string'])) {
-                                $oracle['is_string'] = \is_string($value);
-                        }
 
-                        return $oracle['is_string'];
-                };
+                $checks = [ 'integerStringNotXmlHandler' => [ [[self::class, 'is_integer'],    [$k, $kk]],
+                                                              [[self::class, 'is_string'],     [$v, $vv]],
+                                                              [[self::class, 'is_not_xml'],    [$v, $vv]] ],
 
-                $is_not_string = function($value, $oracle) use ($is_string) {
-                        return ! $is_string($value, $oracle);
-                };
+                            'integerArrayHandler'        => [ [[self::class, 'is_integer'],    [$k, $kk]],
+                                                              ['\is_array',    [$v]] ],
 
-                $is_integer = function($value, $oracle) {
-                        if (! isset($oracle['is_integer'])) {
-                                $oracle['is_integer'] = \is_integer($value);
-                        }
+                            'stringStringHandler'        => [ [[self::class, 'is_string'],     [$k, $kk]],
+                                                              [[self::class, 'has_not_at'],    [$k, $kk]],
+                                                              [[self::class, 'is_string'],     [$v, $vv]] ],
 
-                        return $oracle['is_integer'];
-                };
+                            'stringNotStringHandler'     => [ [[self::class, 'is_string'],     [$k, $kk]],
+                                                              [[self::class, 'is_not_string'], [$v, $vv]] ],
 
-                $is_at = function($value) {
-                        return $value === '@';
-                };
+                            'specialContentHandler'      => [ [[self::class, 'is_string'],     [$k, $kk]],
+                                                              [[self::class, 'is_string'],     [$v, $vv]],
+                                                              [[self::class, 'is_at'],         [$k, $kk]] ],
 
-                $is_almost_at = function($value) {
-                        return $value[0] === '@' && $value !== '@';
-                };
+                            'specialAttributeHandler'    => [ [[self::class, 'is_string'],     [$k, $kk]],
+                                                              [[self::class, 'is_string'],     [$v, $vv]],
+                                                              [[self::class, 'is_almost_at'],  [$k, $kk]] ],
 
-                $has_not_at = function($value) {
-                        return $value[0] !== '@';
-                };
+                            'integerXmlHandler'          => [ [[self::class, 'is_integer'],    [$k, $kk]],
+                                                              [[self::class, 'is_xml'],        [$v, $vv]] ],
 
-                $is_xml = function($value, $oracle) {
-                        if (! isset($oracle['is_xml'])) {
-                                $oracle['is_xml'] = is_an_xml_string($value);
-                        }
+                            'integerDomdocumentHandler'  => [ [[self::class, 'is_integer'],    [$k, $kk]],
+                                                              [[self::class, 'is_a'],          [$v, \DOMDocument::class]]      ],
 
-                        return $oracle['is_xml'];
-                };
+                            'integerDomnodelistHandler'  => [ [[self::class, 'is_integer'],    [$k, $kk]],
+                                                              [[self::class, 'is_a'],          [$v, \DOMNodeList::class]]      ],
 
-                $is_not_xml = function($value, $oracle) use ($is_xml) {
-                        return ! $is_xml($value, $oracle);
-                };
+                            'integerDomnodeHandler'      => [ [[self::class, 'is_integer'],    [$k, $kk]],
+                                                              [[self::class, 'is_a'],          [$v, \DOMNode::class]]          ],
 
-                $is_a = function($instance, $class) {
-                        return \is_a($instance, $class);
-                };
+                            'integerSimplexmlHandler'    => [ [[self::class, 'is_integer'],    [$k, $kk]],
+                                                              [[self::class, 'is_a'],          [$v, \SimpleXMLElement::class]] ],
 
-                $checks = [ 'integerStringNotXmlHandler' => [ [$is_integer,    [$k, $kk]],
-                                                              [$is_string,     [$v, $vv]],
-                                                              [$is_not_xml,    [$v, $vv]] ],
+                            'integerFluidxmlHandler'     => [ [[self::class, 'is_integer'],    [$k, $kk]],
+                                                              [[self::class, 'is_a'],          [$v, FluidXml::class]]          ],
 
-                            'integerArrayHandler'        => [ [$is_integer,    [$k, $kk]],
-                                                              ['\is_array',    [$v]]      ],
-
-                            'stringStringHandler'        => [ [$is_string,     [$k, $kk]],
-                                                              [$has_not_at,    [$k, $kk]],
-                                                              [$is_string,     [$v, $vv]] ],
-
-                            'stringNotStringHandler'     => [ [$is_string,     [$k, $kk]],
-                                                              [$is_not_string, [$v, $vv]] ],
-
-                            'specialContentHandler'      => [ [$is_string,     [$k, $kk]],
-                                                              [$is_string,     [$v, $vv]],
-                                                              [$is_at,         [$k, $kk]] ],
-
-                            'specialAttributeHandler'    => [ [$is_string,     [$k, $kk]],
-                                                              [$is_string,     [$v, $vv]],
-                                                              [$is_almost_at,  [$k, $kk]] ],
-
-                            'integerXmlHandler'          => [ [$is_integer,    [$k, $kk]],
-                                                              [$is_xml,        [$v, $vv]] ],
-
-                            'integerDomdocumentHandler'  => [ [$is_integer,    [$k, $kk]],
-                                                              [$is_a,          [$v, \DOMDocument::class]]      ],
-
-                            'integerDomnodelistHandler'  => [ [$is_integer,    [$k, $kk]],
-                                                              [$is_a,          [$v, \DOMNodeList::class]]      ],
-
-                            'integerDomnodeHandler'      => [ [$is_integer,    [$k, $kk]],
-                                                              [$is_a,          [$v, \DOMNode::class]]          ],
-
-                            'integerSimplexmlHandler'    => [ [$is_integer,    [$k, $kk]],
-                                                              [$is_a,          [$v, \SimpleXMLElement::class]] ],
-
-                            'integerFluidxmlHandler'     => [ [$is_integer,    [$k, $kk]],
-                                                              [$is_a,          [$v, FluidXml::class]]          ],
-
-                            'integerFluidcontextHandler' => [ [$is_integer,    [$k, $kk]],
-                                                              [$is_a,          [$v, FluidContext::class]]      ]
+                            'integerFluidcontextHandler' => [ [[self::class, 'is_integer'],    [$k, $kk]],
+                                                              [[self::class, 'is_a'],          [$v, FluidContext::class]]      ]
                 ];
 
                 foreach ($checks as $check => $conditions) {
