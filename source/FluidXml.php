@@ -993,27 +993,117 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        protected function handleInsertion(...$arguments)
+        protected function handleInsertion($parent, $k, $v, $fn, $optionals)
         {
-                $check_sequence = [ 'specialContentHandler',
-                                    'specialAttributeHandler',
-                                    'stringStringHandler',
-                                    'stringMixedHandler',
-                                    'integerArrayHandler',
-                                    'integerStringNotXmlHandler',
-                                    'integerXmlHandler',
-                                    'integerDomdocumentHandler',
-                                    'integerDomnodelistHandler',
-                                    'integerDomnodeHandler',
-                                    'integerSimplexmlHandler',
-                                    'integerFluidxmlHandler',
-                                    'integerFluidcontextHandler' ];
+                $kk = new \ArrayObject();
+                $vv = new \ArrayObject();
 
-                foreach ($check_sequence as $check) {
-                        $ret = $this->$check(...$arguments);
+                $is_string = function($value, $oracle) {
+                        if (! isset($oracle['is_string'])) {
+                                $oracle['is_string'] = \is_string($value);
+                        }
 
-                        if ($ret !== false) {
-                                return $ret;
+                        return $oracle['is_string'];
+                };
+
+                $is_not_string = function($value, $oracle) use ($is_string) {
+                        return ! $is_string($value, $oracle);
+                };
+
+                $is_integer = function($value, $oracle) {
+                        if (! isset($oracle['is_integer'])) {
+                                $oracle['is_integer'] = \is_integer($value);
+                        }
+
+                        return $oracle['is_integer'];
+                };
+
+                $is_at = function($value) {
+                        return $value === '@';
+                };
+
+                $is_almost_at = function($value) {
+                        return $value[0] === '@' && $value !== '@';
+                };
+
+                $has_not_at = function($value) {
+                        return $value[0] !== '@';
+                };
+
+                $is_xml = function($value, $oracle) {
+                        if (! isset($oracle['is_xml'])) {
+                                $oracle['is_xml'] = is_an_xml_string($value);
+                        }
+
+                        return $oracle['is_xml'];
+                };
+
+                $is_not_xml = function($value, $oracle) use ($is_xml) {
+                        return ! $is_xml($value, $oracle);
+                };
+
+                $is_a = function($instance, $class) {
+                        return \is_a($instance, $class);
+                };
+
+                $checks = [ 'integerStringNotXmlHandler' => [ [$is_integer,    [$k, $kk]],
+                                                              [$is_string,     [$v, $vv]],
+                                                              [$is_not_xml,    [$v, $vv]] ],
+
+                            'integerArrayHandler'        => [ [$is_integer,    [$k, $kk]],
+                                                              ['\is_array',    [$v]]      ],
+
+                            'stringStringHandler'        => [ [$is_string,     [$k, $kk]],
+                                                              [$has_not_at,    [$k, $kk]],
+                                                              [$is_string,     [$v, $vv]] ],
+
+                            'stringNotStringHandler'     => [ [$is_string,     [$k, $kk]],
+                                                              [$is_not_string, [$v, $vv]] ],
+
+                            'specialContentHandler'      => [ [$is_string,     [$k, $kk]],
+                                                              [$is_string,     [$v, $vv]],
+                                                              [$is_at,         [$k, $kk]] ],
+
+                            'specialAttributeHandler'    => [ [$is_string,     [$k, $kk]],
+                                                              [$is_string,     [$v, $vv]],
+                                                              [$is_almost_at,  [$k, $kk]] ],
+
+                            'integerXmlHandler'          => [ [$is_integer,    [$k, $kk]],
+                                                              [$is_xml,        [$v, $vv]] ],
+
+                            'integerDomdocumentHandler'  => [ [$is_integer,    [$k, $kk]],
+                                                              [$is_a,          [$v, \DOMDocument::class]]      ],
+
+                            'integerDomnodelistHandler'  => [ [$is_integer,    [$k, $kk]],
+                                                              [$is_a,          [$v, \DOMNodeList::class]]      ],
+
+                            'integerDomnodeHandler'      => [ [$is_integer,    [$k, $kk]],
+                                                              [$is_a,          [$v, \DOMNode::class]]          ],
+
+                            'integerSimplexmlHandler'    => [ [$is_integer,    [$k, $kk]],
+                                                              [$is_a,          [$v, \SimpleXMLElement::class]] ],
+
+                            'integerFluidxmlHandler'     => [ [$is_integer,    [$k, $kk]],
+                                                              [$is_a,          [$v, FluidXml::class]]          ],
+
+                            'integerFluidcontextHandler' => [ [$is_integer,    [$k, $kk]],
+                                                              [$is_a,          [$v, FluidContext::class]]      ]
+                ];
+
+                foreach ($checks as $check => $conditions) {
+                        $satisfied = false;
+
+                        foreach ($conditions as $c) {
+
+                                $satisfied = \call_user_func($c[0], ...$c[1]);
+
+                                if (! $satisfied) {
+                                        break;
+                                }
+                        }
+
+                        if ($satisfied) {
+                                return $this->$check($parent, $k, $v, $fn, $optionals);
                         }
                 }
 
@@ -1073,10 +1163,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function specialContentHandler($parent, $k, $v)
         {
-                if (! \is_string($k) || $k !== '@'|| ! \is_string($v)) {
-                        return false;
-                }
-
                 // The user has passed an element text content:
                 // [ '@' => 'Element content.' ]
 
@@ -1094,10 +1180,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function specialAttributeHandler($parent, $k, $v)
         {
-                if (! \is_string($k) || $k[0] !== '@' || ! \is_string($v)) {
-                        return false;
-                }
-
                 // The user has passed an attribute name and an attribute value:
                 // [ '@attribute' => 'Attribute content' ]
 
@@ -1109,10 +1191,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function stringStringHandler($parent, $k, $v, $fn)
         {
-                if (! \is_string($k) || ! \is_string($v)) {
-                        return false;
-                }
-
                 // The user has passed an element name and an element value:
                 // [ 'element' => 'Element content' ]
 
@@ -1122,12 +1200,8 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [ $el ];
         }
 
-        protected function stringMixedHandler($parent, $k, $v, $fn, $optionals)
+        protected function stringNotStringHandler($parent, $k, $v, $fn, $optionals)
         {
-                if (! \is_string($k) || \is_string($v)) {
-                        return false;
-                }
-
                 // The user has passed one of these two cases:
                 // - [ 'element' => [...] ]
                 // - [ 'element' => DOMNode|SimpleXMLElement|FluidXml ]
@@ -1144,10 +1218,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function integerArrayHandler($parent, $k, $v, $fn, $optionals)
         {
-                if (! \is_int($k) || ! \is_array($v)) {
-                        return false;
-                }
-
                 // The user has passed a wrapper array:
                 // [ [...], ... ]
 
@@ -1164,10 +1234,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function integerStringNotXmlHandler($parent, $k, $v, $fn)
         {
-                if (! \is_int($k) || ! \is_string($v) || is_an_xml_string($v)) {
-                        return false;
-                }
-
                 // The user has passed a node name without a node value:
                 // [ 'element', ... ]
 
@@ -1179,10 +1245,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function integerXmlHandler($parent, $k, $v, $fn)
         {
-                if (! \is_int($k) || ! is_an_xml_string($v)) {
-                        return false;
-                }
-
                 // The user has passed an XML document instance:
                 // [ '<tag></tag>', DOMNode, SimpleXMLElement, FluidXml ]
 
@@ -1212,10 +1274,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function integerDomdocumentHandler($parent, $k, $v, $fn)
         {
-                if (! \is_int($k) || ! $v instanceof \DOMDocument) {
-                        return false;
-                }
-
                 // A DOMDocument can have multiple root nodes.
 
                 // Algorithm 1:
@@ -1227,46 +1285,26 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function integerDomnodelistHandler($parent, $k, $v, $fn)
         {
-                if (! \is_int($k) || ! $v instanceof \DOMNodeList) {
-                        return false;
-                }
-
                 return $this->attachNodes($parent, $v, $fn);
         }
 
         protected function integerDomnodeHandler($parent, $k, $v, $fn)
         {
-                if (! \is_int($k) || ! $v instanceof \DOMNode) {
-                        return false;
-                }
-
                 return $this->attachNodes($parent, $v, $fn);
         }
 
         protected function integerSimplexmlHandler($parent, $k, $v, $fn)
         {
-                if (! \is_int($k) || ! $v instanceof \SimpleXMLElement) {
-                        return false;
-                }
-
                 return $this->attachNodes($parent, \dom_import_simplexml($v), $fn);
         }
 
         protected function integerFluidxmlHandler($parent, $k, $v, $fn)
         {
-                if (! \is_int($k) || ! $v instanceof FluidXml) {
-                        return false;
-                }
-
                 return $this->attachNodes($parent, $v->dom()->documentElement, $fn);
         }
 
         protected function integerFluidcontextHandler($parent, $k, $v, $fn)
         {
-                if (! \is_int($k) || ! $v instanceof FluidContext) {
-                        return false;
-                }
-
                 return $this->attachNodes($parent, $v->asArray(), $fn);
         }
 }
