@@ -919,7 +919,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return new FluidContext($this->document, $context);
         }
 
-        protected function handleOptionals($element, array $optionals)
+        protected function handleOptionals($element, &$optionals)
         {
                 if (! \is_array($element)) {
                         $element = [ $element ];
@@ -948,7 +948,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [ $element, $attributes, $switch_context ];
         }
 
-        protected function insertElement($element, array $optionals, callable $fn)
+        protected function insertElement($element, &$optionals, $fn)
         {
                 list($element, $attributes, $switch_context) = $this->handleOptionals($element, $optionals);
 
@@ -980,7 +980,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        protected function handleInsertion($parent, $k, $v, $fn, $optionals)
+        protected function handleInsertion($parent, $k, $v, $fn, &$optionals)
         {
                 // This is an highly optimized method.
                 // Good code design would split this method in many different handlers
@@ -1192,7 +1192,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [ $el ];
         }
 
-        protected function insertStringMixed($parent, $k, $v, $fn, $optionals)
+        protected function insertStringMixed($parent, $k, $v, $fn, &$optionals)
         {
                 // The user has passed one of these two cases:
                 // - [ 'element' => [...] ]
@@ -1208,7 +1208,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [ $el ];
         }
 
-        protected function insertIntegerArray($parent, $k, $v, $fn, $optionals)
+        protected function insertIntegerArray($parent, $k, $v, $fn, &$optionals)
         {
                 // The user has passed a wrapper array:
                 // [ [...], ... ]
