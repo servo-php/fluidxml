@@ -5,6 +5,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . '.common.php';
 use \FluidXml\FluidXml;
 use \FluidXml\FluidContext;
 use \FluidXml\FluidNamespace;
+use \FluidXml\FluidDocument;
 use \FluidXml\FluidRepeater;
 use function \FluidXml\fluidxml;
 use function \FluidXml\fluidns;
@@ -333,27 +334,6 @@ describe('FluidXml', function() {
 
                         $actual = $xml->dom();
                         assert_is_a($actual, \DOMDocument::class);
-                });
-        });
-
-        describe('.namespaces', function() {
-                it('should return the registered namespaces', function() {
-                        $xml  = new FluidXml();
-                        $ns1  = new FluidNamespace('x', 'x.com');
-                        $ns2  = fluidns('xx', 'xx.com', FluidNamespace::MODE_IMPLICIT);
-
-                        $xml->namespace($ns1);
-                        $xml->namespace($ns2);
-
-                        $nss = $xml->namespaces();
-
-                        $actual   = $nss[$ns1->id()];
-                        $expected = $ns1;
-                        \assert($actual === $expected, __($actual, $expected));
-
-                        $actual   = $nss[$ns2->id()];
-                        $expected = $ns2;
-                        \assert($actual === $expected, __($actual, $expected));
                 });
         });
 
@@ -1860,6 +1840,38 @@ describe('FluidContext', function() {
         });
 
         describe('()', function() {
+                it('should accept a DOMDocument', function() {
+                        $xml = new FluidXml();
+
+                        $new_cx = new FluidContext(new FluidDocument(), $xml->dom());
+
+                        $actual   = $new_cx[0];
+                        $expected = $xml->dom();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should accept a DOMNode', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild(['head'], true);
+
+                        $new_cx = new FluidContext(new FluidDocument(), $cx[0]);
+
+                        $actual   = $new_cx->asArray();
+                        $expected = $cx->asArray();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should accept an array of DOMNode', function() {
+                        $xml = new FluidXml();
+                        $cx = $xml->appendChild(['head', 'body'], true);
+
+                        $new_cx = new FluidContext(new FluidDocument(), $cx->asArray());
+
+                        $actual   = $new_cx->asArray();
+                        $expected = $cx->asArray();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
                 it('should accept a DOMNodeList', function() {
                         $xml = new FluidXml();
                         $cx = $xml->appendChild(['head', 'body'], true);
@@ -1868,10 +1880,10 @@ describe('FluidContext', function() {
                         $domxp = new \DOMXPath($dom);
                         $nodes = $domxp->query('/doc/*');
 
-                        $newCx = new FluidContext($nodes);
+                        $new_cx = new FluidContext(new FluidDocument(), $nodes);
 
-                        $actual   = $cx->asArray() === $newCx->asArray();
-                        $expected = true;
+                        $actual   = $new_cx->asArray();
+                        $expected = $cx->asArray();
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
@@ -1879,10 +1891,10 @@ describe('FluidContext', function() {
                         $xml = new FluidXml();
                         $cx = $xml->appendChild(['head', 'body'], true);
 
-                        $newCx = new FluidContext($cx);
+                        $new_cx = new FluidContext(new FluidDocument(), $cx);
 
-                        $actual   = $cx->asArray() === $newCx->asArray();
-                        $expected = true;
+                        $actual   = $new_cx->asArray();
+                        $expected = $cx->asArray();
                         \assert($actual === $expected, __($actual, $expected));
                 });
         });
