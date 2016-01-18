@@ -130,6 +130,9 @@ function simplexml_to_string_without_headers(\SimpleXMLElement $element)
         return $dom->ownerDocument->saveXML($dom);
 }
 
+/**
+ * @method FluidXml namespace(...$arguments)
+ */
 class FluidXml implements FluidInterface
 {
         use NewableTrait,
@@ -486,7 +489,7 @@ class FluidNamespace
         {
                 $id = $this->id();
 
-                if ($id) {
+                if (! empty($id)) {
                         $id .= ':';
                 }
 
@@ -766,26 +769,28 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         public function query(...$xpath)
         {
-                $xpaths = $xpath;
-
                 if (\is_array($xpath[0])) {
-                        $xpaths = $xpath[0];
+                        $xpath = $xpath[0];
                 }
 
                 $results = [];
 
+                $xp = $this->document->xpath;
+
                 foreach ($this->nodes as $n) {
-                        foreach ($xpaths as $x) {
+                        foreach ($xpath as $x) {
                                 // Returns a DOMNodeList.
-                                $res = $this->document->xpath->query($x, $n);
+                                $res = $xp->query($x, $n);
 
                                 // Algorithm 1:
-                                $results = \array_merge($results, \iterator_to_array($res));
+                                // $results = \array_merge($results, \iterator_to_array($res));
 
                                 // Algorithm 2:
-                                // foreach ($res as $r) {
-                                //         $results[] = $r;
-                                // }
+                                // It is faster than \iterator_to_array and a lot faster
+                                // than \iterator_to_array + \array_merge.
+                                foreach ($res as $r) {
+                                        $results[] = $r;
+                                }
 
                                 // Algorithm 3:
                                 // for ($i = 0, $l = $res->length; $i < $l; ++$i) {
@@ -798,22 +803,9 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // the xpath, relative (../..) or absolute (//), returns identical
                 // matching results that must be collapsed in an unique result
                 // otherwise a subsequent operation is performed multiple times.
-                $unique_results = [];
-                foreach ($results as $r) {
-                        $found = false;
+                $results = $this->filterQueryResults($results);
 
-                        foreach ($unique_results as $u) {
-                                if ($r === $u) {
-                                        $found = true;
-                                }
-                        }
-
-                        if (! $found) {
-                                $unique_results[] = $r;
-                        }
-                }
-
-                return $this->newContext($unique_results);
+                return $this->newContext($results);
         }
 
         public function times($times, callable $fn = null)
@@ -829,9 +821,12 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                                 $fn = $fn->bindTo($this);
 
                                 \array_shift($args);
-                        }
 
-                        \call_user_func($fn, ...$args);
+                                // It is faster than \call_user_func.
+                                $fn(...$args);
+                        } else {
+                                \call_user_func($fn, ...$args);
+                        }
                 }
 
                 return $this;
@@ -847,9 +842,12 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                                 $fn = $fn->bindTo($cx);
 
                                 \array_shift($args);
-                        }
 
-                        \call_user_func($fn, ...$args);
+                                // It is faster than \call_user_func.
+                                $fn(...$args);
+                        } else {
+                                \call_user_func($fn, ...$args);
+                        }
                 }
 
                 return $this;
@@ -1038,9 +1036,30 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return domnodes_to_string($this->nodes);
         }
 
-        protected function newContext($context)
+        protected function newContext(&$context)
         {
                 return new FluidContext($this->document, $context);
+        }
+
+        protected function filterQueryResults(&$results)
+        {
+                $set = [];
+
+                foreach ($results as $r) {
+                        $found = false;
+
+                        foreach ($set as $u) {
+                                if ($r === $u) {
+                                        $found = true;
+                                }
+                        }
+
+                        if (! $found) {
+                                $set[] = $r;
+                        }
+                }
+
+                return $set;
         }
 
         protected function handleOptionals($element, &$optionals)
@@ -1243,7 +1262,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         $name = \substr($name, $colon_pos + 1);
                 }
 
-                if ($id) {
+                if ($id !== null) {
                         $ns  = $this->document->namespaces[$id];
                         $uri = $ns->uri();
 
@@ -1271,7 +1290,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
                 foreach ($nodes as $el) {
                         $el        = $this->document->dom->importNode($el, true);
-                        $context[] = $fn( $parent, $el);
+                        $context[] = $fn($parent, $el);
                 }
 
                 return $context;
