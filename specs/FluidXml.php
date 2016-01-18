@@ -5,6 +5,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . '.common.php';
 use \FluidXml\FluidXml;
 use \FluidXml\FluidNamespace;
 use \FluidXml\Core\FluidContext;
+use \FluidXml\Core\FluidInsertionHandler;
 use \FluidXml\Core\FluidDocument;
 use \FluidXml\Core\FluidRepeater;
 use function \FluidXml\fluidxml;
@@ -1843,7 +1844,9 @@ describe('FluidContext', function() {
                 it('should accept a DOMDocument', function() {
                         $xml = new FluidXml();
 
-                        $new_cx = new FluidContext(new FluidDocument(), $xml->dom());
+                        $doc     = new FluidDocument();
+                        $handler = new FluidInsertionHandler($doc);
+                        $new_cx  = new FluidContext($doc, $handler, $xml->dom());
 
                         $actual   = $new_cx[0];
                         $expected = $xml->dom();
@@ -1854,7 +1857,9 @@ describe('FluidContext', function() {
                         $xml = new FluidXml();
                         $cx = $xml->appendChild(['head'], true);
 
-                        $new_cx = new FluidContext(new FluidDocument(), $cx[0]);
+                        $doc     = new FluidDocument();
+                        $handler = new FluidInsertionHandler($doc);
+                        $new_cx  = new FluidContext($doc, $handler, $cx[0]);
 
                         $actual   = $new_cx->asArray();
                         $expected = $cx->asArray();
@@ -1865,7 +1870,9 @@ describe('FluidContext', function() {
                         $xml = new FluidXml();
                         $cx = $xml->appendChild(['head', 'body'], true);
 
-                        $new_cx = new FluidContext(new FluidDocument(), $cx->asArray());
+                        $doc     = new FluidDocument();
+                        $handler = new FluidInsertionHandler($doc);
+                        $new_cx  = new FluidContext($doc, $handler, $cx->asArray());
 
                         $actual   = $new_cx->asArray();
                         $expected = $cx->asArray();
@@ -1880,7 +1887,9 @@ describe('FluidContext', function() {
                         $domxp = new \DOMXPath($dom);
                         $nodes = $domxp->query('/doc/*');
 
-                        $new_cx = new FluidContext(new FluidDocument(), $nodes);
+                        $doc     = new FluidDocument();
+                        $handler = new FluidInsertionHandler($doc);
+                        $new_cx  = new FluidContext($doc, $handler, $nodes);
 
                         $actual   = $new_cx->asArray();
                         $expected = $cx->asArray();
@@ -1891,7 +1900,9 @@ describe('FluidContext', function() {
                         $xml = new FluidXml();
                         $cx = $xml->appendChild(['head', 'body'], true);
 
-                        $new_cx = new FluidContext(new FluidDocument(), $cx);
+                        $doc     = new FluidDocument();
+                        $handler = new FluidInsertionHandler($doc);
+                        $new_cx  = new FluidContext($doc, $handler, $cx);
 
                         $actual   = $new_cx->asArray();
                         $expected = $cx->asArray();

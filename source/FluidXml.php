@@ -43,6 +43,7 @@ namespace FluidXml
 
 use \FluidXml\Core\FluidInterface;
 use \FluidXml\Core\FluidDocument;
+use \FluidXml\Core\FluidInsertionHandler;
 use \FluidXml\Core\FluidContext;
 use \FluidXml\Core\NewableTrait;
 use \FluidXml\Core\ReservedCallTrait;
@@ -142,6 +143,7 @@ class FluidXml implements FluidInterface
         const ROOT_NODE = 'doc';
 
         private $document;
+        private $handler;
 
         public static function load($document)
         {
@@ -167,9 +169,6 @@ class FluidXml implements FluidInterface
 
         public function __construct($root = null, $options = [])
         {
-                $this->document = new FluidDocument();
-                $doc = $this->document;
-
                 $defaults = [ 'root'       => self::ROOT_NODE,
                               'version'    => '1.0',
                               'encoding'   => 'UTF-8',
@@ -187,11 +186,16 @@ class FluidXml implements FluidInterface
 
                 $opts = \array_merge($defaults, $options);
 
+                $this->document = new FluidDocument();
+                $doc            = $this->document;
+
                 $doc->dom = new \DOMDocument($opts['version'], $opts['encoding']);
                 $doc->dom->formatOutput       = true;
                 $doc->dom->preserveWhiteSpace = false;
 
-                $doc->xpath = new \DOMXPath($doc->dom);
+                $doc->xpath    = new \DOMXPath($doc->dom);
+
+                $this->handler = new FluidInsertionHandler($doc);
 
                 if (! empty($opts['root'])) {
                         $this->appendSibling($opts['root']);
@@ -412,7 +416,7 @@ class FluidXml implements FluidInterface
                         // a root node yet. Whether there is not a root node, the DOMDocument
                         // is promoted as root node.
                         if ($this->context === null) {
-                                $this->context = new FluidContext($this->document, $this->document->dom);
+                                $this->context = new FluidContext($this->document, $this->handler, $this->document->dom);
                         }
 
                         return $this->context;
@@ -421,7 +425,7 @@ class FluidXml implements FluidInterface
                 if ($this->contextEl !== $this->document->dom->documentElement) {
                         // The user can prepend a root node to the current root node.
                         // In this case we have to update the context with the new first root node.
-                        $this->context   = new FluidContext($this->document, $this->document->dom->documentElement);
+                        $this->context   = new FluidContext($this->document, $this->handler, $this->document->dom->documentElement);
                         $this->contextEl = $this->document->dom->documentElement;
                 }
 
@@ -631,17 +635,20 @@ class FluidDocument
         public $dom;
         public $xpath;
         public $namespaces = [];
+        public $handler;
 }
 
 class FluidRepeater
 {
         private $document;
+        private $handler;
         private $context;
         private $times;
 
-        public function __construct($document, $context, $times)
+        public function __construct($document, $handler, $context, $times)
         {
                 $this->document = $document;
+                $this->handler  = $handler;
                 $this->context  = $context;
                 $this->times    = $times;
         }
@@ -657,409 +664,60 @@ class FluidRepeater
                 }
 
                 if ($new_context !== $this->context) {
-                        return new FluidContext($this->document, $nodes);
+                        return new FluidContext($this->document, $this->handler, $nodes);
                 }
 
                 return $this->context;
         }
 }
 
-class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
+class FluidInsertionHandler
 {
-        use NewableTrait,
-            ReservedCallTrait,          // For compatibility with PHP 5.6.
-            ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
-
         private $document;
-        private $nodes = [];
-        private $seek = 0;
+        private $dom;
+        private $namespaces;
 
-        public function __construct($document, $context)
+        public function __construct($document)
         {
-                $this->document = $document;
-
-                if (! \is_array($context) && ! $context instanceof \Traversable) {
-                        // DOMDocument, DOMElement and DOMNode are not iterable.
-                        // DOMNodeList and FluidContext are iterable.
-                        $context = [ $context ];
-                }
-
-                foreach ($context as $n) {
-                        if (! $n instanceof \DOMNode) {
-                                throw new \Exception('Node type not recognized.');
-                        }
-
-                        $this->nodes[] = $n;
-                }
+                $this->document   = $document;
+                $this->dom        = $document->dom;
+                $this->namespaces =& $document->namespaces;
         }
 
-        public function asArray()
+        public function insertElement(&$nodes, $element, &$optionals, $fn, $orig_context)
         {
-                return $this->nodes;
-        }
+                list($element, $attributes, $switch_context) = $this->handleOptionals($element, $optionals);
 
-        // \ArrayAccess interface.
-        public function offsetSet($offset, $value)
-        {
-                // if (\is_null($offset)) {
-                //         $this->nodes[] = $value;
-                // } else {
-                //         $this->nodes[$offset] = $value;
-                // }
-                throw new \Exception('Setting a context element is not allowed.');
-        }
+                $new_nodes = [];
 
-        // \ArrayAccess interface.
-        public function offsetExists($offset)
-        {
-                return isset($this->nodes[$offset]);
-        }
-
-        // \ArrayAccess interface.
-        public function offsetUnset($offset)
-        {
-                // unset($this->nodes[$offset]);
-                \array_splice($this->nodes, $offset, 1);
-        }
-
-        // \ArrayAccess interface.
-        public function offsetGet($offset)
-        {
-                if (isset($this->nodes[$offset])) {
-                        return $this->nodes[$offset];
-                }
-
-                return null;
-        }
-
-        // \Iterator interface.
-        public function rewind()
-        {
-                $this->seek = 0;
-        }
-
-        // \Iterator interface.
-        public function current()
-        {
-                return $this->nodes[$this->seek];
-        }
-
-        // \Iterator interface.
-        public function key()
-        {
-                return $this->seek;
-        }
-
-        // \Iterator interface.
-        public function next()
-        {
-                ++$this->seek;
-        }
-
-        // \Iterator interface.
-        public function valid()
-        {
-                return isset($this->nodes[$this->seek]);
-        }
-
-        public function length()
-        {
-                return \count($this->nodes);
-        }
-
-        public function query(...$xpath)
-        {
-                if (\is_array($xpath[0])) {
-                        $xpath = $xpath[0];
-                }
-
-                $results = [];
-
-                $xp = $this->document->xpath;
-
-                foreach ($this->nodes as $n) {
-                        foreach ($xpath as $x) {
-                                // Returns a DOMNodeList.
-                                $res = $xp->query($x, $n);
-
-                                // Algorithm 1:
-                                // $results = \array_merge($results, \iterator_to_array($res));
-
-                                // Algorithm 2:
-                                // It is faster than \iterator_to_array and a lot faster
-                                // than \iterator_to_array + \array_merge.
-                                foreach ($res as $r) {
-                                        $results[] = $r;
-                                }
-
-                                // Algorithm 3:
-                                // for ($i = 0, $l = $res->length; $i < $l; ++$i) {
-                                //         $results[] = $res->item($i);
-                                // }
+                foreach ($nodes as $n) {
+                        foreach ($element as $k => $v) {
+                                // I give up, it's a too complex job for only one method like me.
+                                $cx        = $this->handleInsertion($n, $k, $v, $fn, $optionals);
+                                $new_nodes = \array_merge($new_nodes, $cx);
                         }
                 }
 
-                // Performing over multiple sibling nodes a query that ascends
-                // the xpath, relative (../..) or absolute (//), returns identical
-                // matching results that must be collapsed in an unique result
-                // otherwise a subsequent operation is performed multiple times.
-                $results = $this->filterQueryResults($results);
+                $new_context = $this->newContext($new_nodes);
 
-                return $this->newContext($results);
-        }
-
-        public function times($times, callable $fn = null)
-        {
-                if ($fn === null) {
-                        return new FluidRepeater($this->document, $this, $times);
+                // Setting the attributes is an help that the appendChild method
+                // offers to the user and is the same of:
+                // 1. appending a child switching the context
+                // 2. setting the attributes over the new context.
+                if (! empty($attributes)) {
+                        $new_context->setAttribute($attributes);
                 }
 
-                for ($i = 0; $i < $times; ++$i) {
-                        $args = [$this, $i];
-
-                        if ($fn instanceof \Closure) {
-                                $fn = $fn->bindTo($this);
-
-                                \array_shift($args);
-
-                                // It is faster than \call_user_func.
-                                $fn(...$args);
-                        } else {
-                                \call_user_func($fn, ...$args);
-                        }
+                if ($switch_context) {
+                        return $new_context;
                 }
 
-                return $this;
-        }
-
-        public function each(callable $fn)
-        {
-                foreach ($this->nodes as $i => $n) {
-                        $cx   = $this->newContext($n);
-                        $args = [$cx, $i, $n];
-
-                        if ($fn instanceof \Closure) {
-                                $fn = $fn->bindTo($cx);
-
-                                \array_shift($args);
-
-                                // It is faster than \call_user_func.
-                                $fn(...$args);
-                        } else {
-                                \call_user_func($fn, ...$args);
-                        }
-                }
-
-                return $this;
-        }
-
-        // appendChild($child, $value?, $attributes? = [], $switchContext? = false)
-        public function appendChild($child, ...$optionals)
-        {
-                return $this->insertElement($child, $optionals, function($parent, $element) {
-                        return $parent->appendChild($element);
-                });
-        }
-
-        // Alias of appendChild().
-        public function add($child, ...$optionals)
-        {
-                return $this->appendChild($child, ...$optionals);
-        }
-
-        public function prependSibling($sibling, ...$optionals)
-        {
-                return $this->insertElement($sibling, $optionals, function($sibling, $element) {
-                        return $sibling->parentNode->insertBefore($element, $sibling);
-                });
-        }
-
-        // Alias of prependSibling().
-        public function prepend($sibling, ...$optionals)
-        {
-                return $this->prependSibling($sibling, ...$optionals);
-        }
-
-        // Alias of prependSibling().
-        public function insertSiblingBefore($sibling, ...$optionals)
-        {
-                return $this->prependSibling($sibling, ...$optionals);
-        }
-
-        public function appendSibling($sibling, ...$optionals)
-        {
-                return $this->insertElement($sibling, $optionals, function($sibling, $element) {
-                        // If ->nextSibling is null, $element is simply appended as last sibling.
-                        return $sibling->parentNode->insertBefore($element, $sibling->nextSibling);
-                });
-        }
-
-        // Alias of appendSibling().
-        public function append($sibling, ...$optionals)
-        {
-                return $this->appendSibling($sibling, ...$optionals);
-        }
-
-        // Alias of appendSibling().
-        public function insertSiblingAfter($sibling, ...$optionals)
-        {
-                return $this->appendSibling($sibling, ...$optionals);
-        }
-
-        // Arguments can be in the form of:
-        // setAttribute($name, $value)
-        // setAttribute(['name' => 'value', ...])
-        public function setAttribute(...$arguments)
-        {
-                // Default case is:
-                // [ 'name' => 'value', ... ]
-                $attrs = $arguments[0];
-
-                // If the first argument is not an array,
-                // the user has passed two arguments:
-                // 1. is the attribute name
-                // 2. is the attribute value
-                if (! \is_array($arguments[0])) {
-                        $attrs = [$arguments[0] => $arguments[1]];
-                }
-
-                foreach ($this->nodes as $n) {
-                        foreach ($attrs as $k => $v) {
-                                // Algorithm 1:
-                                $n->setAttribute($k, $v);
-
-                                // Algorithm 2:
-                                // $n->setAttributeNode(new \DOMAttr($k, $v));
-
-                                // Algorithm 3:
-                                // $n->appendChild(new \DOMAttr($k, $v));
-
-                                // Algorithm 2 and 3 have a different behaviour
-                                // from Algorithm 1.
-                                // The attribute is still created or setted, but
-                                // changing the value of an existing attribute
-                                // changes even the order of that attribute
-                                // in the attribute list.
-                        }
-                }
-
-                return $this;
-        }
-
-        // Alias of setAttribute().
-        public function attr(...$arguments)
-        {
-                return $this->setAttribute(...$arguments);
-        }
-
-        public function appendText($text)
-        {
-                foreach ($this->nodes as $n) {
-                        $n->appendChild(new \DOMText($text));
-                }
-
-                return $this;
-        }
-
-        public function appendCdata($text)
-        {
-                foreach ($this->nodes as $n) {
-                        $n->appendChild(new \DOMCDATASection($text));
-                }
-
-                return $this;
-        }
-
-        public function setText($text)
-        {
-                foreach ($this->nodes as $n) {
-                        // Algorithm 1:
-                        $n->nodeValue = $text;
-
-                        // Algorithm 2:
-                        // foreach ($n->childNodes as $c) {
-                        //         $n->removeChild($c);
-                        // }
-                        // $n->appendChild(new \DOMText($text));
-
-                        // Algorithm 3:
-                        // foreach ($n->childNodes as $c) {
-                        //         $n->replaceChild(new \DOMText($text), $c);
-                        // }
-                }
-
-                return $this;
-        }
-
-        // Alias of setText().
-        public function text($text)
-        {
-                return $this->setText($text);
-        }
-
-        public function setCdata($text)
-        {
-                foreach ($this->nodes as $n) {
-                        $n->nodeValue = '';
-                        $n->appendChild(new \DOMCDATASection($text));
-                }
-
-                return $this;
-        }
-
-        // Alias of setCdata().
-        public function cdata($text)
-        {
-                return $this->setCdata($text);
-        }
-
-        public function remove(...$xpath)
-        {
-                // Arguments can be empty, a string or an array of strings.
-
-                if (empty($xpath)) {
-                        // The user has requested to remove the nodes of this context.
-                        $targets = $this->nodes;
-                } else {
-                        $targets = $this->query(...$xpath);
-                }
-
-                foreach ($targets as $t) {
-                        $t->parentNode->removeChild($t);
-                }
-
-                return $this;
-        }
-
-        public function xml($strip = false)
-        {
-                return domnodes_to_string($this->nodes);
+                return $orig_context;
         }
 
         protected function newContext(&$context)
         {
-                return new FluidContext($this->document, $context);
-        }
-
-        protected function filterQueryResults(&$results)
-        {
-                $set = [];
-
-                foreach ($results as $r) {
-                        $found = false;
-
-                        foreach ($set as $u) {
-                                if ($r === $u) {
-                                        $found = true;
-                                }
-                        }
-
-                        if (! $found) {
-                                $set[] = $r;
-                        }
-                }
-
-                return $set;
+                return new FluidContext($this->document, $this, $context);
         }
 
         protected function handleOptionals($element, &$optionals)
@@ -1091,37 +749,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return [ $element, $attributes, $switch_context ];
         }
 
-        protected function insertElement($element, &$optionals, $fn)
-        {
-                list($element, $attributes, $switch_context) = $this->handleOptionals($element, $optionals);
-
-                $nodes = [];
-
-                foreach ($this->nodes as $n) {
-                        foreach ($element as $k => $v) {
-                                // I give up, it's a too complex job for only one method like me.
-                                $cx    = $this->handleInsertion($n, $k, $v, $fn, $optionals);
-
-                                $nodes = \array_merge($nodes, $cx);
-                        }
-                }
-
-                $new_context = $this->newContext($nodes);
-
-                // Setting the attributes is an help that the appendChild method
-                // offers to the user and is the same of:
-                // 1. appending a child switching the context
-                // 2. setting the attributes over the new context.
-                if (! empty($attributes)) {
-                        $new_context->setAttribute($attributes);
-                }
-
-                if ($switch_context) {
-                        return $new_context;
-                }
-
-                return $this;
-        }
 
         protected function handleInsertion($parent, $k, $v, $fn, &$optionals)
         {
@@ -1263,7 +890,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 }
 
                 if ($id !== null) {
-                        $ns  = $this->document->namespaces[$id];
+                        $ns  = $this->namespaces[$id];
                         $uri = $ns->uri();
 
                         if ($ns->mode() === FluidNamespace::MODE_EXPLICIT) {
@@ -1289,7 +916,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 $context = [];
 
                 foreach ($nodes as $el) {
-                        $el        = $this->document->dom->importNode($el, true);
+                        $el        = $this->dom->importNode($el, true);
                         $context[] = $fn($parent, $el);
                 }
 
@@ -1442,6 +1069,408 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         {
                 return $this->attachNodes($parent, $v->asArray(), $fn);
         }
+}
+
+class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
+{
+        use NewableTrait,
+            ReservedCallTrait,          // For compatibility with PHP 5.6.
+            ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
+
+        private $document;
+        private $handler;
+        private $nodes = [];
+        private $seek = 0;
+
+        public function __construct($document, $handler, $context)
+        {
+                $this->document = $document;
+                $this->handler  = $handler;
+
+                if (! \is_array($context) && ! $context instanceof \Traversable) {
+                        // DOMDocument, DOMElement and DOMNode are not iterable.
+                        // DOMNodeList and FluidContext are iterable.
+                        $context = [ $context ];
+                }
+
+                foreach ($context as $n) {
+                        if (! $n instanceof \DOMNode) {
+                                throw new \Exception('Node type not recognized.');
+                        }
+
+                        $this->nodes[] = $n;
+                }
+        }
+
+        public function asArray()
+        {
+                return $this->nodes;
+        }
+
+        // \ArrayAccess interface.
+        public function offsetSet($offset, $value)
+        {
+                // if (\is_null($offset)) {
+                //         $this->nodes[] = $value;
+                // } else {
+                //         $this->nodes[$offset] = $value;
+                // }
+                throw new \Exception('Setting a context element is not allowed.');
+        }
+
+        // \ArrayAccess interface.
+        public function offsetExists($offset)
+        {
+                return isset($this->nodes[$offset]);
+        }
+
+        // \ArrayAccess interface.
+        public function offsetUnset($offset)
+        {
+                // unset($this->nodes[$offset]);
+                \array_splice($this->nodes, $offset, 1);
+        }
+
+        // \ArrayAccess interface.
+        public function offsetGet($offset)
+        {
+                if (isset($this->nodes[$offset])) {
+                        return $this->nodes[$offset];
+                }
+
+                return null;
+        }
+
+        // \Iterator interface.
+        public function rewind()
+        {
+                $this->seek = 0;
+        }
+
+        // \Iterator interface.
+        public function current()
+        {
+                return $this->nodes[$this->seek];
+        }
+
+        // \Iterator interface.
+        public function key()
+        {
+                return $this->seek;
+        }
+
+        // \Iterator interface.
+        public function next()
+        {
+                ++$this->seek;
+        }
+
+        // \Iterator interface.
+        public function valid()
+        {
+                return isset($this->nodes[$this->seek]);
+        }
+
+        public function length()
+        {
+                return \count($this->nodes);
+        }
+
+        public function query(...$xpath)
+        {
+                if (\is_array($xpath[0])) {
+                        $xpath = $xpath[0];
+                }
+
+                $results = [];
+
+                $xp = $this->document->xpath;
+
+                foreach ($this->nodes as $n) {
+                        foreach ($xpath as $x) {
+                                // Returns a DOMNodeList.
+                                $res = $xp->query($x, $n);
+
+                                // Algorithm 1:
+                                // $results = \array_merge($results, \iterator_to_array($res));
+
+                                // Algorithm 2:
+                                // It is faster than \iterator_to_array and a lot faster
+                                // than \iterator_to_array + \array_merge.
+                                foreach ($res as $r) {
+                                        $results[] = $r;
+                                }
+
+                                // Algorithm 3:
+                                // for ($i = 0, $l = $res->length; $i < $l; ++$i) {
+                                //         $results[] = $res->item($i);
+                                // }
+                        }
+                }
+
+                // Performing over multiple sibling nodes a query that ascends
+                // the xpath, relative (../..) or absolute (//), returns identical
+                // matching results that must be collapsed in an unique result
+                // otherwise a subsequent operation is performed multiple times.
+                $results = $this->filterQueryResults($results);
+
+                return $this->newContext($results);
+        }
+
+        public function times($times, callable $fn = null)
+        {
+                if ($fn === null) {
+                        return new FluidRepeater($this->document, $this->handler, $this, $times);
+                }
+
+                for ($i = 0; $i < $times; ++$i) {
+                        $args = [$this, $i];
+
+                        if ($fn instanceof \Closure) {
+                                $fn = $fn->bindTo($this);
+
+                                \array_shift($args);
+
+                                // It is faster than \call_user_func.
+                                $fn(...$args);
+                        } else {
+                                \call_user_func($fn, ...$args);
+                        }
+                }
+
+                return $this;
+        }
+
+        public function each(callable $fn)
+        {
+                foreach ($this->nodes as $i => $n) {
+                        $cx   = $this->newContext($n);
+                        $args = [$cx, $i, $n];
+
+                        if ($fn instanceof \Closure) {
+                                $fn = $fn->bindTo($cx);
+
+                                \array_shift($args);
+
+                                // It is faster than \call_user_func.
+                                $fn(...$args);
+                        } else {
+                                \call_user_func($fn, ...$args);
+                        }
+                }
+
+                return $this;
+        }
+
+        // appendChild($child, $value?, $attributes? = [], $switchContext? = false)
+        public function appendChild($child, ...$optionals)
+        {
+                return $this->handler->insertElement($this->nodes, $child, $optionals, function($parent, $element) {
+                        return $parent->appendChild($element);
+                }, $this);
+        }
+
+        // Alias of appendChild().
+        public function add($child, ...$optionals)
+        {
+                return $this->appendChild($child, ...$optionals);
+        }
+
+        public function prependSibling($sibling, ...$optionals)
+        {
+                return $this->handler->insertElement($this->nodes, $sibling, $optionals, function($sibling, $element) {
+                        return $sibling->parentNode->insertBefore($element, $sibling);
+                }, $this);
+        }
+
+        // Alias of prependSibling().
+        public function prepend($sibling, ...$optionals)
+        {
+                return $this->prependSibling($sibling, ...$optionals);
+        }
+
+        // Alias of prependSibling().
+        public function insertSiblingBefore($sibling, ...$optionals)
+        {
+                return $this->prependSibling($sibling, ...$optionals);
+        }
+
+        public function appendSibling($sibling, ...$optionals)
+        {
+                return $this->handler->insertElement($this->nodes, $sibling, $optionals, function($sibling, $element) {
+                        // If ->nextSibling is null, $element is simply appended as last sibling.
+                        return $sibling->parentNode->insertBefore($element, $sibling->nextSibling);
+                }, $this);
+        }
+
+        // Alias of appendSibling().
+        public function append($sibling, ...$optionals)
+        {
+                return $this->appendSibling($sibling, ...$optionals);
+        }
+
+        // Alias of appendSibling().
+        public function insertSiblingAfter($sibling, ...$optionals)
+        {
+                return $this->appendSibling($sibling, ...$optionals);
+        }
+
+        // Arguments can be in the form of:
+        // setAttribute($name, $value)
+        // setAttribute(['name' => 'value', ...])
+        public function setAttribute(...$arguments)
+        {
+                // Default case is:
+                // [ 'name' => 'value', ... ]
+                $attrs = $arguments[0];
+
+                // If the first argument is not an array,
+                // the user has passed two arguments:
+                // 1. is the attribute name
+                // 2. is the attribute value
+                if (! \is_array($arguments[0])) {
+                        $attrs = [$arguments[0] => $arguments[1]];
+                }
+
+                foreach ($this->nodes as $n) {
+                        foreach ($attrs as $k => $v) {
+                                // Algorithm 1:
+                                $n->setAttribute($k, $v);
+
+                                // Algorithm 2:
+                                // $n->setAttributeNode(new \DOMAttr($k, $v));
+
+                                // Algorithm 3:
+                                // $n->appendChild(new \DOMAttr($k, $v));
+
+                                // Algorithm 2 and 3 have a different behaviour
+                                // from Algorithm 1.
+                                // The attribute is still created or setted, but
+                                // changing the value of an existing attribute
+                                // changes even the order of that attribute
+                                // in the attribute list.
+                        }
+                }
+
+                return $this;
+        }
+
+        // Alias of setAttribute().
+        public function attr(...$arguments)
+        {
+                return $this->setAttribute(...$arguments);
+        }
+
+        public function appendText($text)
+        {
+                foreach ($this->nodes as $n) {
+                        $n->appendChild(new \DOMText($text));
+                }
+
+                return $this;
+        }
+
+        public function appendCdata($text)
+        {
+                foreach ($this->nodes as $n) {
+                        $n->appendChild(new \DOMCDATASection($text));
+                }
+
+                return $this;
+        }
+
+        public function setText($text)
+        {
+                foreach ($this->nodes as $n) {
+                        // Algorithm 1:
+                        $n->nodeValue = $text;
+
+                        // Algorithm 2:
+                        // foreach ($n->childNodes as $c) {
+                        //         $n->removeChild($c);
+                        // }
+                        // $n->appendChild(new \DOMText($text));
+
+                        // Algorithm 3:
+                        // foreach ($n->childNodes as $c) {
+                        //         $n->replaceChild(new \DOMText($text), $c);
+                        // }
+                }
+
+                return $this;
+        }
+
+        // Alias of setText().
+        public function text($text)
+        {
+                return $this->setText($text);
+        }
+
+        public function setCdata($text)
+        {
+                foreach ($this->nodes as $n) {
+                        $n->nodeValue = '';
+                        $n->appendChild(new \DOMCDATASection($text));
+                }
+
+                return $this;
+        }
+
+        // Alias of setCdata().
+        public function cdata($text)
+        {
+                return $this->setCdata($text);
+        }
+
+        public function remove(...$xpath)
+        {
+                // Arguments can be empty, a string or an array of strings.
+
+                if (empty($xpath)) {
+                        // The user has requested to remove the nodes of this context.
+                        $targets = $this->nodes;
+                } else {
+                        $targets = $this->query(...$xpath);
+                }
+
+                foreach ($targets as $t) {
+                        $t->parentNode->removeChild($t);
+                }
+
+                return $this;
+        }
+
+        public function xml($strip = false)
+        {
+                return domnodes_to_string($this->nodes);
+        }
+
+        protected function newContext(&$context)
+        {
+                return new FluidContext($this->document, $this->handler, $context);
+        }
+
+        protected function filterQueryResults(&$results)
+        {
+                $set = [];
+
+                foreach ($results as $r) {
+                        $found = false;
+
+                        foreach ($set as $u) {
+                                if ($r === $u) {
+                                        $found = true;
+                                }
+                        }
+
+                        if (! $found) {
+                                $set[] = $r;
+                        }
+                }
+
+                return $set;
+        }
+
 }
 
 } // END OF NAMESPACE FluidXml\Core
