@@ -1224,18 +1224,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 }
 
                 for ($i = 0; $i < $times; ++$i) {
-                        $args = [$this, $i];
-
-                        if ($fn instanceof \Closure) {
-                                $fn = $fn->bindTo($this);
-
-                                \array_shift($args);
-
-                                // It is faster than \call_user_func.
-                                $fn(...$args);
-                        } else {
-                                \call_user_func($fn, ...$args);
-                        }
+                        $this->callfn($fn, [$this, $i]);
                 }
 
                 return $this;
@@ -1244,19 +1233,9 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         public function each(callable $fn)
         {
                 foreach ($this->nodes as $i => $n) {
-                        $cx   = $this->newContext($n);
-                        $args = [$cx, $i, $n];
+                        $cx = $this->newContext($n);
 
-                        if ($fn instanceof \Closure) {
-                                $fn = $fn->bindTo($cx);
-
-                                \array_shift($args);
-
-                                // It is faster than \call_user_func.
-                                $fn(...$args);
-                        } else {
-                                \call_user_func($fn, ...$args);
-                        }
+                        $this->callfn($fn, [$cx, $i, $n]);
                 }
 
                 return $this;
@@ -1471,6 +1450,19 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $set;
         }
 
+        protected function callfn($fn, $args)
+        {
+                if ($fn instanceof \Closure) {
+                        $bind = \array_shift($args);
+
+                        $fn = $fn->bindTo($bind);
+
+                        // It is faster than \call_user_func.
+                        return $fn(...$args);
+                }
+
+                return \call_user_func($fn, ...$args);
+        }
 }
 
 } // END OF NAMESPACE FluidXml\Core

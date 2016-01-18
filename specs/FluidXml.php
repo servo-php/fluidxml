@@ -665,7 +665,6 @@ describe('FluidXml', function() {
 
                         $xml->each('eachassert');
 
-
                         $xml->appendChild('child1')
                             ->appendChild('child2');
 
@@ -673,7 +672,8 @@ describe('FluidXml', function() {
                         $index = 0;
                         $xml->query('/doc/*')
                             ->each(function($i, $n) use (&$nodes, &$index) {
-                                $this->setText($n->nodeName);
+                                $idx = $i + 1;
+                                $this->setText($n->nodeName . $idx);
                                 $nodes[] = $n;
 
                                 $actual   = $i;
@@ -688,10 +688,30 @@ describe('FluidXml', function() {
                         \assert($actual === $expected, __($actual, $expected));
 
                         $expected = "<doc>\n"
-                                  . "  <child1>child1</child1>\n"
-                                  . "  <child2>child2</child2>\n"
+                                  . "  <child1>child11</child1>\n"
+                                  . "  <child2>child22</child2>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
+
+                        $xml = new FluidXml();
+                        $xml->appendChild('child1')
+                            ->appendChild('child2');
+
+                        function eachsettext($cx, $i, $n)
+                        {
+                                $idx = $i + 1;
+                                $cx->setText($n->nodeName . $idx);
+                        }
+
+                        $xml->query('/doc/*')
+                                ->each('eachsettext');
+
+                        $expected = "<doc>\n"
+                                  . "  <child1>child11</child1>\n"
+                                  . "  <child2>child22</child2>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+
                 });
         });
 
