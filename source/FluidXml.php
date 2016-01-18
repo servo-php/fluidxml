@@ -265,6 +265,7 @@ class FluidXml implements FluidInterface
         public function __construct($root = null, $options = [])
         {
                 $this->document = new FluidDocument();
+                $doc = $this->document;
 
                 $defaults = [ 'root'       => self::ROOT_NODE,
                               'version'    => '1.0',
@@ -283,11 +284,11 @@ class FluidXml implements FluidInterface
 
                 $opts = \array_merge($defaults, $options);
 
-                $this->document->dom = new \DOMDocument($opts['version'], $opts['encoding']);
-                $this->document->dom->formatOutput       = true;
-                $this->document->dom->preserveWhiteSpace = false;
+                $doc->dom = new \DOMDocument($opts['version'], $opts['encoding']);
+                $doc->dom->formatOutput       = true;
+                $doc->dom->preserveWhiteSpace = false;
 
-                $this->document->xpath = new \DOMXPath($this->document->dom);
+                $doc->xpath = new \DOMXPath($doc->dom);
 
                 if (! empty($opts['root'])) {
                         $this->appendSibling($opts['root']);
@@ -300,7 +301,7 @@ class FluidXml implements FluidInterface
                                . "href=\"{$opts['stylesheet']}\"";
                         $stylesheet = new \DOMProcessingInstruction('xml-stylesheet', $attrs);
 
-                        $this->document->dom->insertBefore($stylesheet, $this->document->dom->documentElement);
+                        $doc->dom->insertBefore($stylesheet, $doc->dom->documentElement);
                 }
         }
 
@@ -514,11 +515,10 @@ class FluidXml implements FluidInterface
                         return $this->context;
                 }
 
-
-                if ($this->contextEl === null || $this->contextEl !== $this->document->dom->documentElement) {
+                if ($this->contextEl !== $this->document->dom->documentElement) {
                         // The user can prepend a root node to the current root node.
                         // In this case we have to update the context with the new first root node.
-                        $this->context = new FluidContext($this->document, $this->document->dom->documentElement);
+                        $this->context   = new FluidContext($this->document, $this->document->dom->documentElement);
                         $this->contextEl = $this->document->dom->documentElement;
                 }
 
