@@ -4,6 +4,9 @@ $ds = \DIRECTORY_SEPARATOR;
 $source_dir = __DIR__ . "{$ds}..{$ds}source";
 \set_include_path($source_dir . \PATH_SEPARATOR . \get_include_path());
 
+use \FluidXml\FluidXml;
+use \FluidXml\Core\FluidInterface;
+
 function __($actual, $expected)
 {
         $v = [ 'actual'   => \var_export($actual, true),
@@ -36,11 +39,11 @@ function assert_is_a($actual, $expected)
 
 function assert_is_fluid($method, ...$args)
 {
-        $instance = new \FluidXml\FluidXml();
+        $instance = new FluidXml();
 
         if (\method_exists($instance, $method)) {
                 $actual   = \call_user_func([$instance, $method], ...$args);
-                $expected = \FluidXml\FluidInterface::class;
+                $expected = FluidInterface::class;
                 assert_is_a($actual, $expected);
         }
 
@@ -48,7 +51,7 @@ function assert_is_fluid($method, ...$args)
 
         if (\method_exists($instance, $method)) {
                 $actual   = \call_user_func([$instance, $method], ...$args);
-                $expected = \FluidXml\FluidInterface::class;
+                $expected = FluidInterface::class;
                 assert_is_a($actual, $expected);
         }
 }

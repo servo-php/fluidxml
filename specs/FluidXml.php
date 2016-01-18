@@ -3,10 +3,10 @@
 require_once __DIR__ . DIRECTORY_SEPARATOR . '.common.php';
 
 use \FluidXml\FluidXml;
-use \FluidXml\FluidContext;
 use \FluidXml\FluidNamespace;
-use \FluidXml\FluidDocument;
-use \FluidXml\FluidRepeater;
+use \FluidXml\Core\FluidContext;
+use \FluidXml\Core\FluidDocument;
+use \FluidXml\Core\FluidRepeater;
 use function \FluidXml\fluidxml;
 use function \FluidXml\fluidns;
 use function \FluidXml\fluidify;

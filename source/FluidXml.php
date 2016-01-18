@@ -38,7 +38,15 @@
  * @license https://opensource.org/licenses/BSD-2-Clause
  */
 
-namespace FluidXml;
+namespace FluidXml
+{
+
+use \FluidXml\Core\FluidInterface;
+use \FluidXml\Core\FluidDocument;
+use \FluidXml\Core\FluidContext;
+use \FluidXml\Core\NewableTrait;
+use \FluidXml\Core\ReservedCallTrait;
+use \FluidXml\Core\ReservedCallStaticTrait;
 
 /**
  * Constructs a new FluidXml instance.
@@ -120,114 +128,6 @@ function simplexml_to_string_without_headers(\SimpleXMLElement $element)
         $dom = \dom_import_simplexml($element);
 
         return $dom->ownerDocument->saveXML($dom);
-}
-
-interface FluidInterface
-{
-        /**
-         * Executes an XPath query.
-         *
-         * ```php
-         * $xml = fluidxml();
-
-         * $xml->query("/doc/book[@id='123']");
-         *
-         * // Relative queries are valid.
-         * $xml->query("/doc")->query("book[@id='123']");
-         * ```
-         *
-         * @param string $xpath The XPath to execute.
-         *
-         * @return FluidContext The context associated to the DOMNodeList.
-         */
-        public function query(...$xpath);
-        public function times($times, callable $fn = null);
-        public function each(callable $fn);
-
-        /**
-         * Append a new node as child of the current context.
-         *
-         * ```php
-         * $xml = fluidxml();
-
-         * $xml->appendChild('title', 'The Theory Of Everything');
-         * $xml->appendChild([ 'author' => 'S. Hawking' ]);
-         *
-         * $xml->appendChild('chapters', true)->appendChild('chapter', ['id'=> 1]);
-         *
-         * ```
-         *
-         * @param string|array $child The child/children to add.
-         * @param string $value The child text content.
-         * @param bool $switchContext Whether to return the current context
-         *                            or the context of the created node.
-         *
-         * @return FluidContext The context associated to the DOMNodeList.
-         */
-        public function appendChild($child, ...$optionals);
-        public function prependSibling($sibling, ...$optionals);
-        public function appendSibling($sibling, ...$optionals);
-        public function setAttribute(...$arguments);
-        public function setText($text);
-        public function appendText($text);
-        public function setCdata($text);
-        public function appendCdata($text);
-        public function remove(...$xpath);
-        public function xml($strip = false);
-        // Aliases:
-        public function add($child, ...$optionals);
-        public function prepend($sibling, ...$optionals);
-        public function insertSiblingBefore($sibling, ...$optionals);
-        public function append($sibling, ...$optionals);
-        public function insertSiblingAfter($sibling, ...$optionals);
-        public function attr(...$arguments);
-        public function text($text);
-}
-
-trait ReservedCallTrait
-{
-        public function __call($method, $arguments)
-        {
-                $m = "{$method}_";
-
-                if (\method_exists($this, $m)) {
-                        return $this->$m(...$arguments);
-                }
-
-                throw new \Exception("Method '$method' not found.");
-        }
-}
-
-trait ReservedCallStaticTrait
-{
-        public static function __callStatic($method, $arguments)
-        {
-                $m = "{$method}_";
-
-                if (\method_exists(static::class, $m)) {
-                        return static::$m(...$arguments);
-                }
-
-                throw new \Exception("Method '$method' not found.");
-        }
-}
-
-trait NewableTrait
-{
-        // This method should be called 'new',
-        // but for compatibility with PHP 5.6
-        // it is shadowed by the __callStatic() method.
-        public static function new_(...$arguments)
-        {
-                return new static(...$arguments);
-        }
-}
-
-class FluidDocument
-{
-        public $dom;
-        public $xpath;
-        public $namespaces = [];
 }
 
 class FluidXml implements FluidInterface
@@ -534,6 +434,230 @@ class FluidXml implements FluidInterface
                 }
 
                 return $this;
+        }
+}
+
+class FluidNamespace
+{
+        const ID   = 'id'  ;
+        const URI  = 'uri' ;
+        const MODE = 'mode';
+
+        const MODE_IMPLICIT = 0;
+        const MODE_EXPLICIT = 1;
+
+        private $config = [ self::ID   => '',
+                            self::URI  => '',
+                            self::MODE => self::MODE_EXPLICIT ];
+
+        public function __construct($id, $uri, $mode = 1)
+        {
+                if (\is_array($id)) {
+                        $args = $id;
+                        $id   = $args[self::ID];
+                        $uri  = $args[self::URI];
+
+                        if (isset($args[self::MODE])) {
+                                $mode = $args[self::MODE];
+                        }
+                }
+
+                $this->config[self::ID]   = $id;
+                $this->config[self::URI]  = $uri;
+                $this->config[self::MODE] = $mode;
+        }
+
+        public function id()
+        {
+                return $this->config[self::ID];
+        }
+
+        public function uri()
+        {
+                return $this->config[self::URI];
+        }
+
+        public function mode()
+        {
+                return $this->config[self::MODE];
+        }
+
+        public function querify($xpath)
+        {
+                $id = $this->id();
+
+                if ($id) {
+                        $id .= ':';
+                }
+
+                // An XPath query may not start with a slash ('/').
+                // Relative queries are an example '../target".
+                $new_xpath = '';
+
+                $nodes = \explode('/', $xpath);
+
+                foreach ($nodes as $node) {
+                        // An XPath query may have multiple slashes ('/')
+                        // example: //target
+                        if ($node) {
+                                $new_xpath .= "{$id}{$node}";
+                        }
+
+                        $new_xpath .= '/';
+                }
+
+                // Removes the last appended slash.
+                return \substr($new_xpath, 0, -1);
+        }
+}
+
+} // END OF NAMESPACE FluidXml
+
+namespace FluidXml\Core
+{
+
+use \FluidXml\FluidXml;
+use \FluidXml\FluidNamespace;
+
+use function \FluidXml\is_an_xml_string;
+use function \FluidXml\domnodes_to_string;
+
+interface FluidInterface
+{
+        /**
+         * Executes an XPath query.
+         *
+         * ```php
+         * $xml = fluidxml();
+
+         * $xml->query("/doc/book[@id='123']");
+         *
+         * // Relative queries are valid.
+         * $xml->query("/doc")->query("book[@id='123']");
+         * ```
+         *
+         * @param string $xpath The XPath to execute.
+         *
+         * @return FluidContext The context associated to the DOMNodeList.
+         */
+        public function query(...$xpath);
+        public function times($times, callable $fn = null);
+        public function each(callable $fn);
+
+        /**
+         * Append a new node as child of the current context.
+         *
+         * ```php
+         * $xml = fluidxml();
+
+         * $xml->appendChild('title', 'The Theory Of Everything');
+         * $xml->appendChild([ 'author' => 'S. Hawking' ]);
+         *
+         * $xml->appendChild('chapters', true)->appendChild('chapter', ['id'=> 1]);
+         *
+         * ```
+         *
+         * @param string|array $child The child/children to add.
+         * @param string $value The child text content.
+         * @param bool $switchContext Whether to return the current context
+         *                            or the context of the created node.
+         *
+         * @return FluidContext The context associated to the DOMNodeList.
+         */
+        public function appendChild($child, ...$optionals);
+        public function prependSibling($sibling, ...$optionals);
+        public function appendSibling($sibling, ...$optionals);
+        public function setAttribute(...$arguments);
+        public function setText($text);
+        public function appendText($text);
+        public function setCdata($text);
+        public function appendCdata($text);
+        public function remove(...$xpath);
+        public function xml($strip = false);
+        // Aliases:
+        public function add($child, ...$optionals);
+        public function prepend($sibling, ...$optionals);
+        public function insertSiblingBefore($sibling, ...$optionals);
+        public function append($sibling, ...$optionals);
+        public function insertSiblingAfter($sibling, ...$optionals);
+        public function attr(...$arguments);
+        public function text($text);
+}
+
+trait ReservedCallTrait
+{
+        public function __call($method, $arguments)
+        {
+                $m = "{$method}_";
+
+                if (\method_exists($this, $m)) {
+                        return $this->$m(...$arguments);
+                }
+
+                throw new \Exception("Method '$method' not found.");
+        }
+}
+
+trait ReservedCallStaticTrait
+{
+        public static function __callStatic($method, $arguments)
+        {
+                $m = "{$method}_";
+
+                if (\method_exists(static::class, $m)) {
+                        return static::$m(...$arguments);
+                }
+
+                throw new \Exception("Method '$method' not found.");
+        }
+}
+
+trait NewableTrait
+{
+        // This method should be called 'new',
+        // but for compatibility with PHP 5.6
+        // it is shadowed by the __callStatic() method.
+        public static function new_(...$arguments)
+        {
+                return new static(...$arguments);
+        }
+}
+
+class FluidDocument
+{
+        public $dom;
+        public $xpath;
+        public $namespaces = [];
+}
+
+class FluidRepeater
+{
+        private $document;
+        private $context;
+        private $times;
+
+        public function __construct($document, $context, $times)
+        {
+                $this->document = $document;
+                $this->context  = $context;
+                $this->times    = $times;
+        }
+
+        public function __call($method, $arguments)
+        {
+                $nodes = [];
+                $new_context = $this->context;
+
+                for ($i = 0, $l = $this->times; $i < $l; ++$i) {
+                        $new_context = $this->context->$method(...$arguments);
+                        $nodes       = \array_merge($nodes, $new_context->asArray());
+                }
+
+                if ($new_context !== $this->context) {
+                        return new FluidContext($this->document, $nodes);
+                }
+
+                return $this->context;
         }
 }
 
@@ -1301,107 +1425,4 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         }
 }
 
-class FluidNamespace
-{
-        const ID   = 'id'  ;
-        const URI  = 'uri' ;
-        const MODE = 'mode';
-
-        const MODE_IMPLICIT = 0;
-        const MODE_EXPLICIT = 1;
-
-        private $config = [ self::ID   => '',
-                            self::URI  => '',
-                            self::MODE => self::MODE_EXPLICIT ];
-
-        public function __construct($id, $uri, $mode = 1)
-        {
-                if (\is_array($id)) {
-                        $args = $id;
-                        $id   = $args[self::ID];
-                        $uri  = $args[self::URI];
-
-                        if (isset($args[self::MODE])) {
-                                $mode = $args[self::MODE];
-                        }
-                }
-
-                $this->config[self::ID]   = $id;
-                $this->config[self::URI]  = $uri;
-                $this->config[self::MODE] = $mode;
-        }
-
-        public function id()
-        {
-                return $this->config[self::ID];
-        }
-
-        public function uri()
-        {
-                return $this->config[self::URI];
-        }
-
-        public function mode()
-        {
-                return $this->config[self::MODE];
-        }
-
-        public function querify($xpath)
-        {
-                $id = $this->id();
-
-                if ($id) {
-                        $id .= ':';
-                }
-
-                // An XPath query may not start with a slash ('/').
-                // Relative queries are an example '../target".
-                $new_xpath = '';
-
-                $nodes = \explode('/', $xpath);
-
-                foreach ($nodes as $node) {
-                        // An XPath query may have multiple slashes ('/')
-                        // example: //target
-                        if ($node) {
-                                $new_xpath .= "{$id}{$node}";
-                        }
-
-                        $new_xpath .= '/';
-                }
-
-                // Removes the last appended slash.
-                return \substr($new_xpath, 0, -1);
-        }
-}
-
-class FluidRepeater
-{
-        private $document;
-        private $context;
-        private $times;
-
-        public function __construct($document, $context, $times)
-        {
-                $this->document = $document;
-                $this->context  = $context;
-                $this->times    = $times;
-        }
-
-        public function __call($method, $arguments)
-        {
-                $nodes = [];
-                $new_context = $this->context;
-
-                for ($i = 0, $l = $this->times; $i < $l; ++$i) {
-                        $new_context = $this->context->$method(...$arguments);
-                        $nodes       = \array_merge($nodes, $new_context->asArray());
-                }
-
-                if ($new_context !== $this->context) {
-                        return new FluidContext($this->document, $nodes);
-                }
-
-                return $this->context;
-        }
-}
+} // END OF NAMESPACE FluidXml\Core

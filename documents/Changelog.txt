@@ -1,11 +1,17 @@
 [+]: new   [~]: changed   [-]: removed   [#]: fixed   [@]: internal
 
 
+1.12.2: (2016-01-18)
+Internal refactoring and performance regression fix.
+
+    * [@] internal refactoring. Performances are normal.
+
+
 1.12.1: (2016-01-16)
 '->times()' and '->each()' are bound to the context. $this behaves as expected.
 
-	* [@] internal refactoring. Performances are worst but code is much
-	better.
+    * [@] internal refactoring. Performances are worst but code is much
+    better.
 
 
 1.12:
