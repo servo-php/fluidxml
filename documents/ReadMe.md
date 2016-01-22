@@ -1,9 +1,11 @@
-[build]: https://travis-ci.org/servo-php/fluidxml
-[build-badge]: https://travis-ci.org/servo-php/fluidxml.svg?branch=master
-[coverage]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
-[coverage-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/coverage.png?b=master
-[quality]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
-[quality-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/quality-score.png?b=master
+[travis-build]: https://travis-ci.org/servo-php/fluidxml
+[travis-build-badge]: https://travis-ci.org/servo-php/fluidxml.svg?branch=master
+[scrutinizer-coverage]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
+[scrutinizer-coverage-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/coverage.png?b=master
+[scrutinizer-quality]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
+[scrutinizer-quality-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/quality-score.png?b=master
+[codeclimate-quality]: https://codeclimate.com/github/servo-php/fluidxml
+[codeclimate-quality-badge]: https://codeclimate.com/github/servo-php/fluidxml/badges/gpa.svg
 [coveralls]: https://coveralls.io/github/servo-php/fluidxml?branch=master
 [coveralls-badge]: https://coveralls.io/repos/servo-php/fluidxml/badge.svg?branch=master&service=github
 [apis]: https://github.com/servo-php/fluidxml/blob/master/documents/APIs.md
@@ -21,9 +23,10 @@
 [donate-link-alt]: https://www.paypal.me/danieleorlando
 [thankyou]: https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_corazón.svg/2000px-Heart_corazón.svg.png
 
-[![Build][build-badge]][build]
-[![Coverage][coverage-badge]][coverage]
-[![Quality][quality-badge]][quality]
+[![Travis Build][travis-build-badge]][travis-build]
+[![Scrutinizer Coverage][scrutinizer-coverage-badge]][scrutinizer-coverage]
+[![Scrutinizer Quality][scrutinizer-quality-badge]][scrutinizer-quality]
+[![Code Climate][codeclimate-quality-badge]][codeclimate-quality]
 
 [![Donate][donate-button]][donate-link]
 
@@ -39,31 +42,6 @@ _introduces the `@`/`@<attribute>` special syntax._
 
 * `->appendChild()`, `->prependSibling()` and `->appendSibling()` support the `@`/`@<attribute>` special syntax.
 
-
-**1.10**:
-_adds a fluid style for iterations and completes the CDATA APIs._
-
-* `->each()`, `->setCdata()` and `->cdata()` are part of the family.
-
-
-**1.9**:
-_wraps classes and functions under the **FluidXml namespace**._
-
-
-**1.8**:
-_gives super powers to the manipulation APIs._
-
-* `->appendChild()`, `->appendSibling()` and `->prependSibling()` have the super powers of `->appendXml()`.
-* `->appendXml()` has been removed superseded by `->appendChild()`.
-
-
-**1.7**:
-_improves dealing with other XML object instances._
-
-* `::load()` adds support for _DOMNode, DOMNodeList and FluidXml_.
-* `->xml()` can export any node with its descendants.
-* `->xml()` accepts a boolean flag to remove the XML declaration headers.
-* `->appendXml()` is smarter than ever, supporting _DOMDocument, DOMNode, DOMNodeList, SimpleXMLElement, FluidXml and XML strings_.
 
 **...**
 

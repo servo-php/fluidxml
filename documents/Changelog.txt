@@ -4,14 +4,13 @@
 1.12.2: (2016-01-18)
 Internal refactoring and performance regression fix.
 
-    * [@] internal refactoring. Performances are normal.
+    * [@] refactoring. Performances are normal.
 
 
 1.12.1: (2016-01-16)
 '->times()' and '->each()' are bound to the context. $this behaves as expected.
 
-    * [@] internal refactoring. Performances are worst but code is much
-    better.
+    * [@] refactoring. Performances are worst but code is much better.
 
 
 1.12:
@@ -36,7 +35,7 @@ methods together with an internal refactoring.
     * [+] ->each() is part of the family.
     * [+] ->setCdata() is part of the family.
     * [+] ->cdata() is part of the family.
-    * [@] internal refactoring.
+    * [@] refactoring.
 
 
 1.9:
@@ -73,7 +72,7 @@ fixes a wrong path of the Composer autoloader.
 1.6:
 lowers the minimum PHP version to PHP 5.6 (it was PHP 7).
 
-    * [@] internal cleanup.
+    * [@] cleanup.
 
 
 1.5:
