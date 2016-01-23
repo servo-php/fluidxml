@@ -554,9 +554,10 @@ interface FluidInterface
          * ```
          *
          * @param string|array $child The child/children to add.
-         * @param string $value The child text content.
-         * @param bool $switchContext Whether to return the current context
-         *                            or the context of the created node.
+         * @param ...$optionals Accepted values are:
+         *                      - a boolean for requesting the context switch
+         *                      - a string which is the element text content
+         *                      - an array containing the attributes to set on the element.
          *
          * @return FluidContext The context associated to the DOMNodeList.
          */
@@ -760,9 +761,9 @@ class FluidInsertionHandler
                         return $this->insertStringString($parent, $k, $v, $fn, $optionals);
                 }
 
-                if ($k_is_string && $k_isnt_special && $v_is_string && $v_is_xml) {
+                // if ($k_is_string && $k_isnt_special && $v_is_string && $v_is_xml) {
                         // TODO
-                }
+                // }
 
                 //////////////////////////////////////////////
                 $k_is_special_c = $k_is_special && $k === '@';
@@ -1196,7 +1197,9 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // the xpath, relative (../..) or absolute (//), returns identical
                 // matching results that must be collapsed in an unique result
                 // otherwise a subsequent operation is performed multiple times.
-                return $this->newContext($this->filterQueryResults($results));
+                $results = $this->filterQueryResults($results);
+
+                return $this->newContext($results);
         }
 
         public function times($times, callable $fn = null)
