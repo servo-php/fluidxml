@@ -148,18 +148,11 @@ class FluidXml implements FluidInterface
         public static function load($document)
         {
                 if (\is_string($document) && ! is_an_xml_string($document)) {
-                        // Removes any empty new line at the beginning,
-                        // otherwise the first character check fails.
+                        $file     = $document;
+                        $document = \file_get_contents($file);
 
-                        $file        = $document;
-                        $is_file     = \is_file($file);
-                        $is_readable = \is_readable($file);
-
-                        if ($is_file && $is_readable) {
-                                $document = \file_get_contents($file);
-                        }
-
-                        if (! $is_file || ! $is_readable || ! $document) {
+                        // file_get_contents returns false if it can't read.
+                        if (! $document) {
                                 throw new \Exception("File '$file' not accessible.");
                         }
                 }
@@ -410,23 +403,19 @@ class FluidXml implements FluidInterface
 
         protected function context()
         {
-                if ($this->document->dom->documentElement === null) {
-                        // If the user has requested ['root' => null] at construction time
-                        // the 'documentElement' property is null because we have not created
-                        // a root node yet. Whether there is not a root node, the DOMDocument
-                        // is promoted as root node.
-                        if ($this->context === null) {
-                                $this->context = new FluidContext($this->document, $this->handler, $this->document->dom);
-                        }
+                $el = $this->document->dom->documentElement;
 
-                        return $this->context;
+                if ($el === null) {
+                        // Whether there is not a root node
+                        // the DOMDocument is promoted as root node.
+                        $el = $this->document->dom;
                 }
 
-                if ($this->contextEl !== $this->document->dom->documentElement) {
+                if ($this->context === null || $el !== $this->contextEl) {
                         // The user can prepend a root node to the current root node.
                         // In this case we have to update the context with the new first root node.
-                        $this->context   = new FluidContext($this->document, $this->handler, $this->document->dom->documentElement);
-                        $this->contextEl = $this->document->dom->documentElement;
+                        $this->context   = new FluidContext($this->document, $this->handler, $el);
+                        $this->contextEl = $el;
                 }
 
                 return $this->context;
@@ -489,7 +478,7 @@ class FluidNamespace
                 return $this->config[self::MODE];
         }
 
-        public function querify($xpath)
+        public function __invoke($xpath)
         {
                 $id = $this->id();
 
@@ -504,9 +493,9 @@ class FluidNamespace
                 $nodes = \explode('/', $xpath);
 
                 foreach ($nodes as $node) {
-                        // An XPath query may have multiple slashes ('/')
-                        // example: //target
-                        if ($node) {
+                        if (! empty($node)) {
+                                // An XPath query can have multiple slashes.
+                                // Example: //target
                                 $new_xpath .= "{$id}{$node}";
                         }
 
@@ -692,7 +681,6 @@ class FluidInsertionHandler
 
                 foreach ($nodes as $n) {
                         foreach ($element as $k => $v) {
-                                // I give up, it's a too complex job for only one method like me.
                                 $cx        = $this->handleInsertion($n, $k, $v, $fn, $optionals);
                                 $new_nodes = \array_merge($new_nodes, $cx);
                         }
@@ -708,11 +696,7 @@ class FluidInsertionHandler
                         $new_context->setAttribute($attributes);
                 }
 
-                if ($switch_context) {
-                        return $new_context;
-                }
-
-                return $orig_context;
+                return $switch_context ? $new_context : $orig_context;
         }
 
         protected function newContext(&$context)
@@ -1212,9 +1196,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 // the xpath, relative (../..) or absolute (//), returns identical
                 // matching results that must be collapsed in an unique result
                 // otherwise a subsequent operation is performed multiple times.
-                $results = $this->filterQueryResults($results);
-
-                return $this->newContext($results);
+                return $this->newContext($this->filterQueryResults($results));
         }
 
         public function times($times, callable $fn = null)
@@ -1437,9 +1419,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                         $found = false;
 
                         foreach ($set as $u) {
-                                if ($r === $u) {
-                                        $found = true;
-                                }
+                                $found = ($r === $u) || $found;
                         }
 
                         if (! $found) {

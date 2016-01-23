@@ -12,5 +12,5 @@ fi
 mkdir -pv "sandbox"
 mkdir -pv "sandbox/composer"
 
-composer install -d "."
+composer install -d "." --no-interaction
 rm -f "./composer.lock"

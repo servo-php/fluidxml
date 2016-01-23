@@ -153,6 +153,16 @@ describe('simplexml_to_string_without_headers', function() {
 });
 
 describe('FluidXml', function() {
+        it('should throw invoking not existing staic method', function() {
+                try {
+                        FluidXml::lload();
+                } catch (\Exception $e) {
+                        $actual = $e;
+                }
+
+                assert_is_a($actual, \Exception::class);
+        });
+
         describe(':load', function() {
                 $doc = "<root>\n"
                      . "  <parent>content</parent>\n"
@@ -239,7 +249,7 @@ describe('FluidXml', function() {
                         try {
                                 $xml = FluidXml::load('.impossible.xml');
                         } catch (\Exception $e) {
-                                $actual   = $e;
+                                $actual = $e;
                         }
 
                         assert_is_a($actual, \Exception::class);
@@ -249,7 +259,7 @@ describe('FluidXml', function() {
                         try {
                                 $xml = FluidXml::load(0);
                         } catch (\Exception $e) {
-                                $actual   = $e;
+                                $actual = $e;
                         }
 
                         assert_is_a($actual, \Exception::class);
@@ -326,6 +336,17 @@ describe('FluidXml', function() {
 
                         $expected = $stylesheet;
                         assert_equal_xml($xml, $expected);
+                });
+
+                it('should throw invoking not existing method', function() {
+                        $xml = new FluidXml();
+                        try {
+                                $xml->qquery();
+                        } catch (\Exception $e) {
+                                $actual = $e;
+                        }
+
+                        assert_is_a($actual, \Exception::class);
                 });
         });
 
@@ -1173,7 +1194,7 @@ EOF;
                         try {
                                 $xml->appendChild(0);
                         } catch (\Exception $e) {
-                                $actual   = $e;
+                                $actual = $e;
                         }
 
                         assert_is_a($actual, \Exception::class);
@@ -1928,6 +1949,19 @@ describe('FluidContext', function() {
                         $expected = $cx->asArray();
                         \assert($actual === $expected, __($actual, $expected));
                 });
+
+                it('should throw for not supported document', function() {
+                        $doc     = new FluidDocument();
+                        $handler = new FluidInsertionHandler($doc);
+
+                        try {
+                                new FluidContext($doc, $handler, 'node');
+                        } catch (\Exception $e) {
+                                $actual = $e;
+                        }
+
+                        assert_is_a($actual, \Exception::class);
+                });
         });
 
         describe('[]', function() {
@@ -1961,7 +1995,7 @@ describe('FluidContext', function() {
                         try {
                                 $cx[] = "value";
                         } catch (\Exception $e) {
-                                $actual   = $e;
+                                $actual = $e;
                         }
                         assert_is_a($actual, \Exception::class);
 
@@ -2148,21 +2182,21 @@ describe('FluidNamespace', function() {
                 it('should format an XPath query to use the namespace id', function() {
                         $ns = new FluidNamespace('x', 'x.com');
 
-                        $actual   = $ns->querify('current/child');
+                        $actual   = $ns('current/child');
                         $expected = 'x:current/x:child';
                         \assert($actual === $expected, __($actual, $expected));
 
-                        $actual   = $ns->querify('//current/child');
+                        $actual   = $ns('//current/child');
                         $expected = '//x:current/x:child';
                         \assert($actual === $expected, __($actual, $expected));
 
                         $ns = new FluidNamespace('x', 'x.com', FluidNamespace::MODE_IMPLICIT);
 
-                        $actual   = $ns->querify('current/child');
+                        $actual   = $ns('current/child');
                         $expected = 'x:current/x:child';
                         \assert($actual === $expected, __($actual, $expected));
 
-                        $actual   = $ns->querify('//current/child');
+                        $actual   = $ns('//current/child');
                         $expected = '//x:current/x:child';
                         \assert($actual === $expected, __($actual, $expected));
                 });

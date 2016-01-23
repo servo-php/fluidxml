@@ -12,6 +12,8 @@ if ! chkcmd 'peridot'; then
         exit 1
 fi
 
+coverage_index="$PWD/sandbox/code-coverage-report/index.html"
+
 cd sandbox
 
 reporter=html-code-coverage
@@ -38,8 +40,6 @@ else
         echo ' error: no profiling tool found.'
         exit 1
 fi
-
-coverage_index="code-coverage-report/index.html"
 
 if test -f "$coverage_index" && chkcmd 'open'; then
         open "$coverage_index"

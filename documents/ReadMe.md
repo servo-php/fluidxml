@@ -1,5 +1,7 @@
 [travis-build]: https://travis-ci.org/servo-php/fluidxml
 [travis-build-badge]: https://travis-ci.org/servo-php/fluidxml.svg?branch=master
+[codeship-build]: https://codeship.com/projects/129206
+[codeship-build-badge]: https://codeship.com/projects/8f977260-a359-0133-4946-1ac8bff03ae9/status?branch=master
 [scrutinizer-coverage]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
 [scrutinizer-coverage-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/coverage.png?b=master
 [scrutinizer-quality]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
@@ -24,6 +26,7 @@
 [thankyou]: https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_corazón.svg/2000px-Heart_corazón.svg.png
 
 [![Travis Build][travis-build-badge]][travis-build]
+[![Codeship Build][codeship-build-badge]][codeship-build]
 [![Scrutinizer Coverage][scrutinizer-coverage-badge]][scrutinizer-coverage]
 [![Scrutinizer Quality][scrutinizer-quality-badge]][scrutinizer-quality]
 [![Code Climate][codeclimate-quality-badge]][codeclimate-quality]
