@@ -17,9 +17,6 @@ fi
 coverage_data="$PWD/../../sandbox/code-coverage-report/code-coverage.php"
 coverage_file="$(dirname "$coverage_data")/code-coverage.json"
 
-## It's is not created automatically.
-mkdir -p "$(dirname "$coverage_data")"
-
 ./coverage php-code-coverage
 
 php -f '../coveralls.php' "$coverage_data" "$travis_job_id" > "$coverage_file"

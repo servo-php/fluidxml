@@ -34,11 +34,15 @@ foreach ($data as $file => $c) {
 
         $coverage = [];
         for ($i = 0; $i < $lines; ++$i) {
+                // PHP Code Coverage starts from 1,
+                // Coveralls from 0.
+                $l = $i + 1;
+
                 $val = 1;
 
-                if (! isset($c[$i])) {
+                if (! isset($c[$l])) {
                         $val = null;
-                } else if (\is_array($c[$i]) && empty($c[$i])) {
+                } else if (\is_array($c[$l]) && empty($c[$l])) {
                         $val = 0;
                 }
 

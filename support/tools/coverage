@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 . "./.common.sh"
 cd ../..
 
-PATH="$(pwd)/sandbox/composer/bin:$PATH"
+PATH="$PWD/sandbox/composer/bin:$PATH"
 
 if ! chkcmd 'peridot'; then
         echo ' error: "peridot" command not found.'
@@ -14,7 +14,8 @@ fi
 
 coverage_index="$PWD/sandbox/code-coverage-report/index.html"
 
-cd sandbox
+## It's is not created automatically.
+mkdir -p "$(dirname "$coverage_index")"
 
 reporter=html-code-coverage
 
@@ -22,12 +23,14 @@ if test $# -eq 1; then
         reporter=$1
 fi
 
+cd sandbox
+
 peridot_arguments="-c \"../support/peridot.php\" -r $reporter -g \"*.php\" \"../specs/\""
 
 if php -m | grep -i 'xdebug' > /dev/null; then
         echo ' info: using Xdebug.'
-
         eval "peridot $peridot_arguments"
+
 elif chkcmd 'phpdbg'; then
         echo ' info: using phpdbg.'
         echo
