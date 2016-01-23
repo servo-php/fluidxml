@@ -1,1 +1,1 @@
-support/.vimrc
+support/vimrc

@@ -625,7 +625,6 @@ class FluidDocument
         public $dom;
         public $xpath;
         public $namespaces = [];
-        public $handler;
 }
 
 class FluidRepeater

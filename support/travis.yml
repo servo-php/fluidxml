@@ -11,3 +11,5 @@ install:
     - ./support/tools/init
 script:
     - ./support/tools/test
+after_script:
+    - ./support/tools/coveralls "$TRAVIS_JOB_ID"

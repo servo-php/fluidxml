@@ -2,6 +2,8 @@
 [travis-build-badge]: https://travis-ci.org/servo-php/fluidxml.svg?branch=master
 [codeship-build]: https://codeship.com/projects/129206
 [codeship-build-badge]: https://codeship.com/projects/8f977260-a359-0133-4946-1ac8bff03ae9/status?branch=master
+[coveralls-coverage]: https://coveralls.io/github/servo-php/fluidxml?branch=master
+[coveralls-coverage-badge]: https://coveralls.io/repos/github/servo-php/fluidxml/badge.svg?branch=master
 [scrutinizer-coverage]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
 [scrutinizer-coverage-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/coverage.png?b=master
 [scrutinizer-quality]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
@@ -27,6 +29,7 @@
 
 [![Travis Build][travis-build-badge]][travis-build]
 [![Codeship Build][codeship-build-badge]][codeship-build]
+[![Coveralls Coverage][coveralls-coverage-badge]][coveralls-coverage]
 [![Scrutinizer Coverage][scrutinizer-coverage-badge]][scrutinizer-coverage]
 [![Scrutinizer Quality][scrutinizer-quality-badge]][scrutinizer-quality]
 [![Code Climate][codeclimate-quality-badge]][codeclimate-quality]

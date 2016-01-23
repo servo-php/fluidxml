@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+
+cd "$(dirname "$0")"
+. "./.common.sh"
+
+if ! chkcmd 'curl'; then
+        echo ' error: "curl" command not found.'
+        exit 1
+fi
+
+travis_job_id=''
+
+if test $# -eq 1; then
+        travis_job_id="$1"
+fi
+
+coverage_data="$PWD/../../sandbox/code-coverage-report/code-coverage.php"
+coverage_file="$(dirname "$coverage_data")/code-coverage.json"
+
+## It's is not created automatically.
+mkdir -p "$(dirname "$coverage_data")"
+
+./coverage php-code-coverage
+
+php -f '../coveralls.php' "$coverage_data" "$travis_job_id" > "$coverage_file"
+
+curl -v -F json_file="@$coverage_file" "https://coveralls.io/api/v1/jobs"
