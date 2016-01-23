@@ -34,8 +34,6 @@
 [![Scrutinizer Quality][scrutinizer-quality-badge]][scrutinizer-quality]
 [![Code Climate][codeclimate-quality-badge]][codeclimate-quality]
 
-[![Donate][donate-button]][donate-link]
-
 
 ## Changelog
 
