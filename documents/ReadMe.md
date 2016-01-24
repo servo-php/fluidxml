@@ -62,7 +62,7 @@ _introduces the `@`/`@<attribute>` special syntax._
 FluidXML is a PHP library designed to manipulate XML documents with a **concise** and **fluent** API.<br/>
 It leverages XPath and the fluent programming pattern to be **fun and effective**.
 
-Its main goals are making PHP templating and DOM manipulation **fast**, **clear** and **expressive**.
+Its main goals are making HTML/XML templating and DOM manipulation **fast**, **clear** and **expressive**.
 
 ```php
 $book = fluidxml();
