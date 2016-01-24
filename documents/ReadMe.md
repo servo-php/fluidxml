@@ -59,27 +59,10 @@ _introduces the `@`/`@<attribute>` special syntax._
 # FluidXML
 <img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png" height="64px" alt="Servo-PHP Logo"/>
 
-FluidXML is a PHP library designed to manipulate XML documents with a **concise**
-and **fluent** API.
-
+FluidXML is a PHP library designed to manipulate XML documents with a **concise** and **fluent** API.<br/>
 It leverages XPath and the fluent programming pattern to be **fun and effective**.
 
-**STOP generating XML documents with template engines.**<br/>
-**STOP using the boring and verbose DOMDocument.**
-
-FluidXML has been created to bring XML manipulation to the next level.
-
-```php
-$book = new FluidXml();
-
-$book->appendChild('title', 'The Theory Of Everything')
-     ->appendChild('author', 'S. Hawking')
-     ->appendChild('chapters', true)
-         ->appendChild('chapter', 'Ideas About The Universe', ['id' => 1])
-         ->appendChild('chapter', 'The Expanding Universe',   ['id' => 2]);
-```
-
-Or, if you prefer, there is a **concise syntax**.
+Its main goals are making PHP templating and DOM manipulation **fast**, **clear** and **expressive**.
 
 ```php
 $book = fluidxml();
@@ -91,7 +74,19 @@ $book->add('title', 'The Theory Of Everything')
          ->add('chapter', 'The Expanding Universe',   ['id' => 2]);
 ```
 
-Do you love **PHP Arrays**? Take a look at this. :D
+Or, if you prefer, there is an **extended syntax**.
+
+```php
+$book = new FluidXml();
+
+$book->appendChild('title', 'The Theory Of Everything')
+     ->appendChild('author', 'S. Hawking')
+     ->appendChild('chapters', true)
+         ->appendChild('chapter', 'Ideas About The Universe', ['id' => 1])
+         ->appendChild('chapter', 'The Expanding Universe',   ['id' => 2]);
+```
+
+**PHP Arrays** are first class citizens.
 
 ```php
 $book->add([ 'title'  => 'The Theory Of Everything',
@@ -122,7 +117,7 @@ echo $book->xml();
 </doc>
 ```
 
-**XPath** is king. One method to rule them all.
+**XPath** is king.
 
 ```php
 $book->query('//title', '//author', '//chapter')
@@ -169,7 +164,7 @@ $book->query('//chapters')
 ```
 
 And interoperability with existing **DOMDocument** and **SimpleXML** is simply magic.<br/>
-Import them or inject them in any point of the FluidXML document just like that.
+Import them or inject them in any point of the FluidXML flow just like that.
 
 ```php
 fluidify($domdocument)
@@ -193,17 +188,17 @@ Many other [APIs][apis] are available:
 - `setCdata()`/`cdata()`
 - `length()`
 - `dom()`
+- `save()`
 - `asArray()`
-
-and others to come.
+- ...
 
 
 ## Still doubts?
-Other three great reasons to use FluidXML, but you'll have the best answer trying it yourself.
-
 FluidXML is **fun** to use, **concise** and **effective**.
 
 If it's not enough, it has a comprehensive test suite with a **100% code coverage**.
+
+But you'll have the best answer trying it yourself.
 
 ![100% Code Coverage][codecoverage]
 
@@ -263,17 +258,16 @@ and go to the [Wiki Page][wiki] for more reading.
 
 
 ## Donation
-If you think this project is **awesome** or if you want to demonstrate<br/>
-your immense gratitude **♡**, donate _1cent_.
+If you think this code is **awesome** or if you want to demonstrate<br/>
+your immense gratitude **[♥][thankyou]**, donate _1cent_.
 
 [![Donate][donate-button]][donate-link]
-
-**Thank You! :D** [♥][thankyou]
 
 
 ## Roadmap
 * [x] PHP 5.6 backport
-* [ ] Expanding the APIs and the documentation
+* [ ] Extending the documentation
+* [ ] Expanding the APIs
 
 <a href='https://pledgie.com/campaigns/30607'>
     <img alt='Click here to lend your support to: FluidXML and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/30607.png?skin_name=chrome' border='0' >
