@@ -37,7 +37,11 @@
 
 ## Changelog
 
-**1.12** (2016-01-08):
+**1.13** (2016-01-24):
+_introduces the `->save()` method._
+
+
+**1.12**:
 _introduces the `->times()` method._
 
 
