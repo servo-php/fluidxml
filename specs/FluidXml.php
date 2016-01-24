@@ -153,6 +153,9 @@ describe('simplexml_to_string_without_headers', function() {
 });
 
 describe('FluidXml', function() {
+        $ds = \DIRECTORY_SEPARATOR;
+        $this->out_dir = __DIR__ . "{$ds}..{$ds}sandbox{$ds}";
+
         it('should throw invoking not existing staic method', function() {
                 try {
                         FluidXml::lload();
@@ -188,8 +191,7 @@ describe('FluidXml', function() {
                 });
 
                 it('should import an XML file', function() use ($doc) {
-                        $ds   = \DIRECTORY_SEPARATOR;
-                        $file = __DIR__ . "{$ds}..{$ds}sandbox{$ds}.fixture.xml";
+                        $file = "{$this->out_dir}.test_load.xml";
                         \file_put_contents($file, $doc);
                         $xml = FluidXml::load($file);
                         \unlink($file);
@@ -1682,6 +1684,63 @@ EOF;
                         $expected = "<child>content1</child>\n"
                                   . "<child>content2</child>";
                         \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.save', function() {
+                it('should be fluid', function() {
+                        $file = "{$this->out_dir}.test_save0.xml";
+                        assert_is_fluid('save', $file);
+                        \unlink($file);
+                });
+
+                it('should store the entire XML document in a file', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                                ->appendChild('child', 'content');
+
+                        $file = "{$this->out_dir}.test_save1.xml";
+                        $xml->save($file);
+
+                        $actual   = \trim(\file_get_contents($file));
+                        $expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                                  . "<doc>\n"
+                                  . "  <parent>\n"
+                                  . "    <child>content</child>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+
+                        \unlink($file);
+
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should store a fragment of the XML document in a file', function() {
+                        $xml = new FluidXml();
+                        $xml->appendChild('parent', true)
+                                ->appendChild('child', 'content');
+
+                        $file = "{$this->out_dir}.test_save2.xml";
+                        $xml->query('//child')->save($file);
+
+                        $actual   = \trim(\file_get_contents($file));
+                        $expected = "<child>content</child>";
+
+                        \unlink($file);
+
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should throw for not writable file', function() {
+                        $xml = new FluidXml();
+
+                        try {
+                                $xml->save('/.impossible/tmp/out.xml');
+                        } catch (\Exception $e) {
+                                $actual = $e;
+                        }
+
+                        assert_is_a($actual, \Exception::class);
                 });
         });
 

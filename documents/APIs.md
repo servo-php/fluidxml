@@ -26,33 +26,27 @@ __construct($root?, array $options?);
 
 ->query(...$xpath);
 
-->appendChild($child, ...$optionals);
-// alias:
 ->add($child, ...$optionals);
+->appendChild($child, ...$optionals);
 
-->prependSibling($sibling, ...$optionals);
-// aliases:
 ->prepend($sibling, ...$optionals);
+->prependSibling($sibling, ...$optionals);
 ->insertSiblingBefore($sibling, ...$optionals);
 
-->appendSibling($sibling, ...$optionals);
-// aliases:
 ->append($sibling, ...$optionals);
+->appendSibling($sibling, ...$optionals);
 ->insertSiblingAfter($sibling, ...$optionals);
 
-->setAttribute(...$arguments);
-// alias:
 ->attr(...$arguments);
+->setAttribute(...$arguments);
 
-->setText($text);
-// alias:
 ->text($text);
+->setText($text);
 
 ->appendText($text);
 
-->setCdata($text);
-// alias:
 ->cdata($text);
+->setCdata($text);
 
 ->appendCdata($text);
 
@@ -65,6 +59,8 @@ __construct($root?, array $options?);
 ->dom();
 
 ->xml($strip = false);
+
+->save($file, $strip = false);
 ```
 
 

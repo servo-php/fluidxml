@@ -608,7 +608,7 @@ The document can be exported as `DOMDocument`.
 $dom = $book->dom();
 ```
 
-Or as XML string.
+Or as **XML string**.
 
 ```php
 $xml = $book->xml();
@@ -643,6 +643,34 @@ $xml = $book->query('//chapter')->xml();
 ```xml
 <chapter lang="en" first="">Ideas About The Universe</chapter>
 <chapter lang="en" last="">The Expanding Universe</chapter>
+```
+
+The document can be **saved on a file** too.
+
+```php
+$book->save('book.xml');
+```
+
+As for `->xml()`, the output document can be saved without the XML declaration
+
+```php
+$book->save('book.xml', true);
+```
+
+or only specific nodes can be saved.
+
+```php
+$book->query('//chapter')
+     ->save('book_chapters.xml');
+```
+
+Saving is fluid too.
+
+```php
+$book->save('book.xml')
+     ->save('book_tidy.xml', true)
+     ->query('//chapter')
+     ->save('book_chapters.xml');
 ```
 
 

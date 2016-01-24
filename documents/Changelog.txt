@@ -1,20 +1,26 @@
 [+]: new   [~]: changed   [-]: removed   [#]: fixed   [@]: internal
 
 
-1.12.4: (2016-01-23)
-Internal cleanup.
+1.13: (2016-01-24)
+introduces the '->save()' method.
+
+    * [+] ->save() is part of the family.
+
+
+1.12.4:
+internal cleanup.
 
     * [@] cleanup.
 
 
 1.12.3:
-Refactoring improving the code design.
+refactoring improving the code design.
 
     * [@] refactoring.
 
 
 1.12.2:
-Internal refactoring and performance regression fix.
+internal refactoring and performance regression fix.
 
     * [@] refactoring. Performances are normal.
 

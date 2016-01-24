@@ -46,6 +46,7 @@ use \FluidXml\Core\FluidDocument;
 use \FluidXml\Core\FluidInsertionHandler;
 use \FluidXml\Core\FluidContext;
 use \FluidXml\Core\NewableTrait;
+use \FluidXml\Core\SaveableTrait;
 use \FluidXml\Core\ReservedCallTrait;
 use \FluidXml\Core\ReservedCallStaticTrait;
 
@@ -137,6 +138,7 @@ function simplexml_to_string_without_headers(\SimpleXMLElement $element)
 class FluidXml implements FluidInterface
 {
         use NewableTrait,
+            SaveableTrait,
             ReservedCallTrait,          // For compatibility with PHP 5.6.
             ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
 
@@ -571,6 +573,7 @@ interface FluidInterface
         public function appendCdata($text);
         public function remove(...$xpath);
         public function xml($strip = false);
+        public function save($file, $strip = false);
         // Aliases:
         public function add($child, ...$optionals);
         public function prepend($sibling, ...$optionals);
@@ -617,6 +620,20 @@ trait NewableTrait
         public static function new_(...$arguments)
         {
                 return new static(...$arguments);
+        }
+}
+
+trait SaveableTrait
+{
+        public function save($file, $strip = false)
+        {
+                $status = \file_put_contents($file, $this->xml($strip));
+
+                if (! $status) {
+                        throw new \Exception("The file '$file' is not writable.");
+                }
+
+                return $this;
         }
 }
 
@@ -1058,6 +1075,7 @@ class FluidInsertionHandler
 class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 {
         use NewableTrait,
+            SaveableTrait,
             ReservedCallTrait,          // For compatibility with PHP 5.6.
             ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
 
