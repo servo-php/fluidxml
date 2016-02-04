@@ -84,115 +84,59 @@ class FluidInsertionHandler
                 // of performances for a core method like this, so this implementation
                 // is prefered to collapse many identical checks to one.
 
-                //////////////////////
-                // Key is a string. //
-                //////////////////////
+                $v_matches = false;
 
-                ///////////////////////////////////////////////////////
-                $k_is_string    = \is_string($k);
-                $v_is_string    = \is_string($v);
-                $v_is_simple    = $v_is_string || \is_numeric($v);
-                $v_is_xml       = $v_is_string && FluidHelper::isAnXmlString($v);
-                $k_is_special   = $k_is_string && $k[0] === '@';
-                $k_isnt_special = ! $k_is_special;
-                $v_isnt_string  = ! $v_is_string;
-                $v_isnt_xml     = ! $v_is_xml;
-                ///////////////////////////////////////////////////////
-
-                if ($k_is_string && $k_isnt_special && $v_is_simple && $v_isnt_xml) {
-                        return $this->insertStringSimple($parent, $k, $v, $fn, $optionals);
-                }
-
-                //////////////////////////////////////////////
+                $k_is_string       = \is_string($k);
+                $k_is_integer      = ! $k_is_string && \is_integer($k);
+                $k_is_special      = $k_is_string && $k[0] === '@';
                 $k_is_special_cont = $k_is_special && $k === '@';
-                //////////////////////////////////////////////
-
-                if ($k_is_special_cont && $v_is_simple) {
-                        return $this->insertSpecialContent($parent, $k, $v, $fn, $optionals);
-                }
-
-                /////////////////////////////////////////////////////
                 $k_is_special_attr = $k_is_special && ! $k_is_special_cont;
-                /////////////////////////////////////////////////////
 
-                if ($k_is_special_attr && $v_is_simple) {
-                        return $this->insertSpecialAttribute($parent, $k, $v, $fn, $optionals);
-                }
+                $v_is_string       = \is_string($v);
+                $v_is_xml          = $v_is_string && FluidHelper::isAnXmlString($v);
+                $v_is_simple       = $v_is_string || \is_numeric($v);
+                $v_is_array        = ! $v_is_simple && \is_array($v);
 
-                if ($k_is_string && $v_isnt_string) {
-                        return $this->insertStringMixed($parent, $k, $v, $fn, $optionals);
-                }
+                $v_matches         = $v_matches || $v_is_string || $v_is_xml || $v_is_simple || $v_is_array;
 
-                ////////////////////////
-                // Key is an integer. //
-                ////////////////////////
+                $v_is_domdoc       = ! $v_matches && $v instanceof \DOMDocument;
+                $v_matches         = $v_matches || $v_is_domdoc;
 
-                ////////////////////////////////
-                $k_is_integer = \is_integer($k);
-                ////////////////////////////////
+                $v_is_domnodelist  = ! $v_matches && $v instanceof \DOMNodeList;
+                $v_matches         = $v_matches || $v_is_domnodelist;
 
-                if ($k_is_integer && $v_is_string && $v_isnt_xml) {
-                        return $this->insertIntegerString($parent, $k, $v, $fn, $optionals);
-                }
+                $v_is_domnode      = ! $v_matches && $v instanceof \DOMNode;
+                $v_matches         = $v_matches || $v_is_domnode;
 
-                if ($k_is_integer && $v_is_string && $v_is_xml) {
-                        return $this->insertIntegerXml($parent, $k, $v, $fn, $optionals);
-                }
+                $v_is_simplexml    = ! $v_matches && $v instanceof \SimpleXMLElement;
+                $v_matches         = $v_matches || $v_is_simplexml;
 
-                ////////////////////////////
-                $v_is_array = \is_array($v);
-                ////////////////////////////
+                $v_is_fluidxml     = ! $v_matches && $v instanceof FluidXml;
+                $v_matches         = $v_matches || $v_is_fluidxml;
 
-                if ($k_is_integer && $v_is_array) {
-                        return $this->insertIntegerArray($parent, $k, $v, $fn, $optionals);
-                }
+                $v_is_fluidcx      = ! $v_matches && $v instanceof FluidContext;
+                $v_matches         = $v_matches || $v_is_fluidcx;
 
-                //////////////////////////////////////////
-                $v_is_domdoc = $v instanceof \DOMDocument;
-                //////////////////////////////////////////
+                $map = ['insertStringSimple'        => $k_is_string && ! $k_is_special && $v_is_simple && ! $v_is_xml,
+                        'insertSpecialContent'      => $k_is_special_cont && $v_is_simple,
+                        'insertSpecialAttribute'    => $k_is_special_attr && $v_is_simple,
+                        'insertStringMixed'         => $k_is_string && ! $v_is_string,
+                        'insertIntegerString'       => $k_is_integer && $v_is_string && ! $v_is_xml,
+                        'insertIntegerXml'          => $k_is_integer && $v_is_string && $v_is_xml,
+                        'insertIntegerArray'        => $k_is_integer && $v_is_array,
+                        'insertIntegerDomdocument'  => $v_is_domdoc,
+                        'insertIntegerDomnodelist'  => $v_is_domnodelist,
+                        'insertIntegerDomnode'      => $v_is_domnode,
+                        'insertIntegerSimplexml'    => $v_is_simplexml,
+                        'insertIntegerFluidxml'     => $v_is_fluidxml,
+                        'insertIntegerFluidcontext' => $v_is_fluidcx
+                ];
 
-                if ($k_is_integer && $v_is_domdoc) {
-                        return $this->insertIntegerDomdocument($parent, $k, $v, $fn, $optionals);
-                }
 
-                ///////////////////////////////////////////////
-                $v_is_domnodelist = $v instanceof \DOMNodeList;
-                ///////////////////////////////////////////////
-
-                if ($k_is_integer && $v_is_domnodelist) {
-                        return $this->insertIntegerDomnodelist($parent, $k, $v, $fn, $optionals);
-                }
-
-                ///////////////////////////////////////
-                $v_is_domnode = $v instanceof \DOMNode;
-                ///////////////////////////////////////
-
-                if ($k_is_integer && ! $v_is_domdoc && $v_is_domnode) {
-                        return $this->insertIntegerDomnode($parent, $k, $v, $fn, $optionals);
-                }
-
-                //////////////////////////////////////////////////
-                $v_is_simplexml = $v instanceof \SimpleXMLElement;
-                //////////////////////////////////////////////////
-
-                if ($k_is_integer && $v_is_simplexml) {
-                        return $this->insertIntegerSimplexml($parent, $k, $v, $fn, $optionals);
-                }
-
-                ////////////////////////////////////////
-                $v_is_fluidxml = $v instanceof FluidXml;
-                ////////////////////////////////////////
-
-                if ($k_is_integer && $v_is_fluidxml) {
-                        return $this->insertIntegerFluidxml($parent, $k, $v, $fn, $optionals);
-                }
-
-                ///////////////////////////////////////////
-                $v_is_fluidcx = $v instanceof FluidContext;
-                ///////////////////////////////////////////
-
-                if ($k_is_integer && $v_is_fluidcx) {
-                        return $this->insertIntegerFluidcontext($parent, $k, $v, $fn, $optionals);
+                foreach ($map as $handler => $match) {
+                        if ($match) {
+                                return $this->$handler($parent, $k, $v, $fn, $optionals);
+                        }
                 }
 
                 throw new \Exception('XML document not supported.');
