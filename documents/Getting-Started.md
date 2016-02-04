@@ -27,27 +27,27 @@ require_once 'vendor/autoload.php';
 ```
 
 Now `use` classes and functions you need.
-> Extended syntax
-> ```php
-> use \FluidXml\FluidXml;
-> use \FluidXml\FluidNamespace;
-> ```
 > Concise syntax
 > ```php
 > use function \FluidXml\fluidxml;
 > use function \FluidXml\fluidns;
 > use function \FluidXml\fluidify;
 > ```
+> Extended syntax
+> ```php
+> use \FluidXml\FluidXml;
+> use \FluidXml\FluidNamespace;
+> ```
 
 We can proceed to create our first XML document in the simplest way.
 
-> Extended syntax
-> ```php
-> $book = new FluidXml();
-> ```
 > Concise syntax
 > ```php
 > $book = fluidxml();
+> ```
+> Extended syntax
+> ```php
+> $book = new FluidXml();
 > ```
 
 It creates a new XML document with one root node by default called `<doc/>`.
@@ -64,14 +64,6 @@ echo $book->xml();
 Whether there is the need to influence the document creation, the constructor supports<br/>
 some options.
 
-> Extended syntax
-> ```php
-> $book = new FluidXml('book', ['stylesheet' => 'http://domain.com/style.xsl']);
->
-> // Which is the same of
->
-> $book = new FluidXml(['root' => 'book', 'stylesheet' => 'http://domain.com/style.xsl']);
-> ```
 > Concise syntax
 > ```php
 > $book = fluidxml('book', ['stylesheet' => 'http://domain.com/style.xsl']);
@@ -79,6 +71,14 @@ some options.
 > // Which is the same of
 >
 > $book = fluidxml(['root' => 'book', 'stylesheet' => 'http://domain.com/style.xsl']);
+> ```
+> Extended syntax
+> ```php
+> $book = new FluidXml('book', ['stylesheet' => 'http://domain.com/style.xsl']);
+>
+> // Which is the same of
+>
+> $book = new FluidXml(['root' => 'book', 'stylesheet' => 'http://domain.com/style.xsl']);
 > ```
 
 Our XML document now has a root node called `<book/>`.
@@ -101,20 +101,20 @@ Our XML document now has a root node called `<book/>`.
 
 ## Adding Nodes
 
-Adding a node is super easy. Because FluidXML implements the fluid OOP pattern, multiple<br/>
+Adding a node is super easy. Because FluidXML implements the fluent OOP pattern, multiple<br/>
 operations can be performed chaining methods calls.
 
-> Extended syntax
-> ```php
-> $book->appendChild('title',  'The Theory Of Everything')
->      ->appendChild('author', 'S. Hawking')
->      ->appendChild('description');
-> ```
 > Concise syntax
 > ```php
 > $book->add('title',  'The Theory Of Everything')
 >      ->add('author', 'S. Hawking')
 >      ->add('description');
+> ```
+> Extended syntax
+> ```php
+> $book->appendChild('title',  'The Theory Of Everything')
+>      ->appendChild('author', 'S. Hawking')
+>      ->appendChild('description');
 > ```
 
 ```php
@@ -143,19 +143,19 @@ node insertion to nested trees creation.
 One of the most important argument is the boolean flag `$switchContext`. Passing a `true`<br/>
 boolean value returns the new node instead of the current one.
 
-> Extended syntax
-> ```php
-> $book->appendChild('chapters', true)
->          ->appendChild('chapter', 'Ideas About The Universe')
->          ->appendChild('chapter', 'The Expanding Universe');
->
-> // true asks to return the 'chapters' node instead of the 'book' node.
-> ```
 > Concise syntax
 > ```php
 > $book->add('chapters', true)
 >          ->add('chapter', 'Ideas About The Universe')
 >          ->add('chapter', 'The Expanding Universe');
+>
+> // true asks to return the 'chapters' node instead of the 'book' node.
+> ```
+> Extended syntax
+> ```php
+> $book->appendChild('chapters', true)
+>          ->appendChild('chapter', 'Ideas About The Universe')
+>          ->appendChild('chapter', 'The Expanding Universe');
 >
 > // true asks to return the 'chapters' node instead of the 'book' node.
 > ```
@@ -181,26 +181,6 @@ Chaining methods calls is nice, but sometimes it's more convenient creating node
 in a batch operation, for example when the nodes' structure is defined using an array.<br/>
 To demonstrate this concept, we create a new document that will be filled with food.
 
-> Extended syntax
-> ```php
-> $food = new FluidXml('food');
->
-> $food->appendChild('fruit')               // A 'fruit' node with an empty content.
->      ->appendChild('fruit', 'orange');    // A 'fruit' node with 'orange' as content.
->
->
-> // Batch insertion of nodes.
->
-> $food->appendChild([ 'cake'  => 'Tiramisu',
->                      'pizza' => 'Margherita' ]);
->
->
-> // PHP arrays can't contain identical keys.
-> // But it's still possible to create, in a batch operation, nodes with the same tag.
->
-> $food->appendChild([ [ 'pasta' => 'Carbonara' ],
->                      [ 'pasta' => 'Matriciana' ] ]);
-> ```
 > Concise syntax
 > ```php
 > $food = fluidxml('food');
@@ -221,6 +201,26 @@ To demonstrate this concept, we create a new document that will be filled with f
 > $food->add([ [ 'pasta' => 'Carbonara' ],
 >              [ 'pasta' => 'Matriciana' ] ]);
 > ```
+> Extended syntax
+> ```php
+> $food = new FluidXml('food');
+>
+> $food->appendChild('fruit')               // A 'fruit' node with an empty content.
+>      ->appendChild('fruit', 'orange');    // A 'fruit' node with 'orange' as content.
+>
+>
+> // Batch insertion of nodes.
+>
+> $food->appendChild([ 'cake'  => 'Tiramisu',
+>                      'pizza' => 'Margherita' ]);
+>
+>
+> // PHP arrays can't contain identical keys.
+> // But it's still possible to create, in a batch operation, nodes with the same tag.
+>
+> $food->appendChild([ [ 'pasta' => 'Carbonara' ],
+>                      [ 'pasta' => 'Matriciana' ] ]);
+> ```
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -237,47 +237,60 @@ To demonstrate this concept, we create a new document that will be filled with f
 Another important argument is `$attributes`, which allows to set the attributes<br/>
 of a node contextually to its creation.
 
-> Extended syntax
-> ```php
-> $food->appendChild('fruit', 'apple', ['color' => 'red']);
-> ```
 > Concise syntax
 > ```php
 > $food->add('fruit', 'apple', ['color' => 'red']);
 > ```
+> Extended syntax
+> ```php
+> $food->appendChild('fruit', 'apple', ['color' => 'red']);
+> ```
 
 Which is identical to
 
-> Extended syntax
-> ```php
-> $food->appendChild('fruit', 'apple', true)        // Remember, passing 'true' returns the created node.
->          ->setAttribute([ 'color' => 'red' ]);
-> ```
 > Concise syntax
 > ```php
 > $food->add('fruit', 'apple', true)        // Remember, passing 'true' returns the created node.
 >          ->attr([ 'color' => 'red' ]);
 > ```
+> Extended syntax
+> ```php
+> $food->appendChild('fruit', 'apple', true)        // Remember, passing 'true' returns the created node.
+>          ->setAttribute([ 'color' => 'red' ]);
+> ```
 
 The advantage comes when multiple nodes have the same attributes.
 
-> Extended syntax
-> ```php
-> $food->appendChild([ ['egg'], ['egg'] ], ['price' => '0.25']);
->
-> // A bunch of eggs all with the same price.
-> ```
 > Concise syntax
 > ```php
 > $food->add([ ['egg'], ['egg'] ], ['price' => '0.25']);
 >
 > // A bunch of eggs all with the same price.
 > ```
+> Extended syntax
+> ```php
+> $food->appendChild([ ['egg'], ['egg'] ], ['price' => '0.25']);
+>
+> // A bunch of eggs all with the same price.
+> ```
 
 Creating arbitrarily complex structures is possible too nesting arrays and using<br/>
-the `@` special syntax. An array key starting with an '@' is interpreted as an attribute<br/>
-identifier and an array key equel to '@' is interpreted as the text content.
+the `@` special syntax. An array key **starting with** an `@` is interpreted as an attribute<br/>
+identifier and an array key **equal to** `@` is interpreted as the text content.
 
+> Concise syntax
+> ```php
+> $food->add([ 'menu' => [
+>                  'pasta' => [
+>                      'spaghetti' => [
+>                          '@id'      => '123',
+>                          '@country' => 'Italy',
+>                          '@'        => 'Spaghetti are an Italian dish...',
+>
+>                          'variants' => [
+>                              'tomato' => [ '@type' => 'vegan' ],
+>                              'egg'    => [ '@type' => 'vegetarian' ] ]]]]]);
+> ```
 > Extended syntax
 > ```php
 > $food->appendChild([ 'menu' => [
@@ -291,19 +304,6 @@ identifier and an array key equel to '@' is interpreted as the text content.
 >                                     'tomato' => [ '@type' => 'vegan' ],
 >                                     'egg'    => [ '@type' => 'vegetarian' ] ]]]]]);
 > ```
-> Concise syntax
-> ```php
-> $food->add([ 'menu' => [
->                  'pasta' => [
->                      'spaghetti' => [
->                          '@id'      => '123',
->                          '@country' => 'Italy',
->                          '@'        => 'Spaghetti are an Italian dish...',
->
->                          'variants' => [
->                              'tomato' => [ '@type' => 'vegan' ],
->                              'egg'    => [ '@type' => 'vegetarian' ] ]]]]]);
-```
 
 ```php
 echo $food->xml();
@@ -353,27 +353,18 @@ XML
 
 ## Executing XPath Queries
 
-The possibility to execute XPath queries very easily is another feature of FluidXML.
+The possibility to execute XPath queries easily is another feature of FluidXML.
 
 ```php
 $eggs   = $food->query('//egg');
 $fruits = $food->query('//fruit[@price="expensive"]');
 
-echo "We have {$eggs->length()} eggs and {$fruits->length()} expensive fruit.\n";
+echo "We have {$eggs->size()} eggs and {$fruits->size()} expensive fruit.\n";
 ```
 
 Chaining queries together with the usage of relative XPath queries gives an immense<br/>
 flexibility.
 
-> Extended syntax
-> ```php
-> $book->query('//chapter')
->           ->setAttribute('lang', 'en')
->      ->query('..')
->           ->setAttribute('lang', 'en')
->      ->query('../title')
->           ->setAttribute('lang', 'en');
-> ```
 > Concise syntax
 > ```php
 > $book->query('//chapter')
@@ -382,6 +373,15 @@ flexibility.
 >           ->attr('lang', 'en')
 >      ->query('../title')
 >           ->attr('lang', 'en');
+> ```
+> Extended syntax
+> ```php
+> $book->query('//chapter')
+>           ->setAttribute('lang', 'en')
+>      ->query('..')
+>           ->setAttribute('lang', 'en')
+>      ->query('../title')
+>           ->setAttribute('lang', 'en');
 > ```
 
 > **Pro Tip**:<br/>
@@ -395,7 +395,7 @@ flexibility.
 
 ## Iterating
 
-Iterations can be performed without interrupting the fluid flow.
+Iterations can be performed without interrupting the fluent flow.
 
 `->each()` iterates the results of a query or of an insertion method.
 
@@ -464,7 +464,7 @@ Accessing the query result as array or iterating it returns the DOMNode unwrappe
 ```php
 $chapters = $book->query('//chapter');
 
-$last = $chapters->length() - 1;
+$last = $chapters->size() - 1;
 
 // Raw DOMNode access.
 $chapters[0]->setAttribute('first', '');
@@ -495,10 +495,10 @@ foreach ($chapters as $i => $chapter) {
 >
 > See http://php.net/manual/en/class.domnode.php for the reference documentation.
 
-Another way to retrieve the DOMNode instances is using the `asArray()` method.
+Another way to retrieve the DOMNode instances is using the `array()` method.
 
 ```php
-$nodes = $chapters->asArray();          // Returns an array of DOMNode instances.
+$nodes = $chapters->array();          // Returns an array of DOMNode instances.
 ```
 
 
@@ -517,19 +517,19 @@ $book->namespace('xhtml', 'http://www.w3.org/1999/xhtml')
 
 At this point you are ready to use it.
 
-> Extended syntax
-> ```php
-> $book->appendChild('xhtml:h1')
->      ->appendChild([ 'xsl:template'  => [ 'xsl:variable' ] ])
->      ->query('//xhtml:h1')
->           ->appendChild('svg:shape');
-> ```
 > Concise syntax
 > ```php
 > $book->add('xhtml:h1')
 >      ->add([ 'xsl:template'  => [ 'xsl:variable' ] ])
 >      ->query('//xhtml:h1')
 >           ->add('svg:shape');
+> ```
+> Extended syntax
+> ```php
+> $book->appendChild('xhtml:h1')
+>      ->appendChild([ 'xsl:template'  => [ 'xsl:variable' ] ])
+>      ->query('//xhtml:h1')
+>           ->appendChild('svg:shape');
 > ```
 
 ```php
@@ -555,16 +555,16 @@ That's it! Even XML namespaces can be easy and fun to use.
 > A namespace can be defined even as a `FluidNamespace` instance,<br/>
 > to make easy to share namespaces between different documents.
 >
-> Extended syntax
-> ```php
-> $xhtml = new FluidNamespace('xhtml', 'http://www.w3.org/1999/xhtml');
-> $svg   = new FluidNamespace('svg',   'http://www.w3.org/2000/svg', FluidNamespace::MODE_IMPLICIT);
-> $book->namespace($xhtml, $svg);
-> ```
 > Concise syntax
 > ```php
 > $xhtml = fluidns('xhtml', 'http://www.w3.org/1999/xhtml');
 > $svg   = fluidns('svg',   'http://www.w3.org/2000/svg', FluidNamespace::MODE_IMPLICIT);
+> $book->namespace($xhtml, $svg);
+> ```
+> Extended syntax
+> ```php
+> $xhtml = new FluidNamespace('xhtml', 'http://www.w3.org/1999/xhtml');
+> $svg   = new FluidNamespace('svg',   'http://www.w3.org/2000/svg', FluidNamespace::MODE_IMPLICIT);
 > $book->namespace($xhtml, $svg);
 > ```
 >
@@ -664,7 +664,7 @@ $book->query('//chapter')
      ->save('book_chapters.xml');
 ```
 
-Saving is fluid too.
+Saving is fluent too.
 
 ```php
 $book->save('book.xml')
@@ -690,43 +690,43 @@ $xml = <<<XML
 </html>
 XML;
 ```
-> Extended syntax
-> ```php
-> $doc = FluidXml::load($xml);
-> ```
 > Concise syntax
 > ```php
 > $doc = fluidify($xml);
 > ```
-
-* **XML File**<br/>
 > Extended syntax
 > ```php
-> $doc = FluidXml::load('path/to/file.xml');
+> $doc = FluidXml::load($xml);
 > ```
+
+* **XML File**<br/>
 > Concise syntax
 > ```php
 > $doc = fluidify('path/to/file.xml');
 > ```
-
-* **DOMDocument**<br/>
 > Extended syntax
 > ```php
-> $doc = FluidXml::load($domdocument);  // $domdocument is an instance of DOMDocument.
+> $doc = FluidXml::load('path/to/file.xml');
 > ```
+
+* **DOMDocument**<br/>
 > Concise syntax
 > ```php
 > $doc = fluidify($domdocument);        // $domdocument is an instance of DOMDocument.
 > ```
-
-* **SimpleXMLElement**<br/>
 > Extended syntax
 > ```php
-> $doc = FluidXml::load($simplexml);    // $simplexml is an instance of SimpleXMLElement.
+> $doc = FluidXml::load($domdocument);  // $domdocument is an instance of DOMDocument.
 > ```
+
+* **SimpleXMLElement**<br/>
 > Concise syntax
 > ```php
 > $doc = fluidify($simplexml);          // $simplexml is an instance of SimpleXMLElement.
+> ```
+> Extended syntax
+> ```php
+> $doc = FluidXml::load($simplexml);    // $simplexml is an instance of SimpleXMLElement.
 > ```
 
 > **Pro Tip**:<br/>

@@ -1,7 +1,7 @@
 language: php
 php:
-    - '5.6'
-    - '7.0'
+    - 5.6
+    - 7.0
 cache:
     directories:
         - sandbox/composer/
@@ -13,3 +13,5 @@ script:
     - ./support/tools/test
 after_script:
     - ./support/tools/coveralls "$TRAVIS_JOB_ID"
+notifications:
+  email: false

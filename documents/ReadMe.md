@@ -132,7 +132,7 @@ $book->namespace('xhtml', 'http://www.w3.org/1999/xhtml')
      ->query('//xhtml:h1');
 ```
 
-And sometimes **string templates** are the fastest way.
+And sometimes **string fragments** are the fastest way.
 
 ```php
 $book->add(<<<XML
@@ -140,16 +140,19 @@ $book->add(<<<XML
         <h1>The Theory Of Everything</h1>
         <img src="http://goo.gl/kO3Iov"/>
     </cover>
+    <back>
+        <img src="http://goo.gl/kO3Iov"/>
+    </cover>
 XML
 );
 ```
 
-Everything is fluid, even **iterations**.
+Everything is fluent, even **iterations**.
 
 ```php
 $book->query('//chapter')
-        ->each(function($idx) {
-             $this->attr('id', $idx);
+        ->each(function($i) {
+             $this->attr('id', $i);
         });
 ```
 
@@ -157,7 +160,7 @@ $book->query('//chapter')
 $book->query('//chapters')
         ->times(3)
             ->add('chapter')
-        ->times(4, function($idx) {
+        ->times(4, function($i) {
             $this->add('chapter');
             $this->add('illustration');
         });
@@ -178,18 +181,21 @@ fluidify($domdocument)
 Don't be shy and tell it: **« IT'S AWESOME! »** ^\_^
 
 Many other [APIs][apis] are available:
-- `load()`
-- `remove()`
 - `appendSibling()`/`append()`
 - `prependSibling()`/`prepend()`
 - `appendText()`
 - `setText()`/`text()`
 - `appendCdata()`
 - `setCdata()`/`cdata()`
-- `length()`
-- `dom()`
+- `remove()`
+- `size()`/`length()`
+- `load()`
 - `save()`
-- `asArray()`
+- `dom()`
+- `xml()`
+- `html()`
+- `string()`
+- `array()`
 - ...
 
 
@@ -232,13 +238,13 @@ require_once 'vendor/autoload.php';
 
 `use` classes and functions as you need.
 ```php
-use \FluidXml\FluidXml;
-use \FluidXml\FluidNamespace;
-```
-```php
 use function \FluidXml\fluidxml;
 use function \FluidXml\fluidns;
 use function \FluidXml\fluidify;
+```
+```php
+use \FluidXml\FluidXml;
+use \FluidXml\FluidNamespace;
 ```
 See the [documentation](#documentation) to get started and become a [ninja][ninja].
 

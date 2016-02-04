@@ -14,10 +14,13 @@
                 }
         ],
         "config": {
-                "vendor-dir": "./sandbox/composer"
+                "vendor-dir": "./sandbox/composer/"
         },
         "autoload": {
-                "files": ["./source/FluidXml.php"]
+                "files": ["./source/FluidXml/fluid.php"],
+                "psr-4": {
+                        "FluidXml\\": "./source/FluidXml/"
+                }
         },
         "require": {
                 "php": ">=5.6"

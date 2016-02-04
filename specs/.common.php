@@ -5,7 +5,7 @@ $source_dir = __DIR__ . "{$ds}..{$ds}source";
 \set_include_path($source_dir . \PATH_SEPARATOR . \get_include_path());
 
 use \FluidXml\FluidXml;
-use \FluidXml\Core\FluidInterface;
+use \FluidXml\FluidInterface;
 
 function __($actual, $expected)
 {
