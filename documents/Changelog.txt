@@ -5,10 +5,12 @@
 is a major step forward breaking compatibility with the past.
 Under the hood there is a general reorganization to be PSR-0/4 compliant,
 a general cleanup of the API names for being consistent and allowing future
-clean APIs growth, a notable addition like the ->filter() method to
-programmatically filter the query results.
+clean APIs growth, some notable additions like the ->filter() method to
+programmatically filter the query results and ->html() to output the document
+as valid HTML 5 string.
 
   [+] New:
+  * ->html()                is part of the family.
   * ->filter()              is part of the family.
   * ->comment()             is part of the family.
   * ->setComment()          is part of the family.
@@ -37,6 +39,7 @@ programmatically filter the query results.
   [@] Internal:
   * PSR-0/4 compliance.
   * FluidXml.php is still there for people not using Composer/PSR-0/4 loaders.
+  * FluidInsertionHandler refactoring.
 
 
 1.13: (2016-01-24)

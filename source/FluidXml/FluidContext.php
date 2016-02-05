@@ -112,10 +112,10 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->length();
         }
 
-        public function query(...$xpath)
+        public function query(...$query)
         {
-                if (\is_array($xpath[0])) {
-                        $xpath = $xpath[0];
+                if (\is_array($query[0])) {
+                        $query = $query[0];
                 }
 
                 $results = [];
@@ -123,9 +123,11 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 $xp = $this->document->xpath;
 
                 foreach ($this->nodes as $n) {
-                        foreach ($xpath as $x) {
+                        foreach ($query as $q) {
+                                $q = $this->resolveQuery($q);
+
                                 // Returns a DOMNodeList.
-                                $res = $xp->query($x, $n);
+                                $res = $xp->query($q, $n);
 
                                 // Algorithm 1:
                                 // $results = \array_merge($results, \iterator_to_array($res));
@@ -153,9 +155,9 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->newContext($results);
         }
 
-        public function __invoke(...$xpath)
+        public function __invoke(...$query)
         {
-                return $this->query(...$xpath);
+                return $this->query(...$query);
         }
 
         public function times($times, callable $fn = null)
@@ -378,15 +380,15 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function remove(...$xpath)
+        public function remove(...$query)
         {
                 // Arguments can be empty, a string or an array of strings.
 
-                if (empty($xpath)) {
+                if (empty($query)) {
                         // The user has requested to remove the nodes of this context.
                         $targets = $this->nodes;
                 } else {
-                        $targets = $this->query(...$xpath);
+                        $targets = $this->query(...$query);
                 }
 
                 foreach ($targets as $t) {
@@ -427,6 +429,18 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         protected function newContext(&$context)
         {
                 return new FluidContext($this->document, $this->handler, $context);
+        }
+
+        protected function resolveQuery($query)
+        {
+                if ($query[0] === '/'
+                    || $query === '.'
+                    || ($query[0] === '.' && $query[1] === '/')
+                    || ($query[0] === '.' && $query[1] === '.' && $query[2] === '/')) {
+                        return $query;
+                }
+
+                return CssTranslator::xpath($query);
         }
 
         protected function filterQueryResults(&$results)

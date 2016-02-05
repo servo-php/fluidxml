@@ -462,7 +462,7 @@ describe('FluidXml', function () {
                         assert_is_fluid('query', '.');
                 });
 
-                it('should return the root nodes of the document', function () {
+                it('should return the root nodes of the document with XPath', function () {
                         // XPATH: /*
                         $xml = new FluidXml();
                         $cx = $xml->query('/*');
@@ -483,25 +483,11 @@ describe('FluidXml', function () {
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                it('should accept an array of queries', function () {
-                        $xml = new FluidXml();
-                        $xml->addChild('html', true)
-                            ->addChild(['head','body']);
-                        $xml->query(['//html', '//head', '//body'])
-                            ->setAttribute('lang', 'en');
-
-                        $expected = "<doc>\n"
-                                  . "  <html lang=\"en\">\n"
-                                  . "    <head lang=\"en\"/>\n"
-                                  . "    <body lang=\"en\"/>\n"
-                                  . "  </html>\n"
-                                  . "</doc>";
-                        assert_equal_xml($xml, $expected);
-
+                it('should accept an array of queries, XPath and CSS', function () {
                         $xml = new FluidXml();
                         $xml->addChild('html', true)
                             ->addChild(['head','body'])
-                            ->query(['.', 'head', 'body'])
+                            ->query(['//html', 'head', '//body'])
                             ->setAttribute('lang', 'en');
 
                         $expected = "<doc>\n"
@@ -513,25 +499,11 @@ describe('FluidXml', function () {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should accept variable queries arguments', function () {
-                        $xml = new FluidXml();
-                        $xml->addChild('html', true)
-                            ->addChild(['head','body']);
-                        $xml->query('//html', '//head', '//body')
-                            ->setAttribute('lang', 'en');
-
-                        $expected = "<doc>\n"
-                                  . "  <html lang=\"en\">\n"
-                                  . "    <head lang=\"en\"/>\n"
-                                  . "    <body lang=\"en\"/>\n"
-                                  . "  </html>\n"
-                                  . "</doc>";
-                        assert_equal_xml($xml, $expected);
-
+                it('should accept a variable number of queries, XPath and CSS', function () {
                         $xml = new FluidXml();
                         $xml->addChild('html', true)
                             ->addChild(['head','body'])
-                            ->query('.', 'head', 'body')
+                            ->query('//html', 'head', '//body')
                             ->setAttribute('lang', 'en');
 
                         $expected = "<doc>\n"
@@ -543,12 +515,11 @@ describe('FluidXml', function () {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should support relative queries', function () {
-                        // XPATH: //child subchild
+                it('should support relative XPath queries', function () {
                         $xml = new FluidXml();
-                        $cx = $xml->addChild('html', true);
-                        $cx->addChild(['head','body']);
-                        $cx = $cx->query('body');
+                        $cx = $xml->addChild('html', true)
+                                  ->addChild(['head','body'])
+                                  ->query('./body');
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'body';
@@ -556,14 +527,14 @@ describe('FluidXml', function () {
 
                         $xml = new FluidXml();
                         $xml->addChild('html', true)->addChild(['head','body']);
-                        $cx = $xml->query('/doc/html')->query('head');
+                        $cx = $xml->query('/doc/html')->query('./head');
 
                         $actual   = $cx[0]->nodeName;
                         $expected = 'head';
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                it('should query the root of the document from a sub query', function () {
+                it('should query the root of the document from a sub XPath query', function () {
                         // XPATH: //child/subchild //child
                         $xml = new FluidXml();
                         $xml->addChild('html', true)
@@ -577,8 +548,7 @@ describe('FluidXml', function () {
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                it('should perform relative queries ascending the DOM tree', function () {
-                        // XPATH: //child/subchild ../..
+                it('should perform relative XPath queries ascending the DOM tree', function () {
                         $xml = new FluidXml();
                         $xml->addChild('html', true)
                             ->addChild(['head','body'], true)
@@ -599,7 +569,7 @@ describe('FluidXml', function () {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should query namespaced nodes', function () {
+                it('should query namespaced nodes with XPath and CSS', function () {
                         $xml   = new FluidXml();
                         $x_ns  = new FluidNamespace('x', 'x.com');
                         $xx_ns = fluidns('xx', 'xx.com', FluidNamespace::MODE_IMPLICIT);
@@ -672,6 +642,40 @@ describe('FluidXml', function () {
 
                         $actual   = $r[0]->nodeName;
                         $expected = 'g';
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                $hml = new FluidXml([ 'html' => [ 'body' => [ 'div' =>
+                        [ 'p'  => [ '@class' => 'a', '@id' => '123' ],
+                          'h1' => [ '@class' => 'b' ],
+                          'p'  => [ '@class' => 'a b' ],
+                          'p'  => [ '@class' => 'a' ]    ]
+                ]]]);
+
+                it('should support the relative CSS selectors', function () use ($hml) {
+                        $actual   = $hml('//html')->query('p')->array();
+                        $expected = $hml('//html')->query('.//p')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector E', function () use ($hml) {
+                        $actual   = $hml->query('p')->array();
+                        $expected = $hml->query('.//p')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $expected = $hml->query('//p')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector E F', function () use ($hml) {
+                        $actual   = $hml->query('body p')->array();
+                        $expected = $hml->query('//body//p')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector :root', function () use ($hml) {
+                        $actual   = $hml->query(':root html p')->array();
+                        $expected = $hml->query('//html//p')->array();
                         \assert($actual === $expected, __($actual, $expected));
                 });
         });
@@ -1899,7 +1903,7 @@ EOF;
                         assert_equal_xml($xml, $expected);
 
                         $xml = $new_doc();
-                        $xml->query('/doc/parent')->remove('*[@class="removable"]');
+                        $xml->query('/doc/parent')->remove('./*[@class="removable"]');
 
                         assert_equal_xml($xml, $expected);
                 });
@@ -1916,7 +1920,7 @@ EOF;
                         assert_equal_xml($xml, $expected);
 
                         $xml = $new_doc();
-                        $xml->query('/doc/parent')->remove(['child1', 'child2']);
+                        $xml->query('/doc/parent')->remove(['./child1', './child2']);
 
                         assert_equal_xml($xml, $expected);
                 });
@@ -1933,7 +1937,7 @@ EOF;
                         assert_equal_xml($xml, $expected);
 
                         $xml = $new_doc();
-                        $xml->query('/doc/parent')->remove('child1', 'child2');
+                        $xml->query('/doc/parent')->remove('./child1', './child2');
 
                         assert_equal_xml($xml, $expected);
                 });

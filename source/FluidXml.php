@@ -45,6 +45,8 @@ require_once __DIR__ . "{$ds}FluidXml{$ds}ReservedCallStaticTrait.php";
 require_once __DIR__ . "{$ds}FluidXml{$ds}ReservedCallTrait.php";
 
 // All.
+
+require_once __DIR__ . "{$ds}FluidXml{$ds}CssTranslator.php";
 require_once __DIR__ . "{$ds}FluidXml{$ds}FluidContext.php";
 require_once __DIR__ . "{$ds}FluidXml{$ds}FluidDocument.php";
 require_once __DIR__ . "{$ds}FluidXml{$ds}FluidHelper.php";

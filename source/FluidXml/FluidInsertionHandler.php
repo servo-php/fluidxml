@@ -84,8 +84,6 @@ class FluidInsertionHandler
                 // of performances for a core method like this, so this implementation
                 // is prefered to collapse many identical checks to one.
 
-                $v_matches = false;
-
                 $k_is_string       = \is_string($k);
                 $k_is_integer      = ! $k_is_string && \is_integer($k);
                 $k_is_special      = $k_is_string && $k[0] === '@';
@@ -96,24 +94,17 @@ class FluidInsertionHandler
                 $v_is_xml          = $v_is_string && FluidHelper::isAnXmlString($v);
                 $v_is_simple       = $v_is_string || \is_numeric($v);
                 $v_is_array        = ! $v_is_simple && \is_array($v);
-
-                $v_matches         = $v_matches || $v_is_string || $v_is_xml || $v_is_simple || $v_is_array;
-
+                $v_matches         = $v_is_string || $v_is_xml || $v_is_simple || $v_is_array;
                 $v_is_domdoc       = ! $v_matches && $v instanceof \DOMDocument;
                 $v_matches         = $v_matches || $v_is_domdoc;
-
                 $v_is_domnodelist  = ! $v_matches && $v instanceof \DOMNodeList;
                 $v_matches         = $v_matches || $v_is_domnodelist;
-
                 $v_is_domnode      = ! $v_matches && $v instanceof \DOMNode;
                 $v_matches         = $v_matches || $v_is_domnode;
-
                 $v_is_simplexml    = ! $v_matches && $v instanceof \SimpleXMLElement;
                 $v_matches         = $v_matches || $v_is_simplexml;
-
                 $v_is_fluidxml     = ! $v_matches && $v instanceof FluidXml;
                 $v_matches         = $v_matches || $v_is_fluidxml;
-
                 $v_is_fluidcx      = ! $v_matches && $v instanceof FluidContext;
                 $v_matches         = $v_matches || $v_is_fluidcx;
 
