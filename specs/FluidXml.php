@@ -9,9 +9,19 @@ use \FluidXml\FluidContext;
 use \FluidXml\FluidDocument;
 use \FluidXml\FluidInsertionHandler;
 use \FluidXml\FluidRepeater;
+use const \FluidXml\FLUIDXML_VERSION;
 use function \FluidXml\fluidxml;
 use function \FluidXml\fluidns;
 use function \FluidXml\fluidify;
+
+
+describe('FLUIDXML_VERSION', function () {
+        it('should be defined', function () {
+                $actual   = \defined('FLUIDXML_VERSION');
+                $expected = true;
+                \assert($actual === $expected, __($actual, $expected));
+        });
+});
 
 describe('fluidxml()', function () {
         it('should behave like FluidXml::__construct()', function () {
@@ -86,74 +96,6 @@ describe('fluidns()', function () {
                 $actual   = $ns->mode();
                 $expected = $alias->mode();
                 \assert($actual === $expected, __($actual, $expected));
-        });
-});
-
-describe('FluidHelper', function () {
-        describe(':isAnXmlString()', function () {
-                it('should understand if a string is an XML document', function () {
-                        $xml = new FluidXml();
-
-                        $actual   = FluidHelper::isAnXmlString($xml->xml());
-                        $expected = true;
-                        \assert($actual === $expected, __($actual, $expected));
-
-                        $actual   = FluidHelper::isAnXmlString(" \n \n \t" . $xml->xml());
-                        $expected = true;
-                        \assert($actual === $expected, __($actual, $expected));
-
-                        $actual   = FluidHelper::isAnXmlString('item');
-                        $expected = false;
-                        \assert($actual === $expected, __($actual, $expected));
-                });
-        });
-
-        describe(':domdocumentToStringWithoutHeaders()', function () {
-                it('should convert a DOMDocument instance to an XML string without the XML headers (declaration and stylesheets)', function () {
-                        $xml = new FluidXml();
-
-                        $actual   = FluidHelper::domdocumentToStringWithoutHeaders($xml->dom());
-                        $expected = "<doc/>";
-                        \assert($actual === $expected, __($actual, $expected));
-
-                        $xml = new FluidXml('doc', ['stylesheet' => 'x.com/style.xsl']);
-
-                        $actual   = FluidHelper::domdocumentToStringWithoutHeaders($xml->dom());
-                        $expected = "<doc/>";
-                        \assert($actual === $expected, __($actual, $expected));
-                });
-        });
-
-        describe(':domnodelistToString()', function () {
-                it('should convert a DOMNodeList instance to an XML string', function () {
-                        $xml   = new FluidXml();
-                        $nodes = $xml->dom()->childNodes;
-
-                        $actual   = FluidHelper::domnodelistToString($nodes);
-                        $expected = "<doc/>";
-                        \assert($actual === $expected, __($actual, $expected));
-                });
-        });
-
-        describe(':domnodesToString()', function () {
-                it('should convert an array of DOMNode instances to an XML string', function () {
-                        $xml   = new FluidXml();
-                        $nodes = [ $xml->dom()->documentElement ];
-
-                        $actual   = FluidHelper::domnodesToString($nodes);
-                        $expected = "<doc/>";
-                        \assert($actual === $expected, __($actual, $expected));
-                });
-        });
-
-        describe('simplexmlToStringWithoutHeaders()', function () {
-                it('should convert a SimpleXMLElement instance to an XML string without the XML headers (declaration and stylesheets)', function () {
-                        $xml = \simplexml_import_dom((new FluidXml())->dom());
-
-                        $actual   = FluidHelper::simplexmlToStringWithoutHeaders($xml);
-                        $expected = "<doc/>";
-                        \assert($actual === $expected, __($actual, $expected));
-                });
         });
 });
 
@@ -462,8 +404,7 @@ describe('FluidXml', function () {
                         assert_is_fluid('query', '.');
                 });
 
-                it('should return the root nodes of the document with XPath', function () {
-                        // XPATH: /*
+                it('should accept a query that return the root nodes of the document (XPath)', function () {
                         $xml = new FluidXml();
                         $cx = $xml->query('/*');
 
@@ -483,7 +424,27 @@ describe('FluidXml', function () {
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                it('should accept an array of queries, XPath and CSS', function () {
+                it('should accept a query that return the root nodes of the document (CSS)', function () {
+                        $xml = new FluidXml();
+                        $cx = $xml->query(':root');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'doc';
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $xml->appendSibling('meta');
+                        $cx = $xml->query(':root');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'doc';
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $cx[1]->nodeName;
+                        $expected = 'meta';
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should accept an array of queries (XPath)', function () {
                         $xml = new FluidXml();
                         $xml->addChild('html', true)
                             ->addChild(['head','body'])
@@ -499,7 +460,23 @@ describe('FluidXml', function () {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should accept a variable number of queries, XPath and CSS', function () {
+                it('should accept an array of queries (XPath and CSS)', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild('html', true)
+                            ->addChild(['head','body'])
+                            ->query(['//html', 'head', '//body'])
+                            ->setAttribute('lang', 'en');
+
+                        $expected = "<doc>\n"
+                                  . "  <html lang=\"en\">\n"
+                                  . "    <head lang=\"en\"/>\n"
+                                  . "    <body lang=\"en\"/>\n"
+                                  . "  </html>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should accept a variable number of queries (XPath and CSS)', function () {
                         $xml = new FluidXml();
                         $xml->addChild('html', true)
                             ->addChild(['head','body'])
@@ -515,7 +492,7 @@ describe('FluidXml', function () {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should support relative XPath queries', function () {
+                it('should support relative queries (XPath)', function () {
                         $xml = new FluidXml();
                         $cx = $xml->addChild('html', true)
                                   ->addChild(['head','body'])
@@ -534,8 +511,7 @@ describe('FluidXml', function () {
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                it('should query the root of the document from a sub XPath query', function () {
-                        // XPATH: //child/subchild //child
+                it('should query the root of the document from a sub query (XPath)', function () {
                         $xml = new FluidXml();
                         $xml->addChild('html', true)
                             ->addChild(['head','body']);
@@ -548,7 +524,20 @@ describe('FluidXml', function () {
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                it('should perform relative XPath queries ascending the DOM tree', function () {
+                it('should query the root of the document from a sub query (CSS)', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild('html', true)
+                            ->addChild(['head','body']);
+                        $cx = $xml->query('body')
+                                  ->addChild('h1')
+                                  ->query(':root head');
+
+                        $actual   = $cx[0]->nodeName;
+                        $expected = 'head';
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should perform relative queries (XPath) ascending the DOM tree', function () {
                         $xml = new FluidXml();
                         $xml->addChild('html', true)
                             ->addChild(['head','body'], true)
@@ -569,7 +558,7 @@ describe('FluidXml', function () {
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should query namespaced nodes with XPath and CSS', function () {
+                it('should query namespaced nodes (XPath)', function () {
                         $xml   = new FluidXml();
                         $x_ns  = new FluidNamespace('x', 'x.com');
                         $xx_ns = fluidns('xx', 'xx.com', FluidNamespace::MODE_IMPLICIT);
@@ -645,37 +634,79 @@ describe('FluidXml', function () {
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                $hml = new FluidXml([ 'html' => [ 'body' => [ 'div' =>
-                        [ 'p'  => [ '@class' => 'a', '@id' => '123' ],
-                          'h1' => [ '@class' => 'b' ],
-                          'p'  => [ '@class' => 'a b' ],
-                          'p'  => [ '@class' => 'a' ]    ]
-                ]]]);
+                it('should query namespaced nodes (CSS)', function () {
+                        $xml   = new FluidXml();
+                        $x_ns  = new FluidNamespace('x', 'x.com');
+                        $xx_ns = fluidns('xx', 'xx.com', FluidNamespace::MODE_IMPLICIT);
 
-                it('should support the relative CSS selectors', function () use ($hml) {
-                        $actual   = $hml('//html')->query('p')->array();
-                        $expected = $hml('//html')->query('.//p')->array();
+                        $xml->namespace($x_ns, $xx_ns);
+
+                        $xml->addChild('x:a',  true)
+                            ->addChild('x:b',  true)
+                            ->addChild('xx:c', true)
+                            ->addChild('xx:d', true)
+                            ->addChild('e',    true)
+                            ->addChild('x:f',  true)
+                            ->addChild('g');
+
+                        $r = $xml->query('a');
+
+                        $actual   = $r->length();
+                        $expected = 0;
                         \assert($actual === $expected, __($actual, $expected));
-                });
 
-                it('should support the CSS selector E', function () use ($hml) {
-                        $actual   = $hml->query('p')->array();
-                        $expected = $hml->query('.//p')->array();
+                        $r = $xml->query('x|a');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'x:a';
                         \assert($actual === $expected, __($actual, $expected));
 
-                        $expected = $hml->query('//p')->array();
-                        \assert($actual === $expected, __($actual, $expected));
-                });
+                        $r = $xml->query('x|a > x|b');
 
-                it('should support the CSS selector E F', function () use ($hml) {
-                        $actual   = $hml->query('body p')->array();
-                        $expected = $hml->query('//body//p')->array();
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'x:b';
                         \assert($actual === $expected, __($actual, $expected));
-                });
 
-                it('should support the CSS selector :root', function () use ($hml) {
-                        $actual   = $hml->query(':root html p')->array();
-                        $expected = $hml->query('//html//p')->array();
+                        $r = $xml->query('x|a > x|b > c');
+
+                        $actual   = $r->length();
+                        $expected = 0;
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('x|a > x|b > xx|c');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'c';
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('x|a > x|b > xx|c > xx|d');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'd';
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('x|a > x|b > xx|c > xx|d > e');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'e';
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('x|a > x|b > xx|c > xx|d > e > f');
+
+                        $actual   = $r->length();
+                        $expected = 0;
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('x|a > x|b > xx|c > xx|d > e > x|f');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'x:f';
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $r = $xml->query('x|a > x|b > xx|c > xx|d > e > x|f > g');
+
+                        $actual   = $r[0]->nodeName;
+                        $expected = 'g';
                         \assert($actual === $expected, __($actual, $expected));
                 });
         });
@@ -1884,14 +1915,14 @@ EOF;
                         assert_equal_xml($xml, '');
                 });
 
-                it('should remove the results of a query', function () use ($new_doc, $expected) {
+                it('should remove the results of the previous query', function () use ($new_doc, $expected) {
                         $xml = $new_doc();
                         $xml->query('//*[@class="removable"]')->remove();
 
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should remove the absolute and relative targets of an XPath', function () use ($new_doc, $expected) {
+                it('should remove the absolute and relative targets of a query (XPath)', function () use ($new_doc, $expected) {
                         $xml = $new_doc();
                         $xml->remove('//*[@class="removable"]');
 
@@ -1908,36 +1939,53 @@ EOF;
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should remove the absolute and relative targets of an array of XPaths', function () use ($new_doc, $expected) {
+                it('should remove the absolute and relative targets of a query (CSS)', function () use ($new_doc, $expected) {
                         $xml = $new_doc();
-                        $xml->remove(['//child1', '//child2']);
+                        $xml->remove('.removable');
 
                         assert_equal_xml($xml, $expected);
 
                         $xml = $new_doc();
-                        $xml->query('/doc')->remove(['//child1', '//child2']);
+                        $xml->query('/doc')->remove(':root .removable');
 
                         assert_equal_xml($xml, $expected);
 
                         $xml = $new_doc();
-                        $xml->query('/doc/parent')->remove(['./child1', './child2']);
+                        $xml->query('/doc/parent')->remove('.removable');
 
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should remove the absolute and relative targets of a variable list of XPaths', function () use ($new_doc, $expected) {
+                it('should remove the absolute and relative targets of an array of queries (XPath and CSS)', function () use ($new_doc, $expected) {
                         $xml = $new_doc();
-                        $xml->remove('//child1', '//child2');
+                        $xml->remove(['//child1', ':root child2']);
 
                         assert_equal_xml($xml, $expected);
 
                         $xml = $new_doc();
-                        $xml->query('/doc')->remove('//child1', '//child2');
+                        $xml->query('/doc')->remove(['//child1', ':root child2']);
 
                         assert_equal_xml($xml, $expected);
 
                         $xml = $new_doc();
-                        $xml->query('/doc/parent')->remove('./child1', './child2');
+                        $xml->query('/doc/parent')->remove(['./child1', 'child2']);
+
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should remove the absolute and relative targets of a variable list of queries (XPath and CSS)', function () use ($new_doc, $expected) {
+                        $xml = $new_doc();
+                        $xml->remove('//child1', ':root child2');
+
+                        assert_equal_xml($xml, $expected);
+
+                        $xml = $new_doc();
+                        $xml->query('/doc')->remove('//child1', ':root child2');
+
+                        assert_equal_xml($xml, $expected);
+
+                        $xml = $new_doc();
+                        $xml->query('/doc/parent')->remove('./child1', 'child2');
 
                         assert_equal_xml($xml, $expected);
                 });
@@ -2486,5 +2534,190 @@ describe('FluidNamespace', function () {
                         $expected = '//x:current/x:child';
                         \assert($actual === $expected, __($actual, $expected));
                 });
+        });
+});
+
+describe('FluidHelper', function () {
+        describe(':isAnXmlString()', function () {
+                it('should understand if a string is an XML document', function () {
+                        $xml = new FluidXml();
+
+                        $actual   = FluidHelper::isAnXmlString($xml->xml());
+                        $expected = true;
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = FluidHelper::isAnXmlString(" \n \n \t" . $xml->xml());
+                        $expected = true;
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = FluidHelper::isAnXmlString('item');
+                        $expected = false;
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe(':domdocumentToStringWithoutHeaders()', function () {
+                it('should convert a DOMDocument instance to an XML string without the XML headers (declaration and stylesheets)', function () {
+                        $xml = new FluidXml();
+
+                        $actual   = FluidHelper::domdocumentToStringWithoutHeaders($xml->dom());
+                        $expected = "<doc/>";
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $xml = new FluidXml('doc', ['stylesheet' => 'x.com/style.xsl']);
+
+                        $actual   = FluidHelper::domdocumentToStringWithoutHeaders($xml->dom());
+                        $expected = "<doc/>";
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe(':domnodelistToString()', function () {
+                it('should convert a DOMNodeList instance to an XML string', function () {
+                        $xml   = new FluidXml();
+                        $nodes = $xml->dom()->childNodes;
+
+                        $actual   = FluidHelper::domnodelistToString($nodes);
+                        $expected = "<doc/>";
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe(':domnodesToString()', function () {
+                it('should convert an array of DOMNode instances to an XML string', function () {
+                        $xml   = new FluidXml();
+                        $nodes = [ $xml->dom()->documentElement ];
+
+                        $actual   = FluidHelper::domnodesToString($nodes);
+                        $expected = "<doc/>";
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('simplexmlToStringWithoutHeaders()', function () {
+                it('should convert a SimpleXMLElement instance to an XML string without the XML headers (declaration and stylesheets)', function () {
+                        $xml = \simplexml_import_dom((new FluidXml())->dom());
+
+                        $actual   = FluidHelper::simplexmlToStringWithoutHeaders($xml);
+                        $expected = "<doc/>";
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+});
+
+describe('CssTranslator', function () {
+        describe('.xpath()', function () {
+                $hml = new FluidXml([ 'html' => [ 'body' => [ 'div' =>
+                        [ 'p'  => [ '@class' => 'a', '@id' => '123', [ 'span' ] ],
+                          'h1' => [ '@class' => 'b' ],
+                          'p'  => [ '@class' => 'a b' ],
+                          'p'  => [ '@class' => 'a' ]    ]
+                ]]]);
+                $hml->namespace('svg', 'http://svg.org');
+                $hml->query('//body')
+                        ->add('svg', true)
+                            ->add('shape');
+
+                it('should support the CSS selector A', function () use ($hml) {
+                        $actual   = $hml->query('p')->array();
+                        $expected = $hml->query('.//p')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $expected = $hml->query('//p')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector ns|A', function () use ($hml) {
+                        $actual   = $hml->query('svg|shape')->array();
+                        $expected = $hml->query('//svg:shape')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector :root', function () use ($hml) {
+                        $actual   = $hml->query(':root')->array();
+                        $expected = $hml->query('/*')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector #id', function () use ($hml) {
+                        $actual   = $hml->query('#123')->array();
+                        $expected = $hml->query('//*[@id="123"]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector .class.class', function () use ($hml) {
+                        $actual   = $hml->query('.a')->array();
+                        $expected = $hml->query('//p')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('.a.b')->array();
+                        $expected = $hml->query('//p[2]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('h1.b')->array();
+                        $expected = $hml->query('//h1')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector [attr]', function () use ($hml) {
+                        $actual   = $hml->query('[class]')->array();
+                        $expected = $hml->query('//div//*')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('[id]')->array();
+                        $expected = $hml->query('//*[@id]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector [attr="val"]', function () use ($hml) {
+                        $actual   = $hml->query('[id="123"]')->array();
+                        $expected = $hml->query('//*[@id]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('p[id="123"]')->array();
+                        $expected = $hml->query('//p[@id]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector A B', function () use ($hml) {
+                        $actual   = $hml->query('body p')->array();
+                        $expected = $hml->query('//body//p')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector A > B', function () use ($hml) {
+                        $actual   = $hml->query('div > p')->array();
+                        $expected = $hml->query('//div/p')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('body > p')->array();
+                        $expected = $hml->query('//body/p')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector A, B', function () use ($hml) {
+                        $actual   = $hml->query('p, div')->array();
+                        $expected = $hml->query('//p|//div')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector A + B', function () use ($hml) {
+                        $actual   = $hml->query('p + p')->array();
+                        $expected = $hml->query('//p[2]', '//p[3]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector A ~ B', function () use ($hml) {
+                        $actual   = $hml->query('p ~ h1')->array();
+                        $expected = $hml->query('//h1')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support mixing CSS selectors #123 span, :root > body, .a', function () use ($hml) {
+                        $actual   = $hml->query('#123 span, :root > body, .a')->array();
+                        $expected = $hml->query('//span', '//body', '//p')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
         });
 });

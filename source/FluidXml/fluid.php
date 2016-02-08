@@ -2,6 +2,8 @@
 
 namespace FluidXml;
 
+define('FLUIDXML_VERSION', '1.20');
+
 function fluidxml(...$arguments)
 {
         return new \FluidXml\FluidXml(...$arguments);

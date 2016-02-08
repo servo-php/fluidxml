@@ -433,10 +433,21 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function resolveQuery($query)
         {
-                if ($query[0] === '/'
-                    || $query === '.'
-                    || ($query[0] === '.' && $query[1] === '/')
-                    || ($query[0] === '.' && $query[1] === '.' && $query[2] === '/')) {
+                $matched = false;
+
+                $is_dot   = $query === '.';
+                $matched  = $matched || $is_dot;
+
+                $slash    = ! $matched && $query[0] === '/';
+                $matched  = $matched || $slash;
+
+                $dotslash = ! $matched && $query[0] === '.' && $query[1] === '/';
+                $matched  = $matched || $dotslash;
+
+                $dotdot   = ! $matched && $query[0] === '.' && $query[1] === '.';
+                $matched  = $matched || $dotdot;
+
+                if ($is_dot || $slash || $dotslash || $dotdot) {
                         return $query;
                 }
 

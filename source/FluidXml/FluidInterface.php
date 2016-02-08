@@ -4,8 +4,8 @@ namespace FluidXml;
 
 interface FluidInterface
 {
-        public function query(...$xpath);
-        public function __invoke(...$xpath);
+        public function query(...$query);
+        public function __invoke(...$query);
         public function filter(callable $fn);
         public function each(callable $fn);
         public function times($times, callable $fn = null);
@@ -26,7 +26,7 @@ interface FluidInterface
         public function comment($text);
         public function setComment($text);
         public function addComment($text);
-        public function remove(...$xpath);
+        public function remove(...$query);
         public function dom();
         public function __toString();
         public function xml($strip = false);
