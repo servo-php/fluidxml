@@ -90,7 +90,8 @@ string. Just because awesomenesses are never enough, `->query()` supports **CSS 
 
 # FluidXML
 <img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png?nocache=1" height="64px" alt="Servo-PHP Logo"/>
-<img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Fluidxml_logo.png?nocache=1" height="64px" alt="FluidXML Logo" style="margin-left: 32px;"/>
+<span>           </span>
+<img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Fluidxml_logo.png?nocache=1" height="64px" alt="FluidXML Logo"/>
 
 FluidXML is a PHP library designed to manipulate XML documents with a **concise** and **fluent** API.<br/>
 It leverages the fluent programming pattern to be **fun and effective**.
