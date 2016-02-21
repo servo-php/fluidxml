@@ -90,7 +90,7 @@ string. Just because awesomenesses are never enough, `->query()` supports **CSS 
 
 # FluidXML
 <img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png?nocache=1" height="64px" alt="Servo-PHP Logo"/>
-<span>           </span>
+<span>      </span>
 <img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Fluidxml_logo.png?nocache=1" height="64px" alt="FluidXML Logo"/>
 
 FluidXML is a PHP library designed to manipulate XML documents with a **concise** and **fluent** API.<br/>
@@ -208,12 +208,12 @@ $book->query('//chapters')
 ```
 
 Whether some queries are too complex to express with XPath/CSS,<br/>
-filtering is your friend.
+**filtering** is your friend.
 
 ```php
 $book->query('//chapters')
         ->filter(function($i, $node) {
-            return $node->getAttribute('id') % 2 === 0;
+            return $i % 2 === 0;
         })
         ->attr('even');
 ```

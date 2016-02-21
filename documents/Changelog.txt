@@ -42,7 +42,7 @@ Just because awesomenesses are never enough, ->query() supports CSS Selectors.
   [@] Internal:
   * PSR-0/4 compliance.
   * FluidXml.php is still there for people not using Composer/PSR-0/4 loaders.
-  * FluidInsertionHandler refactoring.
+  * refactoring.
 
 
 1.13: (2016-01-24)
