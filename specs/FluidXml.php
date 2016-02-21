@@ -2378,6 +2378,22 @@ describe('FluidContext', function () {
 
         describe('.array()', function () {
                 it('should return an array of nodes inside the context', function () {
+                        $xml = new FluidXml(null);
+
+                        $a = $xml->array();
+
+                        $actual   = \is_array($a);
+                        $expected = True;
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = \count($a);
+                        $expected = 1;
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $a;
+                        $expected = [ $xml->dom() ];
+                        \assert($actual === $expected, __($actual, $expected));
+
                         $xml = new FluidXml();
 
                         $a = $xml->array();
@@ -2388,6 +2404,10 @@ describe('FluidContext', function () {
 
                         $actual   = \count($a);
                         $expected = 1;
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $a;
+                        $expected = [ $xml->dom()->documentElement ];
                         \assert($actual === $expected, __($actual, $expected));
 
                         $cx = $xml->addChild(['head', 'body'], true);

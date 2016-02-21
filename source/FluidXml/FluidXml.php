@@ -3,6 +3,7 @@
 namespace FluidXml;
 
 /**
+ * @method array array()
  * @method FluidXml namespace(...$arguments)
  */
 class FluidXml implements FluidInterface
