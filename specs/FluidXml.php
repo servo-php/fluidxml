@@ -17,6 +17,9 @@ use function \FluidXml\fluidify;
 
 describe('FLUIDXML_VERSION', function () {
         it('should be defined', function () {
+                // Require for the codecoverage analysis.
+                require \dirname(__DIR__).'/source/FluidXml.php';
+
                 $actual   = \defined('FLUIDXML_VERSION');
                 $expected = true;
                 \assert($actual === $expected, __($actual, $expected));
@@ -1327,6 +1330,18 @@ EOF;
 
                         assert_is_a($actual, \Exception::class);
                 });
+
+                it('should throw for not recognized arguments', function () {
+                        $xml  = new FluidXml();
+
+                        try {
+                                $xml->addChild('child', true, 0);
+                        } catch (\Exception $e) {
+                                $actual = $e;
+                        }
+
+                        assert_is_a($actual, \Exception::class);
+                });
         });
 
         describe('.add()', function () {
@@ -2026,6 +2041,9 @@ EOF;
 
                         $actual = $xml->dom();
                         assert_is_a($actual, \DOMDocument::class);
+
+                        $actual = $xml->query('/*')->dom();
+                        assert_is_a($actual, \DOMDocument::class);
                 });
         });
 
@@ -2603,6 +2621,13 @@ describe('FluidHelper', function () {
                         $actual   = FluidHelper::isAnXmlString('item');
                         $expected = false;
                         \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe(':domdocumentToHtml()', function () {
+                it('should convert a DOMDocument instance to an HTML string without respecting void and not void tags.', function () {
+                        // This is only to analyze a condition (not used) for the code coverage reporter.
+                        FluidHelper::domdocumentToHtml((new FluidXml())->dom(), true);
                 });
         });
 

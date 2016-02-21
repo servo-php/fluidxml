@@ -25,6 +25,7 @@ return function (EventEmitterInterface $eventEmitter) {
                          ->addFilesToBlacklist([__DIR__ . '/../source/FluidXml.php56.php',
                                                 __DIR__ . '/../source/FluidXml.php70.php']);
                 */
-                $reporter->addFilesToWhitelist([__DIR__ . '/../source/FluidXml.php']);
+                $reporter->addDirectoryToWhitelist(__DIR__ . '/../source');
+                // $reporter->addFilesToWhitelist([__DIR__ . '/../source/FluidXml.php']);
         });
 };

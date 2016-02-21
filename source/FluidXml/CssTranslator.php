@@ -177,7 +177,7 @@ class CssTranslator
                         $matches_count = \preg_match_all(self::TOKEN, $xpath, $matches, \PREG_SET_ORDER);
 
                         for ($i = 0; $i < $matches_count; ++$i) {
-                                list($pattern, $type, $id) = $matches[$i];
+                                list(, $type, $id) = $matches[$i];
 
                                 $id = \intval($id);
 

@@ -228,12 +228,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->prependSibling($sibling, ...$optionals);
         }
 
-        // Alias of ->prependSibling().
-        public function insertSiblingBefore($sibling, ...$optionals)
-        {
-                return $this->prependSibling($sibling, ...$optionals);
-        }
-
         public function appendSibling($sibling, ...$optionals)
         {
                 return $this->handler->insertElement($this->nodes, $sibling, $optionals, function ($sibling, $element) {
@@ -439,21 +433,10 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         protected function resolveQuery($query)
         {
-                $matched = false;
-
-                $is_dot   = $query === '.';
-                $matched  = $matched || $is_dot;
-
-                $slash    = ! $matched && $query[0] === '/';
-                $matched  = $matched || $slash;
-
-                $dotslash = ! $matched && $query[0] === '.' && $query[1] === '/';
-                $matched  = $matched || $dotslash;
-
-                $dotdot   = ! $matched && $query[0] === '.' && $query[1] === '.';
-                $matched  = $matched || $dotdot;
-
-                if ($is_dot || $slash || $dotslash || $dotdot) {
+                if ( $query === '.'
+                     || $query[0] === '/'
+                     || ( $query[0] === '.' && $query[1] === '/' )
+                     || ( $query[0] === '.' && $query[1] === '.' ) ) {
                         return $query;
                 }
 

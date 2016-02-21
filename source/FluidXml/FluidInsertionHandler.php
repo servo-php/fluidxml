@@ -58,18 +58,22 @@ class FluidInsertionHandler
                 foreach ($optionals as $opt) {
                         if (\is_array($opt)) {
                                 $attributes = $opt;
-
-                        }  elseif (\is_bool($opt)) {
-                                $switch_context = $opt;
-
-                        }  elseif (\is_string($opt)) {
-                                $e = \array_pop($element);
-
-                                $element[$e] = $opt;
-
-                        } else {
-                                throw new \Exception("Optional argument '$opt' not recognized.");
+                                continue;
                         }
+
+                        if (\is_bool($opt)) {
+                                $switch_context = $opt;
+                                continue;
+                        }
+
+                        if (\is_string($opt)) {
+                                $e = \array_pop($element);
+                                $element[$e] = $opt;
+                                continue;
+
+                        }
+
+                        throw new \Exception("Optional argument '$opt' not recognized.");
                 }
 
                 return [ $element, $attributes, $switch_context ];
@@ -84,53 +88,105 @@ class FluidInsertionHandler
                 // of performances for a core method like this, so this implementation
                 // is prefered to collapse many identical checks to one.
 
-                $k_is_string       = \is_string($k);
-                $k_is_integer      = ! $k_is_string && \is_integer($k);
-                $k_is_special      = $k_is_string && $k[0] === '@';
-                $k_is_special_cont = $k_is_special && $k === '@';
-                $k_is_special_attr = $k_is_special && ! $k_is_special_cont;
+                $handlers = ['handleStringMixed', 'handleIntegerMixed', 'handleDocuments'];
 
-                $v_is_string       = \is_string($v);
-                $v_is_xml          = $v_is_string && FluidHelper::isAnXmlString($v);
-                $v_is_simple       = $v_is_string || \is_numeric($v);
-                $v_is_array        = ! $v_is_simple && \is_array($v);
-                $v_matches         = $v_is_string || $v_is_xml || $v_is_simple || $v_is_array;
-                $v_is_domdoc       = ! $v_matches && $v instanceof \DOMDocument;
-                $v_matches         = $v_matches || $v_is_domdoc;
-                $v_is_domnodelist  = ! $v_matches && $v instanceof \DOMNodeList;
-                $v_matches         = $v_matches || $v_is_domnodelist;
-                $v_is_domnode      = ! $v_matches && $v instanceof \DOMNode;
-                $v_matches         = $v_matches || $v_is_domnode;
-                $v_is_simplexml    = ! $v_matches && $v instanceof \SimpleXMLElement;
-                $v_matches         = $v_matches || $v_is_simplexml;
-                $v_is_fluidxml     = ! $v_matches && $v instanceof FluidXml;
-                $v_matches         = $v_matches || $v_is_fluidxml;
-                $v_is_fluidcx      = ! $v_matches && $v instanceof FluidContext;
-                $v_matches         = $v_matches || $v_is_fluidcx;
+                $status = false;
+                foreach ($handlers as $handler) {
+                        $return = $this->$handler($parent, $k, $v, $fn, $optionals, $status);
 
-                $map = ['insertStringSimple'        => $k_is_string && ! $k_is_special && $v_is_simple && ! $v_is_xml,
-                        'insertSpecialContent'      => $k_is_special_cont && $v_is_simple,
-                        'insertSpecialAttribute'    => $k_is_special_attr && $v_is_simple,
-                        'insertStringMixed'         => $k_is_string && ! $v_is_string,
-                        'insertIntegerString'       => $k_is_integer && $v_is_string && ! $v_is_xml,
-                        'insertIntegerXml'          => $k_is_integer && $v_is_string && $v_is_xml,
-                        'insertIntegerArray'        => $k_is_integer && $v_is_array,
-                        'insertIntegerDomdocument'  => $v_is_domdoc,
-                        'insertIntegerDomnodelist'  => $v_is_domnodelist,
-                        'insertIntegerDomnode'      => $v_is_domnode,
-                        'insertIntegerSimplexml'    => $v_is_simplexml,
-                        'insertIntegerFluidxml'     => $v_is_fluidxml,
-                        'insertIntegerFluidcontext' => $v_is_fluidcx
-                ];
-
-
-                foreach ($map as $handler => $match) {
-                        if ($match) {
-                                return $this->$handler($parent, $k, $v, $fn, $optionals);
+                        if ($status == true) {
+                                return $return;
                         }
                 }
 
                 throw new \Exception('XML document not supported.');
+        }
+
+        protected function handleStringMixed($parent, $k, $v, $fn, &$optionals, &$status)
+        {
+                if (! \is_string($k)) {
+                        return;
+                }
+
+                $handler = 'insertStringMixed';
+
+                if ($k[0] === '@') {
+                        $handler = 'insertSpecialAttribute';
+
+                        if ($k === '@') {
+                                $handler = 'insertSpecialContent';
+                        }
+                } else {
+                        if (\is_string($v)) {
+                                if (! FluidHelper::isAnXmlString($v)) {
+                                        $handler = 'insertStringSimple';
+                                }
+                        } else {
+                                if (\is_numeric($v)) {
+                                        $handler = 'insertStringSimple';
+                                }
+                        }
+                }
+
+                $status = true;
+                return $this->$handler($parent, $k, $v, $fn, $optionals);
+        }
+
+        protected function handleIntegerMixed($parent, $k, $v, $fn, &$optionals, &$status)
+        {
+                if (! \is_integer($k)) {
+                        return;
+                }
+
+                $handler = null;
+
+                if (\is_string($v)) {
+                        if (FluidHelper::isAnXmlString($v)) {
+                                $handler = 'insertIntegerXml';
+                        } else {
+                                $handler = 'insertIntegerString';
+                        }
+                } elseif (\is_array($v)) {
+                        $handler = 'insertIntegerArray';
+                }
+
+                if ($handler !== null) {
+                        $status = true;
+                        return $this->$handler($parent, $k, $v, $fn, $optionals);
+                }
+        }
+
+        protected function handleDocuments($parent, $k, $v, $fn, &$optionals, &$status)
+        {
+                if (! \is_integer($k)) {
+                        return;
+                }
+
+                $handler = null;
+
+                if ($v instanceof \DOMDocument) {
+                        $handler = 'insertIntegerDomdocument';
+
+                } elseif ($v instanceof \DOMNodeList) {
+                        $handler = 'insertIntegerDomnodelist';
+
+                } elseif ($v instanceof \DOMNode) {
+                        $handler = 'insertIntegerDomnode';
+
+                } elseif ($v instanceof \SimpleXMLElement) {
+                        $handler = 'insertIntegerSimplexml';
+
+                } elseif ($v instanceof FluidXml) {
+                        $handler = 'insertIntegerFluidxml';
+
+                } elseif ($v instanceof FluidContext) {
+                        $handler = 'insertIntegerFluidcontext';
+                }
+
+                if ($handler !== null) {
+                        $status = true;
+                        return $this->$handler($parent, $k, $v, $fn, $optionals);
+                }
         }
 
         protected function createElement($name, $value = null)
@@ -225,8 +281,9 @@ class FluidInsertionHandler
 
         protected function insertStringMixed($parent, $k, $v, $fn, &$optionals)
         {
-                // The user has passed one of these two cases:
+                // The user has passed one of these cases:
                 // - [ 'element' => [...] ]
+                // - [ 'element' => '<xml>...</xml>' ]
                 // - [ 'element' => DOMNode|SimpleXMLElement|FluidXml ]
 
                 $el = $this->createElement($k);

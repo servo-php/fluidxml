@@ -16,7 +16,6 @@ class FluidHelper
         public static function exportNode(\DOMDocument $dom, \DOMNode $node, $html = false)
         {
                 // $delegate = $html ? 'saveHTML' : 'saveXML';
-
                 // return $dom->$delegate($node);
 
                 if ($html) {
@@ -50,8 +49,6 @@ class FluidHelper
 
         public static function domnodesToString(array $nodes, $html = false)
         {
-                $delegate = $html ? 'saveHTML' : 'saveXML';
-
                 $dom = $nodes[0]->ownerDocument;
                 $xml = '';
 
