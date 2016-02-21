@@ -66,14 +66,12 @@ class FluidInsertionHandler
                                 continue;
                         }
 
-                        if (\is_string($opt)) {
+                        if (\is_string($opt) || \is_numeric($opt)) {
                                 $e = \array_pop($element);
                                 $element[$e] = $opt;
                                 continue;
 
                         }
-
-                        throw new \Exception("Optional argument '$opt' not recognized.");
                 }
 
                 return [ $element, $attributes, $switch_context ];
@@ -88,18 +86,18 @@ class FluidInsertionHandler
                 // of performances for a core method like this, so this implementation
                 // is prefered to collapse many identical checks to one.
 
-                $handlers = ['handleStringMixed', 'handleIntegerMixed', 'handleDocuments'];
+                $handlers = ['handleStringMixed', 'handleIntegerMixed', 'handleIntegerDocument'];
 
                 $status = false;
                 foreach ($handlers as $handler) {
                         $return = $this->$handler($parent, $k, $v, $fn, $optionals, $status);
 
-                        if ($status == true) {
+                        if ($status === true) {
                                 return $return;
                         }
                 }
 
-                throw new \Exception('XML document not supported.');
+                throw new \Exception('Input type not supported.');
         }
 
         protected function handleStringMixed($parent, $k, $v, $fn, &$optionals, &$status)
@@ -134,9 +132,9 @@ class FluidInsertionHandler
 
         protected function handleIntegerMixed($parent, $k, $v, $fn, &$optionals, &$status)
         {
-                if (! \is_integer($k)) {
-                        return;
-                }
+                // if (! \is_integer($k)) {
+                //         return;
+                // }
 
                 $handler = null;
 
@@ -156,11 +154,11 @@ class FluidInsertionHandler
                 }
         }
 
-        protected function handleDocuments($parent, $k, $v, $fn, &$optionals, &$status)
+        protected function handleIntegerDocument($parent, $k, $v, $fn, &$optionals, &$status)
         {
-                if (! \is_integer($k)) {
-                        return;
-                }
+                // if (! \is_integer($k)) {
+                //         return;
+                // }
 
                 $handler = null;
 

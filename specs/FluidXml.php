@@ -1050,20 +1050,28 @@ EOF;
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should add a child with a value', function () {
+                it('should add a child with a value, string and number', function () {
                         $xml = new FluidXml();
                         $xml->addChild(['child1' => 'value1'])
                             ->addChild('child2', 'value2')
+                            ->addChild(['child3' => 3])
+                            ->addChild('child4', 4)
                             ->addChild('parent', true)
-                            ->addChild(['child3' => 'value3'])
-                            ->addChild('child4', 'value4');
+                            ->addChild(['child5' => 'value5'])
+                            ->addChild('child6', 'value6')
+                            ->addChild(['child7' => 7])
+                            ->addChild('child8', 8);
 
                         $expected = "<doc>\n"
                                   . "  <child1>value1</child1>\n"
                                   . "  <child2>value2</child2>\n"
+                                  . "  <child3>3</child3>\n"
+                                  . "  <child4>4</child4>\n"
                                   . "  <parent>\n"
-                                  . "    <child3>value3</child3>\n"
-                                  . "    <child4>value4</child4>\n"
+                                  . "    <child5>value5</child5>\n"
+                                  . "    <child6>value6</child6>\n"
+                                  . "    <child7>7</child7>\n"
+                                  . "    <child8>8</child8>\n"
                                   . "  </parent>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
@@ -1324,18 +1332,6 @@ EOF;
                         $xml  = new FluidXml();
                         try {
                                 $xml->addChild(0);
-                        } catch (\Exception $e) {
-                                $actual = $e;
-                        }
-
-                        assert_is_a($actual, \Exception::class);
-                });
-
-                it('should throw for not recognized arguments', function () {
-                        $xml  = new FluidXml();
-
-                        try {
-                                $xml->addChild('child', true, 0);
                         } catch (\Exception $e) {
                                 $actual = $e;
                         }
