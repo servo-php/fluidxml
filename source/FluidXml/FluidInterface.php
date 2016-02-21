@@ -4,11 +4,19 @@ namespace FluidXml;
 
 interface FluidInterface
 {
+        public function size();
+        public function length();
+        public function dom();
+        public function array_();
+        public function __toString();
+        public function xml($strip = false);
+        public function html($strip = false);
+        public function save($file, $strip = false);
         public function query(...$query);
         public function __invoke(...$query);
-        public function filter(callable $fn);
-        public function each(callable $fn);
         public function times($times, callable $fn = null);
+        public function each(callable $fn);
+        public function filter(callable $fn);
         public function add($child, ...$optionals);
         public function addChild($child, ...$optionals);
         public function prepend($sibling, ...$optionals);
@@ -27,9 +35,4 @@ interface FluidInterface
         public function setComment($text);
         public function addComment($text);
         public function remove(...$query);
-        public function dom();
-        public function __toString();
-        public function xml($strip = false);
-        public function html($strip = false);
-        public function save($file, $strip = false);
 }

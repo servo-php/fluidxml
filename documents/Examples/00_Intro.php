@@ -1,6 +1,8 @@
 <?php
 
-$source = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'source';
+$DS = DIRECTORY_SEPARATOR;
+$back = '..' . $DS;
+$source = __DIR__ . $DS . $back . $back . 'source';
 \set_include_path($source . PATH_SEPARATOR . \get_include_path());
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,7 +22,7 @@ use function \FluidXml\fluidify;
 
 $book = new FluidXml('book');
 // or
-$book = new FluidXml(['root' => 'book']);
+$book = new FluidXml(null, ['root' => 'book']);
 
 // $book is an XML document with 'book' as root node.
 
@@ -35,7 +37,7 @@ $booksheet = new FluidXml('book', ['stylesheet' => 'http://domain.com/style.xsl'
 // $booksheet = FluidXml::new('book', ['stylesheet' => 'http://domain.com/style.xsl']);
 
 $book->setAttribute('type', 'science')                  // It sets an attribute of the root node ('book').
-     ->appendChild([ 'title'  => 'The Theory Of Everything',
+     ->addChild([ 'title'  => 'The Theory Of Everything',
                      'author' => 'S. Hawking' ]);       // It creates two nodes, each one with some text inside.
 
 echo $book->xml();                                      // Exports the xml document as a string.
@@ -52,17 +54,17 @@ echo "————————————————————————�
 * returns the newly created node instead of the parent.
 * This operation is called Context Switch.
 * Methods that support this context switch are:
-* - appendChild($child, ...$optionals);
+* - addChild($child, ...$optionals);
 * - prependSibling($sibling, ...$optionals);
 * - appendSibling($sibling, ...$optionals);
 * and their alias methods (of course).
 */
 
-$book->appendChild('chapters', true)                     // true forces the return of the 'chapters' node.
-        ->appendChild('chapter', 'Ideas About The Universe',    ['id' => 123, 'first' => ''])
-        ->appendChild('chapter', 'The Expanding Universe',      ['id' => 321])
-        ->appendChild('chapter', 'Black Holes',                 ['id' => 432])
-        ->appendChild('chapter', 'Black Holes Ain\'t So Black', ['id' =>234]);
+$book->addChild('chapters', true)                     // true forces the return of the 'chapters' node.
+        ->addChild('chapter', 'Ideas About The Universe',    ['id' => 123, 'first' => ''])
+        ->addChild('chapter', 'The Expanding Universe',      ['id' => 321])
+        ->addChild('chapter', 'Black Holes',                 ['id' => 432])
+        ->addChild('chapter', 'Black Holes Ain\'t So Black', ['id' =>234]);
 
 
 
@@ -137,7 +139,7 @@ XML
 /*
 * The document can be filled with a raw XML string.
 */
-$html = fluidxml(['root' => null]);
+$html = fluidxml(null);
 $html->add(<<<XML
 <html>
     <head>
@@ -155,11 +157,9 @@ XML
 * Sometimes XML/XHTML comes from legacy templating systems or external sources.
 */
 
-/* Remember, fluidify() is an alias for FluidXml::load(). */
-
 $string = $html->xml();
 // XML string import.
-$fluid = fluidify($string);
+$fluid = fluidxml($string);
 echo $fluid->xml();
 echo "————————————————————————————————————————————————————————————————————————————————\n";
 
@@ -169,14 +169,14 @@ $dom->loadXML($fluid->xml());
 $dom->formatOutput       = true;
 $dom->preserveWhiteSpace = false;
 // DOMDocument import.
-$fluid = fluidify($dom);
+$fluid = fluidxml($dom);
 echo $fluid->xml();
 echo "————————————————————————————————————————————————————————————————————————————————\n";
 
 
 $simplexml = new SimpleXMLElement($fluid->xml());
 // SimpleXMLElement import.
-$fluid = fluidify($simplexml);
+$fluid = fluidxml($simplexml);
 echo $fluid->xml();
 echo "————————————————————————————————————————————————————————————————————————————————\n";
 
@@ -184,7 +184,7 @@ echo "————————————————————————�
 // XML file import.
 // $fluid = fluidify('path/to/file.xml');
 
-$other = fluidify($fluid->xml());
+$other = fluidxml($fluid->xml());
 $fluid = fluidxml();
 
 $fluid->add($other)                                     // Imports a FluidXml instance.
@@ -278,7 +278,7 @@ foreach ($chapters as $i => $chapter) {
 /*
 * To retrieve all DOMNode in one operation there is the ->asArray() method.
 */
-$chapters_nodes = $chapters->asArray();          // Returns an array of DOMNode.
+$chapters_nodes = $chapters->array();          // Returns an array of DOMNode.
 
 echo "————————————————————————————————————————————————————————————————————————————————\n";
 

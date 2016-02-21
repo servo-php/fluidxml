@@ -49,11 +49,11 @@ $machine->add('add([...])', function($data) use ($fluidxml) {
 $xml = $fluidxml(['doc' => [ 'body' => [ 'div' ] ] ]);
 
 $machine->add('query(xpath)', function($data) use ($xml) {
-        assert($xml->query('//body/div')->size(), 1);
+        $xml->query('//body/div');
 });
 
 $machine->add('query(css)', function($data) use ($xml) {
-        assert($xml->query('body > div')->size(), 1);
+        $xml->query('body > div');
 });
 
 

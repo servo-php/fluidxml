@@ -1600,6 +1600,27 @@ EOF;
                         assert_equal_xml($xml, $expected);
                 });
 
+                it('should set the attributes, without values, of a node', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild('child', true)
+                            ->setAttribute('attr1')
+                            ->setAttribute('attr2');
+
+                        $expected = "<doc>\n"
+                                  . "  <child attr1=\"\" attr2=\"\"/>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+
+                        $xml = new FluidXml();
+                        $xml->addChild('child', true)
+                            ->setAttribute(['attr1', 'attr2']);
+
+                        $expected = "<doc>\n"
+                                  . "  <child attr1=\"\" attr2=\"\"/>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
                 it('should change the attributes of a node', function () {
                         $xml = new FluidXml();
                         $xml->addChild('child', true)
@@ -1632,18 +1653,26 @@ EOF;
 
                 it('should behave like .setAttribute()', function () {
                         $xml = new FluidXml();
-                        $xml->setAttribute('attr1', 'Attr1 Value')
-                            ->setAttribute(['attr2' => 'Attr2 Value', 'attr3' => 'Attr3 Value'])
+                        $xml->setAttribute('attr1', 'Value 1')
+                            ->setAttribute('attr2')
+                            ->setAttribute(['attr3' => 'Value 3', 'attr4' => 'Value 4'])
+                            ->setAttribute(['attr5', 'attr6'])
                             ->addChild('child', true)
-                            ->setAttribute('attr4', 'Attr4 Value')
-                            ->setAttribute(['attr5' => 'Attr5 Value', 'attr6' => 'Attr6 Value']);
+                            ->setAttribute('attr1', 'Value 1')
+                            ->setAttribute('attr2')
+                            ->setAttribute(['attr3' => 'Value 3', 'attr4' => 'Value 4'])
+                            ->setAttribute(['attr5', 'attr6']);
 
                         $alias = new FluidXml();
-                        $alias->attr('attr1', 'Attr1 Value')
-                              ->attr(['attr2' => 'Attr2 Value', 'attr3' => 'Attr3 Value'])
+                        $alias->attr('attr1', 'Value 1')
+                              ->attr('attr2')
+                              ->attr(['attr3' => 'Value 3', 'attr4' => 'Value 4'])
+                              ->attr(['attr5', 'attr6'])
                               ->addChild('child', true)
-                              ->attr('attr4', 'Attr4 Value')
-                              ->attr(['attr5' => 'Attr5 Value', 'attr6' => 'Attr6 Value']);
+                              ->attr('attr1', 'Value 1')
+                              ->attr('attr2')
+                              ->attr(['attr3' => 'Value 3', 'attr4' => 'Value 4'])
+                              ->attr(['attr5', 'attr6']);
 
                         $actual   = $xml->xml();
                         $expected = $alias->xml();
@@ -2336,12 +2365,24 @@ describe('FluidContext', function () {
         describe('.array()', function () {
                 it('should return an array of nodes inside the context', function () {
                         $xml = new FluidXml();
+
+                        $a = $xml->array();
+
+                        $actual   = \is_array($a);
+                        $expected = True;
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = \count($a);
+                        $expected = 1;
+                        \assert($actual === $expected, __($actual, $expected));
+
                         $cx = $xml->addChild(['head', 'body'], true);
 
                         $a = $cx->array();
 
-                        $actual = $a;
-                        \assert(\is_array($actual));
+                        $actual   = \is_array($a);
+                        $expected = True;
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = \count($a);
                         $expected = 2;
@@ -2353,6 +2394,10 @@ describe('FluidContext', function () {
                 it('should return the number of nodes inside the context', function () {
                         $xml = new FluidXml();
                         $cx = $xml->query('/*');
+
+                        $actual   = $xml->length();
+                        $expected = 1;
+                        \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $cx->length();
                         $expected = 1;
@@ -2400,6 +2445,11 @@ describe('FluidContext', function () {
         describe('.size()', function () {
                 it('should behave like .length()', function () {
                         $xml = new FluidXml();
+
+                        $actual   = $xml->size();
+                        $expected = $xml->length();
+                        \assert($actual === $expected, __($actual, $expected));
+
                         $cx = $xml->addChild('parent', true)
                                       ->addChild(['child1', 'child2']);
 
@@ -2713,9 +2763,9 @@ describe('CssTranslator', function () {
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
-                it('should support mixing CSS selectors #123 span, :root > body, .a', function () use ($hml) {
-                        $actual   = $hml->query('#123 span, :root > body, .a')->array();
-                        $expected = $hml->query('//span', '//body', '//p')->array();
+                it('should support mixing CSS selectors :root #123 span, div, :root .a', function () use ($hml) {
+                        $actual   = $hml->query(':root #123 span, div, :root .a')->array();
+                        $expected = $hml->query('//span', '//div', '//p')->array();
                         \assert($actual === $expected, __($actual, $expected));
                 });
 

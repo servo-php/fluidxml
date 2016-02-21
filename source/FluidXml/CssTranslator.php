@@ -4,6 +4,7 @@ namespace FluidXml;
 
 class CssTranslator
 {
+        const TOKEN = '/{([[:alpha:]]+)(\d+)}/i';
         const MAP = [
                 // Empty part of #id and .class
                 [ '(?<=^|\s)      # The begining or an empty space.
@@ -130,12 +131,9 @@ class CssTranslator
                 self::translateStack($stack, $xpath);
 
                 $xpath = \trim($xpath);
-
-                if ($xpath[0] !== '/') {
-                        $xpath = ".//$xpath";
-                        $xpath = \str_replace('|', '|.//',   $xpath);
-                        $xpath = \str_replace('|.///', '|/', $xpath);
-                }
+                $xpath = ".//$xpath";
+                $xpath = \str_replace('|', '|.//',   $xpath);
+                $xpath = \str_replace('.///', '/', $xpath);
 
                 return $xpath;
         }
@@ -176,7 +174,7 @@ class CssTranslator
         protected static function translateStack(&$stack, &$xpath)
         {
                 do {
-                        $matches_count = \preg_match_all('/{([[:alpha:]]+)(\d+)}/i', $xpath, $matches, \PREG_SET_ORDER);
+                        $matches_count = \preg_match_all(self::TOKEN, $xpath, $matches, \PREG_SET_ORDER);
 
                         for ($i = 0; $i < $matches_count; ++$i) {
                                 list($pattern, $type, $id) = $matches[$i];

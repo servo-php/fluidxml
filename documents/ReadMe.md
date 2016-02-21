@@ -12,9 +12,9 @@
 [codeclimate-quality-badge]: https://codeclimate.com/github/servo-php/fluidxml/badges/gpa.svg
 [coveralls]: https://coveralls.io/github/servo-php/fluidxml?branch=master
 [coveralls-badge]: https://coveralls.io/repos/servo-php/fluidxml/badge.svg?branch=master&service=github
-[apis]: https://github.com/servo-php/fluidxml/blob/master/documents/APIs.md
-[gettingstarted]: https://github.com/servo-php/fluidxml/blob/master/documents/Getting-Started.md
-[examples]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples.php
+[apis]: https://github.com/servo-php/fluidxml/wiki/APIs
+[gettingstarted]: https://github.com/servo-php/fluidxml/wiki/Getting-Started
+[examples]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples/
 [specs]: https://github.com/servo-php/fluidxml/blob/master/specs/FluidXml.php
 [wiki]: https://github.com/servo-php/fluidxml/wiki
 [bsd]: https://opensource.org/licenses/BSD-2-Clause
@@ -37,32 +37,65 @@
 
 ## Changelog
 
-**1.13** (2016-01-24):
-_introduces the `->save()` method._
+**1.20** (2016-02-21):
+_is a major step forward breaking compatibility with the past.<br/>
+Under the hood there is a general reorganization to be `PSR-0/4` compliant,<br/>
+a general cleanup of the API for being consistent and allowing future clean APIs<br/>
+growth, some notable additions like the `->filter()` method to programmatically<br/>
+filter the query results and `->html()` to output the document as valid HTML 5<br/>
+string. Just because awesomenesses are never enough, `->query()` supports **CSS Selectors**._
 
+### New:
+* `->html()`                is part of the family.
+* `->filter()`              is part of the family.
+* `->comment()`             is part of the family.
+* `->setComment()`          is part of the family.
+* `->addComment()`          is part of the family.
+* `->size()`                is an alias of `->length()`.
+* `->__invoke()`            is an alias of `->query()`.
+* `->__toString()`          is an alias of `->xml()`.
+* `->array()`               replaces `->asArray()`.
+* `->addChild()`            replaces `->appendChild()`.
+* `->addText()`             replaces `->appendText()`.
+* `->addCdata()`            replaces `->appendCdata()`.
 
-**1.12**:
-_introduces the `->times()` method._
+### Changed:
+* `->query()`               supports CSS Selectors.
+* `fluidxml()`              has gained the super powers of `fluidify()`.
+* `FluidXml->__construct()` has gained the super powers of `FluidXml::load()`.
+* `::load()/fluidify()`     can be ONLY used to load an XML file.
 
+### Removed:
+* `->asArray()`             has been removed superseded by `->array()`.
+* `->appendText()`          has been removed superseded by `->addText()`.
+* `->appendCdata()`         has been removed superseded by `->addCdata()`.
+* `->appendChild()`         has been removed superseded by `->addChild()`.
+* `->insertSiblingBefore()` has been removed superseded by `->prependSibling()`.
+* `->insertSiblingAfter()`  has been removed superseded by `->appendSibling()`.
 
-**1.11**:
-_introduces the `@`/`@<attribute>` special syntax._
-
-* `->appendChild()`, `->prependSibling()` and `->appendSibling()` support the `@`/`@<attribute>` special syntax.
-
+### Internal:
+* `PSR-0/4` compliance.
+* `FluidXml.php` is still there for people NOT using Composer/PSR-0/4 loaders.
+* `FluidInsertionHandler` refactoring.
 
 **...**
 
 [See the full changes list.][changelog]
 
+<br/>
+
+[![Donate][donate-button]][donate-link]<br/>
+**1$ or more**<span style="color: gray;">, due to the PayPal fees.</span>
+
 
 # FluidXML
-<img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png" height="64px" alt="Servo-PHP Logo"/>
+<img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png?nocache=1" height="64px" alt="Servo-PHP Logo"/>
+<img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Fluidxml_logo.png?nocache=1" height="64px" alt="FluidXML Logo" style="margin-left: 32px;"/>
 
 FluidXML is a PHP library designed to manipulate XML documents with a **concise** and **fluent** API.<br/>
-It leverages XPath and the fluent programming pattern to be **fun and effective**.
+It leverages the fluent programming pattern to be **fun and effective**.
 
-Its main goals are making HTML/XML templating and DOM manipulation **fast**, **clear** and **expressive**.
+With FluidXML the DOM manipulation becomes **fast**, **clear** and **expressive**.
 
 ```php
 $book = fluidxml();
@@ -79,11 +112,11 @@ Or, if you prefer, there is an **extended syntax**.
 ```php
 $book = new FluidXml();
 
-$book->appendChild('title', 'The Theory Of Everything')
-     ->appendChild('author', 'S. Hawking')
-     ->appendChild('chapters', true)
-         ->appendChild('chapter', 'Ideas About The Universe', ['id' => 1])
-         ->appendChild('chapter', 'The Expanding Universe',   ['id' => 2]);
+$book->addChild('title', 'The Theory Of Everything')
+     ->addChild('author', 'S. Hawking')
+     ->addChild('chapters', true)
+         ->addChild('chapter', 'Ideas About The Universe', ['id' => 1])
+         ->addChild('chapter', 'The Expanding Universe',   ['id' => 2]);
 ```
 
 **PHP Arrays** are first class citizens.
@@ -102,7 +135,7 @@ $book->add([ 'title'  => 'The Theory Of Everything',
 ```
 
 ```php
-echo $book->xml();
+echo $book;
 ```
 
 ```xml
@@ -124,23 +157,30 @@ $book->query('//title', '//author', '//chapter')
         ->attr('lang', 'en');
 ```
 
-**XML Namespaces** are fully covered.
+But **CSS Selectors** rocks.
+
+```php
+$book->query('title', 'author', 'chapters > chapter')
+        ->attr('lang', 'en');
+```
+
+**XML/CSS Namespaces** are fully covered.
 
 ```php
 $book->namespace('xhtml', 'http://www.w3.org/1999/xhtml')
      ->add('xhtml:h1')
-     ->query('//xhtml:h1');
+     ->query('//xhtml:h1')  // XPath namespace.
+     ->query('xhtml|h1');   // CSS namespace.
 ```
 
 And sometimes **string fragments** are the fastest way.
 
 ```php
 $book->add(<<<XML
-    <cover>
-        <h1>The Theory Of Everything</h1>
+    <cover class="front">
         <img src="http://goo.gl/kO3Iov"/>
     </cover>
-    <back>
+    <cover class="back">
         <img src="http://goo.gl/kO3Iov"/>
     </cover>
 XML
@@ -166,11 +206,22 @@ $book->query('//chapters')
         });
 ```
 
-And interoperability with existing **DOMDocument** and **SimpleXML** is simply magic.<br/>
+Whether some queries are too complex to express with XPath/CSS,<br/>
+filtering is your friend.
+
+```php
+$book->query('//chapters')
+        ->filter(function($i, $node) {
+            return $node->getAttribute('id') % 2 === 0;
+        })
+        ->attr('even');
+```
+
+Interoperability with existing **DOMDocument** and **SimpleXML** is simply magic.<br/>
 Import them or inject them in any point of the FluidXML flow just like that.
 
 ```php
-fluidify($domdocument)
+fluidxml($domdocument)
     ->query('/html/body')
          ->add($simplexml);
 
@@ -181,12 +232,15 @@ fluidify($domdocument)
 Don't be shy and tell it: **« IT'S AWESOME! »** ^\_^
 
 Many other [APIs][apis] are available:
-- `appendSibling()`/`append()`
-- `prependSibling()`/`prepend()`
-- `appendText()`
-- `setText()`/`text()`
-- `appendCdata()`
-- `setCdata()`/`cdata()`
+- `__invoke()`
+- `append()`/`appendSibling()`
+- `prepend()`/`prependSibling()`
+- `addText()`
+- `text()`/`setText()`
+- `addCdata()`
+- `cdata()`/`setCdata()`
+- `addComment()`
+- `comment()`/`setComment()`
 - `remove()`
 - `size()`/`length()`
 - `load()`
@@ -194,7 +248,7 @@ Many other [APIs][apis] are available:
 - `dom()`
 - `xml()`
 - `html()`
-- `string()`
+- `__toString()`
 - `array()`
 - ...
 
@@ -254,7 +308,7 @@ _10 minutes reading_<br/>
 Follow the [Getting Started tutorial][gettingstarted] to become a [ninja][ninja] in no time.
 
 Many other examples are available:
-- inside the [`documents/Examples.php`][examples] file
+- inside the [`documents/Examples/`][examples] folder
 - inside the [`specs/FluidXml.php`][specs] file (as test cases)
 
 All them cover from the simplest case to the most complex scenario.
@@ -268,7 +322,7 @@ If you think this code is **awesome** or if you want to demonstrate<br/>
 your immense gratitude **[♥][thankyou]**, donate _1cent_.
 
 [![Donate][donate-button]][donate-link]
-
+**1$ or more**<span style="color: gray;">, due to the PayPal fees.</span>
 
 ## Roadmap
 * [x] PHP 5.6 backport

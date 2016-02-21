@@ -122,6 +122,30 @@ class FluidXml implements FluidInterface
                 return $this;
         }
 
+        public function length()
+        {
+                return 1;
+        }
+
+        // Alias of ->length().
+        public function size()
+        {
+                return $this->length();
+        }
+
+        public function dom()
+        {
+                return $this->document->dom;
+        }
+
+        // This method should be called 'array',
+        // but for compatibility with PHP 5.6
+        // it is shadowed by the __call() method.
+        public function array_()
+        {
+                return [ $this->document->dom ];
+        }
+
         public function __toString()
         {
                 return $this->xml();
@@ -147,11 +171,6 @@ class FluidXml implements FluidInterface
                 $html = FluidHelper::domdocumentToStringWithoutHeaders($this->document->dom, true);
 
                 return "{$header}{$html}";
-        }
-
-        public function dom()
-        {
-                return $this->document->dom;
         }
 
         public function namespaces()
