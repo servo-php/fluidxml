@@ -14,4 +14,6 @@ trait FluidSaveTrait
 
                 return $this;
         }
+
+        abstract public function xml($strip = false);
 }

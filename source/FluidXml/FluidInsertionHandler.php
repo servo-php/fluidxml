@@ -58,19 +58,13 @@ class FluidInsertionHandler
                 foreach ($optionals as $opt) {
                         if (\is_array($opt)) {
                                 $attributes = $opt;
-                                continue;
-                        }
 
-                        if (\is_bool($opt)) {
+                        } elseif (\is_bool($opt)) {
                                 $switch_context = $opt;
-                                continue;
-                        }
 
-                        if (\is_string($opt) || \is_numeric($opt)) {
+                        } elseif (\is_string($opt) || \is_numeric($opt)) {
                                 $e = \array_pop($element);
                                 $element[$e] = $opt;
-                                continue;
-
                         }
                 }
 
