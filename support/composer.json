@@ -1,33 +1,33 @@
 {
-        "name": "servo/fluidxml",
-        "description": "Concise and fluent XML manipulation library",
-        "type": "library",
-        "keywords": ["xml","templating"],
-        "homepage": "https://github.com/servo-php/fluidxml",
-        "license": "BSD-2-Clause",
-        "authors": [
-                {
-                        "name": "Daniele Orlando",
-                        "email": "fluidxml@danieleorlando.com",
-                        "homepage": "https://github.com/servo-php/fluidxml",
-                        "role": "Developer"
-                }
-        ],
-        "config": {
-                "vendor-dir": "./sandbox/composer/"
-        },
-        "autoload": {
-                "files": ["./source/FluidXml/fluid.php"],
-                "psr-4": {
-                        "FluidXml\\": "./source/FluidXml/"
-                }
-        },
-        "require": {
-                "php": ">=5.6"
-        },
-        "require-dev": {
-                "peridot-php/peridot": "1.*",
-                "peridot-php/peridot-code-coverage-reporters": "1.*",
-                "apigen/apigen": "4.*"
+    "name": "servo/fluidxml",
+    "description": "Concise and fluent XML manipulation library",
+    "type": "library",
+    "keywords": ["xml","templating"],
+    "homepage": "https://github.com/servo-php/fluidxml",
+    "license": "BSD-2-Clause",
+    "authors": [
+        {
+            "name": "Daniele Orlando",
+            "email": "fluidxml@danieleorlando.com",
+            "homepage": "https://github.com/servo-php/fluidxml",
+            "role": "Developer"
         }
+    ],
+    "config": {
+        "vendor-dir": "./sandbox/composer/"
+    },
+    "autoload": {
+        "files": ["./source/FluidXml/fluid.php"],
+        "psr-4": {
+            "FluidXml\\": "./source/FluidXml/"
+        }
+    },
+    "require": {
+        "php": ">=5.6"
+    },
+    "require-dev": {
+        "peridot-php/peridot": "1.*",
+        "peridot-php/peridot-code-coverage-reporters": "1.*",
+        "apigen/apigen": "4.*"
+    }
 }
