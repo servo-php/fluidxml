@@ -7,8 +7,9 @@ namespace FluidXml;
  */
 class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 {
-        use NewableTrait,
+        use FluidAliasesTrait,
             FluidSaveTrait,
+            NewableTrait,
             ReservedCallTrait,          // For compatibility with PHP 5.6.
             ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
 
@@ -104,12 +105,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         public function length()
         {
                 return \count($this->nodes);
-        }
-
-        // Alias of ->length().
-        public function size()
-        {
-                return $this->length();
         }
 
         public function query(...$query)
@@ -209,55 +204,45 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 }, $this);
         }
 
-        // Alias of ->addChild().
-        public function add($child, ...$optionals)
-        {
-                return $this->addChild($child, ...$optionals);
-        }
-
         public function prependSibling($sibling, ...$optionals)
         {
                 return $this->handler->insertElement($this->nodes, $sibling, $optionals, function ($sibling, $element) {
+                        if ($sibling->parentNode === null) {
+                                // If the node doesn't have at least one parent node,
+                                // the sibling creation fails. In this case we replace
+                                // the sibling creation with the creation of a child node.
+                                // Useful when dealing with a DOMDocument with a null
+                                // documentElement property.
+                                return $sibling->appendChild($element);
+                        }
                         return $sibling->parentNode->insertBefore($element, $sibling);
                 }, $this);
-        }
-
-        // Alias of ->prependSibling().
-        public function prepend($sibling, ...$optionals)
-        {
-                return $this->prependSibling($sibling, ...$optionals);
         }
 
         public function appendSibling($sibling, ...$optionals)
         {
                 return $this->handler->insertElement($this->nodes, $sibling, $optionals, function ($sibling, $element) {
+                        if ($sibling->parentNode === null) {
+                                // If the node doesn't have at least one parent node,
+                                // the sibling creation fails. In this case we replace
+                                // the sibling creation with the creation of a child node.
+                                // Useful when dealing with a DOMDocument with a null
+                                // documentElement property.
+                                return $sibling->appendChild($element);
+                        }
                         // If ->nextSibling is null, $element is simply appended as last sibling.
                         return $sibling->parentNode->insertBefore($element, $sibling->nextSibling);
                 }, $this);
         }
 
-        // Alias of ->appendSibling().
-        public function append($sibling, ...$optionals)
-        {
-                return $this->appendSibling($sibling, ...$optionals);
-        }
-
-        // Arguments can be in the form of:
         // setAttribute($name, $value)
         // setAttribute(['name' => 'value', ...])
-        public function setAttribute(...$arguments)
+        public function setAttribute($name, $value = null)
         {
-                // Default case is:
-                // [ 'name' => 'value', ... ]
-                $attrs = $arguments[0];
+                $attrs = [ $name => $value ];
 
-                // If the first argument is not an array,
-                // the user has passed two arguments:
-                // 1. is the attribute name
-                // 2. is the attribute value
-                if (! \is_array($arguments[0])) {
-                        $val = isset($arguments[1]) ? $arguments[1]: '';
-                        $attrs = [$arguments[0] => $val];
+                if (\is_array($name)) {
+                        $attrs = $name;
                 }
 
                 foreach ($this->nodes as $n) {
@@ -288,12 +273,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        // Alias of ->setAttribute().
-        public function attr(...$arguments)
-        {
-                return $this->setAttribute(...$arguments);
-        }
-
         public function setText($text)
         {
                 foreach ($this->nodes as $n) {
@@ -315,12 +294,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        // Alias of ->setText().
-        public function text($text)
-        {
-                return $this->setText($text);
-        }
-
         public function addText($text)
         {
                 foreach ($this->nodes as $n) {
@@ -340,12 +313,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        // Alias of ->setCdata().
-        public function cdata($text)
-        {
-                return $this->setCdata($text);
-        }
-
         public function addCdata($text)
         {
                 foreach ($this->nodes as $n) {
@@ -363,12 +330,6 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 }
 
                 return $this;
-        }
-
-        // Alias of ->setComment().
-        public function comment($text)
-        {
-                return $this->setComment($text);
         }
 
         public function addComment($text)

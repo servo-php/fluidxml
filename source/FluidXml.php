@@ -39,6 +39,7 @@ $ds = \DIRECTORY_SEPARATOR;
 
 // First of all.
 require_once __DIR__ . "{$ds}FluidXml{$ds}FluidInterface.php";
+require_once __DIR__ . "{$ds}FluidXml{$ds}FluidAliasesTrait.php";
 require_once __DIR__ . "{$ds}FluidXml{$ds}FluidSaveTrait.php";
 require_once __DIR__ . "{$ds}FluidXml{$ds}NewableTrait.php";
 require_once __DIR__ . "{$ds}FluidXml{$ds}ReservedCallStaticTrait.php";

@@ -1,6 +1,13 @@
 [+]: new   [~]: changed   [-]: removed   [#]: fixed   [@]: internal
 
 
+1.20.1: (2016-02-21)
+internal cleanup.
+
+  [@] Internal:
+  * refactoring.
+
+
 1.20: (2016-02-21)
 is a major step forward breaking compatibility with the past.
 Under the hood there is a general reorganization to be PSR-0/4 compliant,

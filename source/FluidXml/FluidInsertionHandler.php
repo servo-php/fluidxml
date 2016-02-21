@@ -80,104 +80,92 @@ class FluidInsertionHandler
                 // of performances for a core method like this, so this implementation
                 // is prefered to collapse many identical checks to one.
 
-                $handlers = ['handleStringMixed', 'handleIntegerMixed', 'handleIntegerDocument'];
+                $recognizers = ['recognizeStringMixed', 'recognizeIntegerMixed', 'recognizeIntegerDocument'];
 
-                $status = false;
-                foreach ($handlers as $handler) {
-                        $return = $this->$handler($parent, $k, $v, $fn, $optionals, $status);
+                foreach ($recognizers as $recognizer) {
+                        $handler = $this->$recognizer($k, $v);
 
-                        if ($status === true) {
-                                return $return;
+                        if ($handler !== null) {
+                                return $this->$handler($parent, $k, $v, $fn, $optionals);
                         }
                 }
 
                 throw new \Exception('Input type not supported.');
         }
 
-        protected function handleStringMixed($parent, $k, $v, $fn, &$optionals, &$status)
+        protected function recognizeStringMixed($k, $v)
         {
                 if (! \is_string($k)) {
                         return;
                 }
 
-                $handler = 'insertStringMixed';
-
                 if ($k[0] === '@') {
-                        $handler = 'insertSpecialAttribute';
-
                         if ($k === '@') {
-                                $handler = 'insertSpecialContent';
+                                return 'insertSpecialContent';
+                        }
+                        return 'insertSpecialAttribute';
+                }
+
+                if (\is_string($v)) {
+                        if (! FluidHelper::isAnXmlString($v)) {
+                                return 'insertStringSimple';
                         }
                 } else {
-                        if (\is_string($v)) {
-                                if (! FluidHelper::isAnXmlString($v)) {
-                                        $handler = 'insertStringSimple';
-                                }
-                        } else {
-                                if (\is_numeric($v)) {
-                                        $handler = 'insertStringSimple';
-                                }
+                        if (\is_numeric($v)) {
+                                return 'insertStringSimple';
                         }
                 }
 
-                $status = true;
-                return $this->$handler($parent, $k, $v, $fn, $optionals);
+                return 'insertStringMixed';
         }
 
-        protected function handleIntegerMixed($parent, $k, $v, $fn, &$optionals, &$status)
+        protected function recognizeIntegerMixed($k, $v)
         {
                 // if (! \is_integer($k)) {
                 //         return;
                 // }
-
-                $handler = null;
 
                 if (\is_string($v)) {
                         if (FluidHelper::isAnXmlString($v)) {
-                                $handler = 'insertIntegerXml';
-                        } else {
-                                $handler = 'insertIntegerString';
+                                return 'insertIntegerXml';
                         }
-                } elseif (\is_array($v)) {
-                        $handler = 'insertIntegerArray';
+
+                        return 'insertIntegerString';
                 }
 
-                if ($handler !== null) {
-                        $status = true;
-                        return $this->$handler($parent, $k, $v, $fn, $optionals);
+                if (\is_array($v)) {
+                        return 'insertIntegerArray';
                 }
         }
 
-        protected function handleIntegerDocument($parent, $k, $v, $fn, &$optionals, &$status)
+        protected function recognizeIntegerDocument($k, $v)
         {
                 // if (! \is_integer($k)) {
                 //         return;
                 // }
 
-                $handler = null;
-
                 if ($v instanceof \DOMDocument) {
-                        $handler = 'insertIntegerDomdocument';
-
-                } elseif ($v instanceof \DOMNodeList) {
-                        $handler = 'insertIntegerDomnodelist';
-
-                } elseif ($v instanceof \DOMNode) {
-                        $handler = 'insertIntegerDomnode';
-
-                } elseif ($v instanceof \SimpleXMLElement) {
-                        $handler = 'insertIntegerSimplexml';
-
-                } elseif ($v instanceof FluidXml) {
-                        $handler = 'insertIntegerFluidxml';
-
-                } elseif ($v instanceof FluidContext) {
-                        $handler = 'insertIntegerFluidcontext';
+                        return 'insertIntegerDomdocument';
                 }
 
-                if ($handler !== null) {
-                        $status = true;
-                        return $this->$handler($parent, $k, $v, $fn, $optionals);
+                if ($v instanceof \DOMNodeList) {
+                        return 'insertIntegerDomnodelist';
+                }
+
+                if ($v instanceof \DOMNode) {
+                        return 'insertIntegerDomnode';
+                }
+
+                if ($v instanceof \SimpleXMLElement) {
+                        return 'insertIntegerSimplexml';
+                }
+
+                if ($v instanceof FluidXml) {
+                        return 'insertIntegerFluidxml';
+                }
+
+                if ($v instanceof FluidContext) {
+                        return 'insertIntegerFluidcontext';
                 }
         }
 

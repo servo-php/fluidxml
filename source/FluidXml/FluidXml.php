@@ -7,8 +7,9 @@ namespace FluidXml;
  */
 class FluidXml implements FluidInterface
 {
-        use NewableTrait,
+        use FluidAliasesTrait,
             FluidSaveTrait,
+            NewableTrait,
             ReservedCallTrait,          // For compatibility with PHP 5.6.
             ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
 
@@ -21,7 +22,6 @@ class FluidXml implements FluidInterface
 
         private $document;
         private $handler;
-
         private $context;
         private $contextEl;
 
@@ -43,12 +43,12 @@ class FluidXml implements FluidInterface
                 // First, we parse the arguments detecting the options provided.
                 // This options are needed to build the DOM, add the stylesheet
                 // and to create the document root/structure.
-                $options = $this->buildOptions($arguments);
+                $options = $this->mergeOptions($arguments);
 
                 // Having the options set, we can build the FluidDocument model
                 // which incapsulates the DOM and the corresponding XPath instance.
                 $document = new FluidDocument();
-                $document->dom   = $this->buildDom($options);
+                $document->dom   = $this->newDom($options);
                 $document->xpath = new \DOMXPath($document->dom);
 
                 // After the FluidDocument model creation, we can proceed to build
@@ -65,26 +65,26 @@ class FluidXml implements FluidInterface
                      ->initRoot($options);
         }
 
-        protected function buildOptions(&$arguments)
+        protected function mergeOptions(&$arguments)
         {
-                $custom = [];
+                $options = $this->defaults;
 
                 if (\count($arguments) > 0) {
                         // The root option can be specified as first argument
                         // because it is the most common.
-                        $this->defaults['root'] = $arguments[0];
+                        $options['root'] = $arguments[0];
                 }
 
                 if (\count($arguments) > 1) {
                         // Custom options can be specified only as second argument,
                         // to avoid confusion with array to XML construction style.
-                        $custom = $arguments[1];
+                        $options = \array_merge($options, $arguments[1]);
                 }
 
-                return \array_merge($this->defaults, $custom);
+                return $options;
         }
 
-        private function buildDom(&$options)
+        private function newDom(&$options)
         {
                 $dom = new \DOMDocument($options['version'], $options['encoding']);
                 $dom->formatOutput       = true;
@@ -124,13 +124,7 @@ class FluidXml implements FluidInterface
 
         public function length()
         {
-                return 1;
-        }
-
-        // Alias of ->length().
-        public function size()
-        {
-                return $this->length();
+                return \count($this->array());
         }
 
         public function dom()
@@ -143,7 +137,13 @@ class FluidXml implements FluidInterface
         // it is shadowed by the __call() method.
         public function array_()
         {
-                return [ $this->document->dom ];
+                $el = $this->document->dom->documentElement;
+
+                if ($el === null) {
+                        $el = $this->document->dom;
+                }
+
+                return [ $el ];
         }
 
         public function __toString()
@@ -207,168 +207,38 @@ class FluidXml implements FluidInterface
                 return $this;
         }
 
-        public function query(...$xpath)
-        {
-                return $this->context()->query(...$xpath);
-        }
-
-        // Alias of ->query().
-        public function __invoke(...$xpath)
-        {
-                return $this->query(...$xpath);
-        }
-
-        public function times($times, callable $fn = null)
-        {
-                return $this->context()->times($times, $fn);
-        }
-
-        public function each(callable $fn)
-        {
-                return $this->context()->each($fn);
-        }
-
-        public function filter(callable $fn)
-        {
-                return $this->context()->filter($fn);
-        }
+        public function query(...$query)                   { return $this->context()->query(...$query); }
+        public function times($times, callable $fn = null) { return $this->context()->times($times, $fn); }
+        public function each(callable $fn)                 { return $this->context()->each($fn); }
+        public function filter(callable $fn)               { return $this->context()->filter($fn); }
+        public function setAttribute($name, $value = null) { $this->context()->setAttribute($name, $value); return $this; }
+        public function setText($text)                     { $this->context()->setText($text);    return $this; }
+        public function addText($text)                     { $this->context()->addText($text);    return $this; }
+        public function setCdata($text)                    { $this->context()->setCdata($text);   return $this; }
+        public function addCdata($text)                    { $this->context()->addCdata($text);   return $this; }
+        public function setComment($text)                  { $this->context()->setComment($text); return $this; }
+        public function addComment($text)                  { $this->context()->addComment($text); return $this; }
+        public function remove(...$query)                  { $this->context()->remove(...$query); return $this; }
 
         public function addChild($child, ...$optionals)
         {
-                // If the user has requested ['root' => null] at construction time
-                // 'context()' promotes DOMDocument as root node.
-                $context     = $this->context();
-                $new_context = $context->addChild($child, ...$optionals);
-
-                return $this->chooseContext($context, $new_context);
-        }
-
-        // Alias of ->addChild().
-        public function add($child, ...$optionals)
-        {
-                return $this->addChild($child, ...$optionals);
+                return $this->chooseContext(function($cx) use ($child, &$optionals) {
+                        return $cx->addChild($child, ...$optionals);
+                });
         }
 
         public function prependSibling($sibling, ...$optionals)
         {
-                if ($this->document->dom->documentElement === null) {
-                        // If the document doesn't have at least one root node,
-                        // the sibling creation fails. In this case we replace
-                        // the sibling creation with the creation of a generic node.
-                        return $this->addChild($sibling, ...$optionals);
-                }
-
-                $context     = $this->context();
-                $new_context = $context->prependSibling($sibling, ...$optionals);
-
-                return $this->chooseContext($context, $new_context);
-        }
-
-        // Alias of ->prependSibling().
-        public function prepend($sibling, ...$optionals)
-        {
-                return $this->prependSibling($sibling, ...$optionals);
+                return $this->chooseContext(function($cx) use ($sibling, &$optionals) {
+                        return $cx->prependSibling($sibling, ...$optionals);
+                });
         }
 
         public function appendSibling($sibling, ...$optionals)
         {
-                if ($this->document->dom->documentElement === null) {
-                        // If the document doesn't have at least one root node,
-                        // the sibling creation fails. In this case we replace
-                        // the sibling creation with the creation of a generic node.
-                        return $this->addChild($sibling, ...$optionals);
-                }
-
-                $context     = $this->context();
-                $new_context = $context->appendSibling($sibling, ...$optionals);
-
-                return $this->chooseContext($context, $new_context);
-        }
-
-        // Alias of ->appendSibling().
-        public function append($sibling, ...$optionals)
-        {
-                return $this->appendSibling($sibling, ...$optionals);
-        }
-
-        public function setAttribute(...$arguments)
-        {
-                $this->context()->setAttribute(...$arguments);
-
-                return $this;
-        }
-
-        // Alias of ->setAttribute().
-        public function attr(...$arguments)
-        {
-                return $this->setAttribute(...$arguments);
-        }
-
-        public function setText($text)
-        {
-                $this->context()->setText($text);
-
-                return $this;
-        }
-
-        // Alias of ->setText().
-        public function text($text)
-        {
-                return $this->setText($text);
-        }
-
-        public function addText($text)
-        {
-                $this->context()->addText($text);
-
-                return $this;
-        }
-
-        public function setCdata($text)
-        {
-                $this->context()->setCdata($text);
-
-                return $this;
-        }
-
-        // Alias of ->setCdata().
-        public function cdata($text)
-        {
-                return $this->setCdata($text);
-        }
-
-        public function addCdata($text)
-        {
-                $this->context()->addCdata($text);
-
-                return $this;
-        }
-
-        public function setComment($text)
-        {
-                $this->context()->setComment($text);
-
-                return $this;
-        }
-
-        // Alias of ->setComment().
-        public function comment($text)
-        {
-                return $this->setComment($text);
-        }
-
-        public function addComment($text)
-        {
-                $this->context()->addComment($text);
-
-                return $this;
-        }
-
-        public function remove(...$xpath)
-        {
-                $this->context()->remove(...$xpath);
-
-                return $this;
+                return $this->chooseContext(function($cx) use ($sibling, &$optionals) {
+                        return $cx->appendSibling($sibling, ...$optionals);
+                });
         }
 
         protected function context()
@@ -391,11 +261,17 @@ class FluidXml implements FluidInterface
                 return $this->context;
         }
 
-        protected function chooseContext($help_context, $new_context)
+        protected function chooseContext(\Closure $fn)
         {
-                // If the two contextes are diffent, the user has requested
-                // a switch of the context and we have to return it.
-                if ($help_context !== $new_context) {
+                // If the user has requested ['root' => null] at construction time
+                // 'context()' promotes DOMDocument as root node.
+
+                $context     = $this->context();
+                $new_context = $fn($context);
+
+                if ($context !== $new_context) {
+                        // If the two contextes are diffent, the user has requested
+                        // a switch of the context and we have to return it.
                         return $new_context;
                 }
 

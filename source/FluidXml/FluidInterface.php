@@ -23,8 +23,8 @@ interface FluidInterface
         public function prependSibling($sibling, ...$optionals);
         public function append($sibling, ...$optionals);
         public function appendSibling($sibling, ...$optionals);
-        public function attr(...$arguments);
-        public function setAttribute(...$arguments);
+        public function attr($name, $value = null);
+        public function setAttribute($name, $value = null);
         public function text($text);
         public function setText($text);
         public function addText($text);
