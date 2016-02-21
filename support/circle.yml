@@ -1,13 +1,12 @@
 machine:
     php:
-        version: 7.0
+        version: 7.0.0RC7
 dependencies:
     pre:
         - composer self-update
         - git config --global github.accesstoken 21fd5f444e024f66f292461ca7ea7243f63a200d
     override:
-        - ./support/tools/init:
-            timeout: 180
+        - ./support/tools/init
     cache_directories:
         - sandbox/composer/
 test:
