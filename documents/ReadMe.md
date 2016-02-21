@@ -43,7 +43,8 @@ Under the hood there is a general reorganization to be `PSR-0/4` compliant,<br/>
 a general cleanup of the API for being consistent and allowing future clean APIs<br/>
 growth, some notable additions like the `->filter()` method to programmatically<br/>
 filter the query results and `->html()` to output the document as valid HTML 5<br/>
-string. Just because awesomenesses are never enough, `->query()` supports **CSS Selectors**._
+string. Just because awesomenesses are never enough, `->query()` supports<br/>
+**CSS Selectors**._
 
 ### New:
 * `->html()`                is part of the family.
@@ -158,7 +159,7 @@ $book->query('//title', '//author', '//chapter')
         ->attr('lang', 'en');
 ```
 
-But **CSS Selectors** rocks.
+And **CSS Selectors** rocks.
 
 ```php
 $book->query('title', 'author', 'chapters > chapter')
@@ -322,7 +323,7 @@ and go to the [Wiki Page][wiki] for more reading.
 If you think this code is **awesome** or if you want to demonstrate<br/>
 your immense gratitude **[♥][thankyou]**, donate _1cent_.
 
-[![Donate][donate-button]][donate-link]
+[![Donate][donate-button]][donate-link]<br/>
 **1$ or more**<span style="color: gray;">, due to the PayPal fees.</span>
 
 ## Roadmap
