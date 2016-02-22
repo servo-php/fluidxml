@@ -1,38 +1,49 @@
-[travis-build]: https://travis-ci.org/servo-php/fluidxml
-[travis-build-badge]: https://travis-ci.org/servo-php/fluidxml.svg?branch=master
-[codeship-build]: https://codeship.com/projects/129206
-[codeship-build-badge]: https://codeship.com/projects/8f977260-a359-0133-4946-1ac8bff03ae9/status?branch=master
-[coveralls-coverage]: https://coveralls.io/github/servo-php/fluidxml?branch=master
-[coveralls-coverage-badge]: https://coveralls.io/repos/github/servo-php/fluidxml/badge.svg?branch=master
-[scrutinizer-coverage]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
-[scrutinizer-coverage-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/coverage.png?b=master
-[scrutinizer-quality]: https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
-[scrutinizer-quality-badge]: https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/quality-score.png?b=master
-[codeclimate-quality]: https://codeclimate.com/github/servo-php/fluidxml
-[codeclimate-quality-badge]: https://codeclimate.com/github/servo-php/fluidxml/badges/gpa.svg
-[coveralls]: https://coveralls.io/github/servo-php/fluidxml?branch=master
-[coveralls-badge]: https://coveralls.io/repos/servo-php/fluidxml/badge.svg?branch=master&service=github
-[apis]: https://github.com/servo-php/fluidxml/wiki/APIs
-[gettingstarted]: https://github.com/servo-php/fluidxml/wiki/Getting-Started
-[examples]: https://github.com/servo-php/fluidxml/blob/master/documents/Examples/
-[specs]: https://github.com/servo-php/fluidxml/blob/master/specs/FluidXml.php
-[wiki]: https://github.com/servo-php/fluidxml/wiki
-[bsd]: https://opensource.org/licenses/BSD-2-Clause
-[license]: https://github.com/servo-php/fluidxml/blob/master/documents/License.txt
-[changelog]: https://github.com/servo-php/fluidxml/blob/master/documents/Changelog.txt
-[codecoverage]: https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png?nocache=1
-[ninja]: http://1.viki.io/d/1863c/8b75dc48c9.gif
-[donate-button]: https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=2
-[donate-link]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UUBXYHQRVJE28
-[donate-link-alt]: https://www.paypal.me/danieleorlando
-[thankyou]: https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_corazón.svg/2000px-Heart_corazón.svg.png
+[apis]:             https://github.com/servo-php/fluidxml/wiki/APIs
+[gettingstarted]:   https://github.com/servo-php/fluidxml/wiki/Getting-Started
+[examples]:         https://github.com/servo-php/fluidxml/blob/master/documents/Examples/
+[specs]:            https://github.com/servo-php/fluidxml/blob/master/specs/FluidXml.php
+[wiki]:             https://github.com/servo-php/fluidxml/wiki
+[bsd]:              https://opensource.org/licenses/BSD-2-Clause
+[license]:          https://github.com/servo-php/fluidxml/blob/master/documents/License.txt
+[changelog]:        https://github.com/servo-php/fluidxml/blob/master/documents/Changelog.txt
+[codecoverage]:     https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png?nocache=1
+[donate-button]:    https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=2
+[donate-link]:      https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UUBXYHQRVJE28
+[donate-link-alt]:  https://www.paypal.me/danieleorlando
+[ninja]:            http://1.viki.io/d/1863c/8b75dc48c9.gif
+[thankyou]:         https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Heart_corazón.svg/2000px-Heart_corazón.svg.png
 
-[![Travis Build][travis-build-badge]][travis-build]
-[![Codeship Build][codeship-build-badge]][codeship-build]
-[![Coveralls Coverage][coveralls-coverage-badge]][coveralls-coverage]
-[![Scrutinizer Coverage][scrutinizer-coverage-badge]][scrutinizer-coverage]
-[![Scrutinizer Quality][scrutinizer-quality-badge]][scrutinizer-quality]
-[![Code Climate][codeclimate-quality-badge]][codeclimate-quality]
+[packagist]:        https://packagist.org/packages/servo/fluidxml
+[travis]:           https://travis-ci.org/servo-php/fluidxml
+[scrutinizer]:      https://scrutinizer-ci.com/g/servo-php/fluidxml/?branch=master
+[coveralls]:        https://coveralls.io/github/servo-php/fluidxml?branch=master
+[codeclimate]:      https://codeclimate.com/github/servo-php/fluidxml
+[codeship]:         https://codeship.com/projects/129206
+[circle]:           https://circleci.com/gh/servo-php/fluidxml
+
+[packagist-license-badge]:        https://poser.pugx.org/servo/fluidxml/license
+[packagist-release-badge]:        https://poser.pugx.org/servo/fluidxml/v/stable
+[packagist-downloads-badge]:      https://poser.pugx.org/servo/fluidxml/downloads
+[packagist-license-badge-alt]:    https://img.shields.io/packagist/l/servo/fluidxml.svg?style=flat-square
+[packagist-release-badge-alt]:    https://img.shields.io/packagist/v/servo/fluidxml.svg?style=flat-square
+[packagist-downloads-badge-alt]:  https://img.shields.io/packagist/dt/servo/fluidxml.svg?style=flat-square
+[travis-build-badge]:             https://travis-ci.org/servo-php/fluidxml.svg?branch=master
+[scrutinizer-coverage-badge]:     https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/coverage.png?b=master
+[scrutinizer-quality-badge]:      https://scrutinizer-ci.com/g/servo-php/fluidxml/badges/quality-score.png?b=master
+[coveralls-coverage-badge]:       https://coveralls.io/repos/github/servo-php/fluidxml/badge.svg?branch=master
+[codeclimate-quality-badge]:      https://codeclimate.com/github/servo-php/fluidxml/badges/gpa.svg
+[codeship-build-badge]:           https://codeship.com/projects/8f977260-a359-0133-4946-1ac8bff03ae9/status?branch=master
+[circle-build-badge]:             https://circleci.com/gh/servo-php/fluidxml.svg?style=svg
+
+
+[![Travis Build][travis-build-badge]][travis]
+[![Coveralls Coverage][coveralls-coverage-badge]][coveralls]
+[![Scrutinizer Quality][scrutinizer-quality-badge]][scrutinizer]
+[![Code Climate Quality][codeclimate-quality-badge]][codeclimate]
+
+[![Packagist License][packagist-license-badge]][packagist]
+[![Packagist Last Release][packagist-release-badge]][packagist]
+[![Packagist Total Downloads][packagist-downloads-badge]][packagist]
 
 
 ## Changelog
