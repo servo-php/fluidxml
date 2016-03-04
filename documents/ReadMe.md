@@ -6,8 +6,8 @@
 [bsd]:              https://opensource.org/licenses/BSD-2-Clause
 [license]:          https://github.com/servo-php/fluidxml/blob/master/documents/License.txt
 [changelog]:        https://github.com/servo-php/fluidxml/blob/master/documents/Changelog.txt
-[codecoverage]:     https://bytebucket.org/daniele_orlando/hosting/raw/master/FluidXML_code_coverage.png?nocache=1
-[donate-button]:    https://bytebucket.org/daniele_orlando/hosting/raw/master/Donate_button.png?nocache=2
+[codecoverage]:     https://bytebucket.org/daniele_orlando/bithosting/raw/master/FluidXML_code_coverage.png
+[donate-button]:    https://bytebucket.org/daniele_orlando/bithosting/raw/master/Donate_button.png
 [donate-link]:      https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UUBXYHQRVJE28
 [donate-link-alt]:  https://www.paypal.me/danieleorlando
 [ninja]:            http://1.viki.io/d/1863c/8b75dc48c9.gif
@@ -101,9 +101,9 @@ string. Just because awesomenesses are never enough, `->query()` supports<br/>
 
 
 # FluidXML
-<img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Servo_logo.png?nocache=1" height="64px" alt="Servo-PHP Logo"/>
+<img src="https://bytebucket.org/daniele_orlando/bithosting/raw/master/Servo_logo.png" height="64px" alt="Servo-PHP Logo"/>
 <span>      </span>
-<img src="https://bytebucket.org/daniele_orlando/hosting/raw/master/Fluidxml_logo.png?nocache=1" height="64px" alt="FluidXML Logo"/>
+<img src="https://bytebucket.org/daniele_orlando/bithosting/raw/master/Fluidxml_logo.png" height="64px" alt="FluidXML Logo"/>
 
 FluidXML is a PHP library designed to manipulate XML documents with a **concise** and **fluent** API.<br/>
 It leverages the fluent programming pattern to be **fun and effective**.
