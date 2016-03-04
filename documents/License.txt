@@ -1,4 +1,4 @@
-Copyright (c) 2015, Daniele Orlando <danieleorlando.com>
+Copyright (c) 2016, Daniele Orlando <fluidxml(at)danieleorlando.com>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,

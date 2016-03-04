@@ -15,7 +15,7 @@ fi
 phpdbg=
 
 if (test $# -ge 1) && (test $1 = 'debug') && chkcmd 'phpdbg'; then
-        phpdbg=phpdbg
+        phpdbg="phpdbg -e"
 fi
 
-$phpdbg $(which peridot) -g "*.php" "./specs/"
+$phpdbg "$(which peridot)" -c "./support/peridot.php" -g "*.php" "./specs/"

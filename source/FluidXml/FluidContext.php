@@ -239,10 +239,10 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         // setAttribute(['name' => 'value', ...])
         public function setAttribute($name, $value = null)
         {
-                $attrs = [ $name => $value ];
-
                 if (\is_array($name)) {
                         $attrs = $name;
+                } else {
+                        $attrs = [ $name => $value ];
                 }
 
                 foreach ($this->nodes as $n) {

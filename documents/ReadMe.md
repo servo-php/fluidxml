@@ -48,51 +48,12 @@
 
 ## Changelog
 
-**1.20** (2016-02-21):
-_is a major step forward breaking compatibility with the past.<br/>
-Under the hood there is a general reorganization to be `PSR-0/4` compliant,<br/>
-a general cleanup of the API for being consistent and allowing future clean APIs<br/>
-growth, some notable additions like the `->filter()` method to programmatically<br/>
-filter the query results and `->html()` to output the document as valid HTML 5<br/>
-string. Just because awesomenesses are never enough, `->query()` supports<br/>
-**CSS Selectors**._
-
-### New:
-* `->html()`                is part of the family.
-* `->filter()`              is part of the family.
-* `->comment()`             is part of the family.
-* `->setComment()`          is part of the family.
-* `->addComment()`          is part of the family.
-* `->size()`                is an alias of `->length()`.
-* `->__invoke()`            is an alias of `->query()`.
-* `->__toString()`          is an alias of `->xml()`.
-* `->array()`               replaces `->asArray()`.
-* `->addChild()`            replaces `->appendChild()`.
-* `->addText()`             replaces `->appendText()`.
-* `->addCdata()`            replaces `->appendCdata()`.
-
-### Changed:
-* `->query()`               supports CSS Selectors.
-* `fluidxml()`              has gained the super powers of `fluidify()`.
-* `FluidXml->__construct()` has gained the super powers of `FluidXml::load()`.
-* `::load()/fluidify()`     can be ONLY used to load an XML file.
-
-### Removed:
-* `->asArray()`             has been removed superseded by `->array()`.
-* `->appendText()`          has been removed superseded by `->addText()`.
-* `->appendCdata()`         has been removed superseded by `->addCdata()`.
-* `->appendChild()`         has been removed superseded by `->addChild()`.
-* `->insertSiblingBefore()` has been removed superseded by `->prependSibling()`.
-* `->insertSiblingAfter()`  has been removed superseded by `->appendSibling()`.
-
-### Internal:
-* `PSR-0/4` compliance.
-* `FluidXml.php` is still there for people NOT using Composer/PSR-0/4 loaders.
-* `FluidInsertionHandler` refactoring.
+**1.20.2** (2016-03-04):
+_fixes some leaked PHP notices._
 
 **...**
 
-[See the full changes list.][changelog]
+[The full changes list.][changelog]
 
 <br/>
 

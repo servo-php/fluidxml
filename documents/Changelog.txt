@@ -1,7 +1,14 @@
 [+]: new   [~]: changed   [-]: removed   [#]: fixed   [@]: internal
 
 
-1.20.1: (2016-02-21)
+1.20.2: (2016-03-04)
+fixes some leaked PHP notices.
+
+  [#] Fixed:
+  * fix.
+
+
+1.20.1:
 internal cleanup.
 
   [@] Internal:

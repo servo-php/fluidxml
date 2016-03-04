@@ -132,11 +132,13 @@ describe('FluidXml', function () {
                 });
 
                 it('should throw for not existing file', function () {
+                        $err_handler = \set_error_handler(function () {});
                         try {
                                 $xml = FluidXml::load('.impossible.xml');
                         } catch (\Exception $e) {
                                 $actual = $e;
                         }
+                        \set_error_handler($err_handler);
 
                         assert_is_a($actual, \Exception::class);
                 });
@@ -373,23 +375,6 @@ describe('FluidXml', function () {
                         $xx_ns = fluidns('xx', 'xx.com', FluidNamespace::MODE_IMPLICIT);
 
                         $nss = $xml->namespace($x_ns, $xx_ns)
-                                   ->namespaces();
-
-                        $actual   = $nss[$x_ns->id()];
-                        $expected = $x_ns;
-                        \assert($actual === $expected, __($actual, $expected));
-
-                        $actual   = $nss[$xx_ns->id()];
-                        $expected = $xx_ns;
-                        \assert($actual === $expected, __($actual, $expected));
-                });
-
-                it('should accept an array of namespaces', function () {
-                        $xml   = new FluidXml();
-                        $x_ns  = new FluidNamespace('x', 'x.com');
-                        $xx_ns = fluidns('xx', 'xx.com', FluidNamespace::MODE_IMPLICIT);
-
-                        $nss = $xml->namespace([ $x_ns, $xx_ns ])
                                    ->namespaces();
 
                         $actual   = $nss[$x_ns->id()];
@@ -2210,11 +2195,13 @@ EOF;
                 it('should throw for not writable file', function () {
                         $xml = new FluidXml();
 
+                        $err_handler = \set_error_handler(function () {});
                         try {
                                 $xml->save('/.impossible/tmp/out.xml');
                         } catch (\Exception $e) {
                                 $actual = $e;
                         }
+                        \set_error_handler($err_handler);
 
                         assert_is_a($actual, \Exception::class);
                 });
@@ -2516,35 +2503,6 @@ describe('FluidNamespace', function () {
 
                         $ns_mode = FluidNamespace::MODE_IMPLICIT;
                         $ns = new FluidNamespace($ns_id, $ns_uri, $ns_mode);
-
-                        $actual   = $ns->mode();
-                        $expected = $ns_mode;
-                        \assert($actual === $expected, __($actual, $expected));
-                });
-
-                it('should accept an array with an id, an uri and an optional mode flag', function () {
-                        $ns_id   = 'x';
-                        $ns_uri  = 'x.com';
-                        $ns_mode = FluidNamespace::MODE_EXPLICIT;
-                        $args    = [ FluidNamespace::ID  => $ns_id,
-                                     FluidNamespace::URI => $ns_uri ];
-                        $ns      = new FluidNamespace($args);
-
-                        $actual   = $ns->id();
-                        $expected = $ns_id;
-                        \assert($actual === $expected, __($actual, $expected));
-
-                        $actual   = $ns->uri();
-                        $expected = $ns_uri;
-                        \assert($actual === $expected, __($actual, $expected));
-
-                        $actual   = $ns->mode();
-                        $expected = $ns_mode;
-                        \assert($actual === $expected, __($actual, $expected));
-
-                        $ns_mode = FluidNamespace::MODE_IMPLICIT;
-                        $args[FluidNamespace::MODE] = $ns_mode;
-                        $ns = new FluidNamespace($args);
 
                         $actual   = $ns->mode();
                         $expected = $ns_mode;

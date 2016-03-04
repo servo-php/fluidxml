@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 cd "$(dirname "$0")"
-. ".common.sh"
+. "./.common.sh"
 cd ../..
 
 clear

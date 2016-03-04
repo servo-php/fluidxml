@@ -2,7 +2,7 @@
 
 namespace FluidXml;
 
-define('FLUIDXML_VERSION', '1.20');
+define('FLUIDXML_VERSION', '1.20.2');
 
 function fluidxml(...$arguments)
 {

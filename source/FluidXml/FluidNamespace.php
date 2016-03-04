@@ -17,16 +17,6 @@ class FluidNamespace
 
         public function __construct($id, $uri, $mode = 1)
         {
-                if (\is_array($id)) {
-                        $args = $id;
-                        $id   = $args[self::ID];
-                        $uri  = $args[self::URI];
-
-                        if (isset($args[self::MODE])) {
-                                $mode = $args[self::MODE];
-                        }
-                }
-
                 $this->config[self::ID]   = $id;
                 $this->config[self::URI]  = $uri;
                 $this->config[self::MODE] = $mode;

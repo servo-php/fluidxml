@@ -194,8 +194,6 @@ class FluidXml implements FluidInterface
                         }
 
                         $namespaces[] = new FluidNamespace(...$args);
-                }  elseif (\is_array($arguments[0])) {
-                        $namespaces = $arguments[0];
                 } else {
                         $namespaces = $arguments;
                 }
