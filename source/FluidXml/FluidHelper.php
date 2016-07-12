@@ -10,7 +10,7 @@ class FluidHelper
                 // otherwise the first character check may fail.
                 $string = \ltrim($string);
 
-                return $string[0] === '<';
+                return $string && $string[0] === '<';
         }
 
         public static function exportNode(\DOMDocument $dom, \DOMNode $node, $html = false)

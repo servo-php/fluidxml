@@ -953,43 +953,229 @@ describe('FluidXml', function () {
                         assert_is_fluid('addChild', 'a');
                 });
 
-                it('should add a child', function () {
+                it('should add a child using the argument syntax', function () {
                         $xml = new FluidXml();
                         $xml->addChild('child1')
-                            ->addChild('child2')
                             ->addChild('parent', true)
-                            ->addChild('child3')
-                            ->addChild('child4');
+                            ->addChild('child2');
 
                         $expected = "<doc>\n"
                                   . "  <child1/>\n"
-                                  . "  <child2/>\n"
                                   . "  <parent>\n"
-                                  . "    <child3/>\n"
-                                  . "    <child4/>\n"
+                                  . "    <child2/>\n"
                                   . "  </parent>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should add many children', function () {
+                it('should add a child using the array syntax', function () {
                         $xml = new FluidXml();
-                        $xml->addChild(['child1', 'child2'])
-                            ->addChild('parent', true)
-                            ->addChild(['child3', 'child4']);
+                        $xml->addChild(['child1'])
+                            ->addChild(['parent'], true)
+                            ->addChild(['child2']);
 
                         $expected = "<doc>\n"
                                   . "  <child1/>\n"
-                                  . "  <child2/>\n"
                                   . "  <parent>\n"
-                                  . "    <child3/>\n"
-                                  . "    <child4/>\n"
+                                  . "    <child2/>\n"
                                   . "  </parent>\n"
                                   . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
-                it('should add many children recursively', function () {
+                it('should add a child with a string value using the argument syntax', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild('child1', 'value1')
+                            ->addChild('parent', true)
+                                ->addChild('child2', 'value2');
+
+                        $expected = "<doc>\n"
+                                  . "  <child1>value1</child1>\n"
+                                  . "  <parent>\n"
+                                  . "    <child2>value2</child2>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a child with a string value using the array syntax', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild(['child1' => 'value1'])
+                            ->addChild('parent', true)
+                                ->addChild(['child2' => 'value2']);
+
+                        $expected = "<doc>\n"
+                                  . "  <child1>value1</child1>\n"
+                                  . "  <parent>\n"
+                                  . "    <child2>value2</child2>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a child with an empty string value using the argument syntax', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild('child1', '')
+                            ->addChild('parent', true)
+                                ->addChild('child2', '');
+
+                        $expected = "<doc>\n"
+                                  . "  <child1/>\n"
+                                  . "  <parent>\n"
+                                  . "    <child2/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a child with an empty string value using the array syntax', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild(['child1' => ''])
+                            ->addChild('parent', true)
+                                ->addChild(['child2' => '']);
+
+                        $expected = "<doc>\n"
+                                  . "  <child1/>\n"
+                                  . "  <parent>\n"
+                                  . "    <child2/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a child with a null value using the argument syntax', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild('child1', null)
+                            ->addChild('parent', true)
+                                ->addChild('child2', null);
+
+                        $expected = "<doc>\n"
+                                  . "  <child1/>\n"
+                                  . "  <parent>\n"
+                                  . "    <child2/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a child with a null value using the array syntax', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild(['child1' => null])
+                            ->addChild('parent', true)
+                                ->addChild(['child2' => null]);
+
+                        $expected = "<doc>\n"
+                                  . "  <child1/>\n"
+                                  . "  <parent>\n"
+                                  . "    <child2/>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a child with an integer value using the argument syntax', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild('child1', 1)
+                            ->addChild('parent', true)
+                                ->addChild('child2', 1);
+
+                        $expected = "<doc>\n"
+                                  . "  <child1>1</child1>\n"
+                                  . "  <parent>\n"
+                                  . "    <child2>1</child2>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a child with an integer value using the array syntax', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild(['child1' => 1])
+                            ->addChild('parent', true)
+                                ->addChild(['child2' => 1]);
+
+                        $expected = "<doc>\n"
+                                  . "  <child1>1</child1>\n"
+                                  . "  <parent>\n"
+                                  . "    <child2>1</child2>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a child with a 0 value using the argument syntax', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild('child1', 0)
+                            ->addChild('parent', true)
+                                ->addChild('child2', 0);
+
+                        $expected = "<doc>\n"
+                                  . "  <child1>0</child1>\n"
+                                  . "  <parent>\n"
+                                  . "    <child2>0</child2>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add a child with a 0 value using the array syntax', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild(['child1' => 0])
+                            ->addChild('parent', true)
+                                ->addChild(['child2' => 0]);
+
+                        $expected = "<doc>\n"
+                                  . "  <child1>0</child1>\n"
+                                  . "  <parent>\n"
+                                  . "    <child2>0</child2>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add many children with and without a value', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild(['child1', 'child2', 'child3' => 'value3', 'child4' => 'value4'])
+                            ->addChild('parent', true)
+                            ->addChild(['child5', 'child6', 'child7' => 'value7', 'child8' => 'value8']);
+
+                        $expected = "<doc>\n"
+                                  . "  <child1/>\n"
+                                  . "  <child2/>\n"
+                                  . "  <child3>value3</child3>\n"
+                                  . "  <child4>value4</child4>\n"
+                                  . "  <parent>\n"
+                                  . "    <child5/>\n"
+                                  . "    <child6/>\n"
+                                  . "    <child7>value7</child7>\n"
+                                  . "    <child8>value8</child8>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add many children of the same name with and without a value', function () {
+                        $xml = new FluidXml();
+                        $xml->addChild(['child', ['child'], ['child' => 'value1'], ['child' => 'value2']])
+                            ->addChild('parent', true)
+                            ->addChild(['child', ['child'], ['child' => 'value3'], ['child' => 'value4']]);
+
+                        $expected = "<doc>\n"
+                                  . "  <child/>\n"
+                                  . "  <child/>\n"
+                                  . "  <child>value1</child>\n"
+                                  . "  <child>value2</child>\n"
+                                  . "  <parent>\n"
+                                  . "    <child/>\n"
+                                  . "    <child/>\n"
+                                  . "    <child>value3</child>\n"
+                                  . "    <child>value4</child>\n"
+                                  . "  </parent>\n"
+                                  . "</doc>";
+                        assert_equal_xml($xml, $expected);
+                });
+
+                it('should add many children with nested arrays', function () {
                         $xml = new FluidXml();
                         $xml->addChild(['child1'=>['child11'=>['child111', 'child112'=>'value112'], 'child12'=>'value12'],
                                            'child2'=>['child21', 'child22'=>['child221', 'child222']]])
@@ -1031,70 +1217,6 @@ describe('FluidXml', function () {
   </parent>
 </doc>
 EOF;
-
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add a child with a value, string and number', function () {
-                        $xml = new FluidXml();
-                        $xml->addChild(['child1' => 'value1'])
-                            ->addChild('child2', 'value2')
-                            ->addChild(['child3' => 3])
-                            ->addChild('child4', 4)
-                            ->addChild('parent', true)
-                            ->addChild(['child5' => 'value5'])
-                            ->addChild('child6', 'value6')
-                            ->addChild(['child7' => 7])
-                            ->addChild('child8', 8);
-
-                        $expected = "<doc>\n"
-                                  . "  <child1>value1</child1>\n"
-                                  . "  <child2>value2</child2>\n"
-                                  . "  <child3>3</child3>\n"
-                                  . "  <child4>4</child4>\n"
-                                  . "  <parent>\n"
-                                  . "    <child5>value5</child5>\n"
-                                  . "    <child6>value6</child6>\n"
-                                  . "    <child7>7</child7>\n"
-                                  . "    <child8>8</child8>\n"
-                                  . "  </parent>\n"
-                                  . "</doc>";
-                        assert_equal_xml($xml, $expected);
-                });
-
-                it('should add many children with a value', function () {
-                        $xml = new FluidXml();
-                        $xml->addChild(['child1' => 'value1', 'child2' => 'value2'])
-                            ->addChild('parent', true)
-                            ->addChild(['child3' => 'value3', 'child4' => 'value4']);
-
-                        $expected = "<doc>\n"
-                                  . "  <child1>value1</child1>\n"
-                                  . "  <child2>value2</child2>\n"
-                                  . "  <parent>\n"
-                                  . "    <child3>value3</child3>\n"
-                                  . "    <child4>value4</child4>\n"
-                                  . "  </parent>\n"
-                                  . "</doc>";
-                        assert_equal_xml($xml, $expected);
-
-                        $xml = new FluidXml();
-                        $xml->addChild([ 'child', ['child'], ['child' => 'value1'], ['child' => 'value2'] ])
-                            ->addChild('parent', true)
-                            ->addChild([ 'child', ['child'], ['child' => 'value3'], ['child' => 'value4'] ]);
-
-                        $expected = "<doc>\n"
-                                  . "  <child/>\n"
-                                  . "  <child/>\n"
-                                  . "  <child>value1</child>\n"
-                                  . "  <child>value2</child>\n"
-                                  . "  <parent>\n"
-                                  . "    <child/>\n"
-                                  . "    <child/>\n"
-                                  . "    <child>value3</child>\n"
-                                  . "    <child>value4</child>\n"
-                                  . "  </parent>\n"
-                                  . "</doc>";
                         assert_equal_xml($xml, $expected);
                 });
 
@@ -2538,8 +2660,8 @@ describe('FluidNamespace', function () {
                 it('should return the namespace mode', function () {
                         $ns_id   = 'x';
                         $ns_uri  = 'x.com';
-                        $ns_mode = FluidNamespace::MODE_EXPLICIT;
                         $ns      = new FluidNamespace($ns_id, $ns_uri);
+                        $ns_mode = FluidNamespace::MODE_EXPLICIT;
 
                         $actual   = $ns->mode();
                         $expected = $ns_mode;
@@ -2767,6 +2889,5 @@ describe('CssTranslator', function () {
                         $expected = $hml->query('//span', '//div', '//p')->array();
                         \assert($actual === $expected, __($actual, $expected));
                 });
-
         });
 });
