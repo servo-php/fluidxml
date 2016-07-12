@@ -1,7 +1,14 @@
 [+]: new   [~]: changed   [-]: removed   [#]: fixed   [@]: internal
 
 
-1.20.2: (2016-03-04)
+1.20.3: (2016-07-12)
+fixes wrong handling of null/empty node value.
+
+  [#] Fixed:
+  * fixes #13.
+
+
+1.20.2:
 fixes some leaked PHP notices.
 
   [#] Fixed:

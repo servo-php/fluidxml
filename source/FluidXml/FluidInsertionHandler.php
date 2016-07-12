@@ -109,7 +109,7 @@ class FluidInsertionHandler
                         return 'insertSpecialAttribute';
                 }
 
-                if (\is_string($v)) {
+                if (\is_string($v) || $v === null) {
                         if (! FluidHelper::isAnXmlString($v)) {
                                 return 'insertStringSimple';
                         }

@@ -48,8 +48,8 @@
 
 ## Changelog
 
-**1.20.2** (2016-03-04):
-_fixes some leaked PHP notices._
+**1.20.3** (2016-07-12):
+_fixes wrong handling of null/empty node value._
 
 **...**
 
@@ -57,8 +57,9 @@ _fixes some leaked PHP notices._
 
 <br/>
 
-[![Donate][donate-button]][donate-link]<br/>
-**1$ or more**<span style="color: gray;">, due to the PayPal fees.</span>
+<a href='https://ko-fi.com/2216WXOPLSZER' target='_blank'>
+  <img height='32' src='https://az743702.vo.msecnd.net/cdn/kofi5.png?v=a' border='0' alt='Buy Me a Coffee at ko-fi.com'/>
+</a>
 
 
 # FluidXML
@@ -68,8 +69,6 @@ _fixes some leaked PHP notices._
 
 FluidXML is a PHP library designed to manipulate XML documents with a **concise** and **fluent** API.<br/>
 It leverages the fluent programming pattern to be **fun and effective**.
-
-With FluidXML the DOM manipulation becomes **fast**, **clear** and **expressive**.
 
 ```php
 $book = fluidxml();
@@ -92,6 +91,8 @@ $book->addChild('title', 'The Theory Of Everything')
          ->addChild('chapter', 'Ideas About The Universe', ['id' => 1])
          ->addChild('chapter', 'The Expanding Universe',   ['id' => 2]);
 ```
+
+With FluidXML the DOM manipulation becomes **fast**, **clear** and **expressive**.
 
 **PHP Arrays** are first class citizens.
 
@@ -131,11 +132,13 @@ $book->query('//title', '//author', '//chapter')
         ->attr('lang', 'en');
 ```
 
-And **CSS Selectors** rocks.
+And **CSS Selectors** rock.
 
 ```php
-$book->query('title', 'author', 'chapters > chapter')
+$book->query('#id', '.class1.class2', 'div p > span')
         ->attr('lang', 'en');
+
+// Many other selectors are available.
 ```
 
 **XML/CSS Namespaces** are fully covered.
@@ -147,7 +150,7 @@ $book->namespace('xhtml', 'http://www.w3.org/1999/xhtml')
      ->query('xhtml|h1');   // CSS namespace.
 ```
 
-And sometimes **string fragments** are the fastest way.
+And sometimes **XML Fragments** are the fastest way.
 
 ```php
 $book->add(<<<XML
@@ -165,7 +168,7 @@ Everything is fluent, even **iterations**.
 
 ```php
 $book->query('//chapter')
-        ->each(function($i) {
+        ->each(function ($i) {
              $this->attr('id', $i);
         });
 ```
@@ -174,7 +177,7 @@ $book->query('//chapter')
 $book->query('//chapters')
         ->times(3)
             ->add('chapter')
-        ->times(4, function($i) {
+        ->times(4, function ($i) {
             $this->add('chapter');
             $this->add('illustration');
         });
@@ -185,7 +188,7 @@ Whether some queries are too complex to express with XPath/CSS,<br/>
 
 ```php
 $book->query('//chapters')
-        ->filter(function($i, $node) {
+        ->filter(function ($i, $node) {
             return $i % 2 === 0;
         })
         ->attr('even');
@@ -293,20 +296,24 @@ and go to the [Wiki Page][wiki] for more reading.
 
 ## Donation
 If you think this code is **awesome** or if you want to demonstrate<br/>
-your immense gratitude **[♥][thankyou]**, donate _1cent_.
+your immense gratitude **[♥][thankyou]**, _buy me a coffe_.
 
-[![Donate][donate-button]][donate-link]<br/>
-**1$ or more**<span style="color: gray;">, due to the PayPal fees.</span>
+<a href='https://ko-fi.com/2216WXOPLSZER' target='_blank'>
+    <img height='32' src='https://az743702.vo.msecnd.net/cdn/kofi5.png?v=a' border='0' alt='Buy Me a Coffee at ko-fi.com'/>
+</a>
+
+[//]: # ([![Donate][donate-button]][donate-link]<br/>)
+[//]: # (**1$ or more**<span style="color: gray;">, due to the PayPal fees.</span>)
+
+<a-off href='https://pledgie.com/campaigns/30607'>
+    <img-off alt='Click here to lend your support to: FluidXML and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/30607.png?skin_name=chrome' border='0'/>
+</a-off>
+
 
 ## Roadmap
 * [x] PHP 5.6 backport
 * [ ] Extending the documentation
 * [ ] Expanding the APIs
-
-<a href='https://pledgie.com/campaigns/30607'>
-    <img alt='Click here to lend your support to: FluidXML and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/30607.png?skin_name=chrome' border='0' >
-</a>
-
 
 ## Author
 Daniele Orlando  [&lt;fluidxml@danieleorlando.com&gt;](mailto:fluidxml@danieleorlando.com)
