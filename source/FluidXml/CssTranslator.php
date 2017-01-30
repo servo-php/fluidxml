@@ -48,6 +48,13 @@ class CssTranslator
                   '\1:',
                   'NS',
                   false ],
+                // *|A
+                [ '\*           # Namespace wildcard
+                   \|
+                   (\w+)',
+                  '*[local-name() = \'\1\']',
+                  'NS',
+                  false ],
                 // :root
                 [ ':root\b',
                   '/*',

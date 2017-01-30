@@ -2815,6 +2815,16 @@ describe('CssTranslator', function () {
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
+                it('should support the CSS selector *|A', function () use ($hml) {
+                        $actual   = $hml->query('*|shape')->array();
+                        $expected = $hml->query('[local-name() = "shape"]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('*|shape')->size();
+                        $expected = 3;
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
                 it('should support the CSS selector :root', function () use ($hml) {
                         $actual   = $hml->query(':root')->array();
                         $expected = $hml->query('/*')->array();
