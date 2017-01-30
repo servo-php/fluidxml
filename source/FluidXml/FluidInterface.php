@@ -16,6 +16,7 @@ interface FluidInterface
         public function __invoke(...$query);
         public function times($times, callable $fn = null);
         public function each(callable $fn);
+        public function map(callable $fn);
         public function filter(callable $fn);
         public function add($child, ...$optionals);
         public function addChild($child, ...$optionals);

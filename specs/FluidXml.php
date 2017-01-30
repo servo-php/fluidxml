@@ -789,6 +789,54 @@ describe('FluidXml', function () {
                 });
         });
 
+        describe('.map()', function () {
+                it('should map over the nodes inside the context', function () {
+                        $xml = new FluidXml();
+
+                        $xml->map(function ($i, $n) {
+                                assert_is_a($this, FluidContext::class);
+                                assert_is_a($n, \DOMNode::class);
+                                $actual   = $i;
+                                $expected = 0;
+                                \assert($actual === $expected, __($actual, $expected));
+                        });
+
+                        function mapassert($cx, $i, $n)
+                        {
+                                assert_is_a($cx, FluidContext::class);
+                                assert_is_a($n,  \DOMNode::class);
+                                $actual   = $i;
+                                $expected = 0;
+                                \assert($actual === $expected, __($actual, $expected));
+                        }
+
+                        $xml->map('mapassert');
+
+                        $xml->addChild(['child1' => 'child1'])
+                            ->addChild(['child2' => 'child2']);
+
+                        $actual = $xml->query('/doc/*')
+                            ->map(function ($i, $n) {
+                                    $idx = $i + 1;
+                                    return $n->nodeValue . $idx;
+                            });
+
+                        $expected = ['child11', 'child22'];
+
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        function mapfn($cx, $i, $n)
+                        {
+                                $idx = $i + 1;
+                                return $n->nodeValue . $idx;
+                        }
+
+                        $actual = $xml->query('/doc/*')->map('mapfn');
+
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
         describe('.filter()', function () {
                 it('should be fluid', function () {
                         assert_is_fluid('filter', function (){});

@@ -179,6 +179,19 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
+        public function map(callable $fn)
+        {
+                $result = [];
+
+                foreach ($this->nodes as $i => $n) {
+                        $cx = $this->newContext($n);
+
+                        $result[] = $this->callfn($fn, [$cx, $i, $n]);
+                }
+
+                return $result;
+        }
+
         public function filter(callable $fn)
         {
                 $nodes = [];
