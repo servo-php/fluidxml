@@ -209,6 +209,7 @@ class FluidXml implements FluidInterface
         public function query(...$query)                   { return $this->context()->query(...$query); }
         public function times($times, callable $fn = null) { return $this->context()->times($times, $fn); }
         public function each(callable $fn)                 { return $this->context()->each($fn); }
+        public function map(callable $fn)                  { return $this->context()->map($fn); }
         public function filter(callable $fn)               { return $this->context()->filter($fn); }
         public function setAttribute($name, $value = null) { $this->context()->setAttribute($name, $value); return $this; }
         public function setText($text)                     { $this->context()->setText($text);    return $this; }
