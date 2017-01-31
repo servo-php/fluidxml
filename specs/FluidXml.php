@@ -1846,6 +1846,46 @@ EOF;
                 });
         });
 
+        describe('.getText()', function () {
+                it('should get the text content of a node and its children', function () {
+                        $xml = new FluidXml('
+                                <doc>
+                                  <parent>
+                                    <child>child1</child>
+                                    <child/>
+                                    <child>child2</child>
+                                  </parent>
+                                </doc>
+                        ');
+
+                        $expected = 'child1child2';
+                        $actual = $xml->getText();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should get the text of all nodes inside the context', function () {
+                        $xml = new FluidXml('
+                                <doc>
+                                  <parent>
+                                    <child>child1</child>
+                                    <child/>
+                                    <child>child2</child>
+                                  </parent>
+                                </doc>
+                        ');
+
+                        $expected = 'child1' . PHP_EOL . PHP_EOL . 'child2';
+                        $actual = $xml->query('child')->getText();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $expected = 'child1, child2';
+                        $actual = $xml->query('child')->filter(function ($i, $n) {
+                                return (bool) $n->nodeValue;
+                        })->getText(', ');
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
         describe('.setText()', function () {
                 it('should be fluid', function () {
                         assert_is_fluid('setText', 'a');
@@ -1874,11 +1914,24 @@ EOF;
         });
 
         describe('.text()', function () {
+                it('should behave like .getText()', function () {
+                        $xml = new FluidXml('<doc>
+                            <child>child11</child>
+                            <child>child22</child>
+                        </doc>');
+
+                        $actual   = $xml->query('child')->text();
+                        $expected = $xml->query('child')->getText();
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
+        describe('.text($text)', function () {
                 it('should be fluid', function () {
                         assert_is_fluid('text', 'a');
                 });
 
-                it('should behave like .setText()', function () {
+                it('should behave like .setText($text)', function () {
                         $xml = new FluidXml();
                         $xml->setText('Text1')
                             ->addChild('child', true)

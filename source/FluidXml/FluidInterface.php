@@ -27,6 +27,7 @@ interface FluidInterface
         public function attr($name, $value = null);
         public function setAttribute($name, $value = null);
         public function text($text);
+        public function getText($glue = PHP_EOL);
         public function setText($text);
         public function addText($text);
         public function cdata($text);
