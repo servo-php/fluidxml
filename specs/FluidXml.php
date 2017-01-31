@@ -2826,23 +2826,30 @@ describe('FluidHelper', function () {
 
 describe('CssTranslator', function () {
         describe('.xpath()', function () {
-                $hml = new FluidXml([ 'html' => [ 'body' => [ 'div' =>
-                        [ 'p'  => [ '@class' => 'a', '@id' => '123', [ 'span' ] ],
-                          'h1' => [ '@class' => 'b' ],
-                          'p'  => [ '@class' => 'a b' ],
-                          'p'  => [ '@class' => 'a' ]    ]
-                ]]]);
+                $hml = new FluidXml([ 'html' => [
+                        'body' => [
+                                'div' => [
+                                        [ 'p'  => [ '@class' => 'a', '@id' => '123', [ 'span' ] ] ],
+                                        [ 'h1' => [ '@class' => 'b' ] ],
+                                        [ 'shape' => [ '@class' => 'c' ] ],
+                                        [ 'p'  => [ '@class' => 'a b' ] ],
+                                        [ 'p'  => [ '@class' => 'a' ] ],
+                                        [ 'span'  => [ '@class' => 'b' ] ],
+                ]]]]);
+
                 $hml->namespace('svg', 'http://svg.org');
                 $hml->query('//body')
-                        ->add('svg', true)
-                            ->add('shape');
+                        ->add('svg:svg', true)
+                            ->add('svg:shape')
+                            ->add('svg:shape');
 
                 it('should support the CSS selector A', function () use ($hml) {
                         $actual   = $hml->query('p')->array();
-                        $expected = $hml->query('.//p')->array();
+                        $expected = $hml->query('//p')->array();
                         \assert($actual === $expected, __($actual, $expected));
 
-                        $expected = $hml->query('//p')->array();
+                        $actual   = $hml->query('p')->size();
+                        $expected = 3;
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
@@ -2850,17 +2857,39 @@ describe('CssTranslator', function () {
                         $actual   = $hml->query('svg|shape')->array();
                         $expected = $hml->query('//svg:shape')->array();
                         \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('svg|shape')->size();
+                        $expected = 2;
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+
+                it('should support the CSS selector *|A', function () use ($hml) {
+                        $actual   = $hml->query('*|shape')->array();
+                        $expected = $hml->query('[local-name() = "shape"]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('*|shape')->size();
+                        $expected = 3;
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should support the CSS selector :root', function () use ($hml) {
                         $actual   = $hml->query(':root')->array();
                         $expected = $hml->query('/*')->array();
                         \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query(':root')->size();
+                        $expected = 1;
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should support the CSS selector #id', function () use ($hml) {
                         $actual   = $hml->query('#123')->array();
                         $expected = $hml->query('//*[@id="123"]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('#123')->size();
+                        $expected = 1;
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
@@ -2869,38 +2898,70 @@ describe('CssTranslator', function () {
                         $expected = $hml->query('//p')->array();
                         \assert($actual === $expected, __($actual, $expected));
 
+                        $actual   = $hml->query('.a')->size();
+                        $expected = 3;
+                        \assert($actual === $expected, __($actual, $expected));
+
                         $actual   = $hml->query('.a.b')->array();
                         $expected = $hml->query('//p[2]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('.a.b')->size();
+                        $expected = 1;
                         \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $hml->query('h1.b')->array();
                         $expected = $hml->query('//h1')->array();
                         \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('h1.b')->size();
+                        $expected = 1;
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should support the CSS selector [attr]', function () use ($hml) {
                         $actual   = $hml->query('[class]')->array();
-                        $expected = $hml->query('//div//*')->array();
+                        $expected = $hml->query('//div/*')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('[class]')->size();
+                        $expected = 6;
                         \assert($actual === $expected, __($actual, $expected));
 
                         $actual   = $hml->query('[id]')->array();
                         $expected = $hml->query('//*[@id]')->array();
                         \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('[id]')->size();
+                        $expected = 1;
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should support the CSS selector [attr="val"]', function () use ($hml) {
-                        $actual   = $hml->query('[id="123"]')->array();
-                        $expected = $hml->query('//*[@id]')->array();
-                        \assert($actual === $expected, __($actual, $expected));
-
                         $actual   = $hml->query('p[id="123"]')->array();
                         $expected = $hml->query('//p[@id]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('p[id="123"]')->size();
+                        $expected = 1;
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('[class="a"]')->array();
+                        $expected = $hml->query('//*[@class="a"]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('[class="a"]')->size();
+                        $expected = 2;
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should support the CSS selector A B', function () use ($hml) {
-                        $actual   = $hml->query('body p')->array();
-                        $expected = $hml->query('//body//p')->array();
+                        $actual   = $hml->query('div span')->array();
+                        $expected = $hml->query('//div//span')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('div span')->size();
+                        $expected = 2;
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
@@ -2909,8 +2970,8 @@ describe('CssTranslator', function () {
                         $expected = $hml->query('//div/p')->array();
                         \assert($actual === $expected, __($actual, $expected));
 
-                        $actual   = $hml->query('body > p')->array();
-                        $expected = $hml->query('//body/p')->array();
+                        $actual   = $hml->query('div > p')->size();
+                        $expected = 3;
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
@@ -2918,23 +2979,39 @@ describe('CssTranslator', function () {
                         $actual   = $hml->query('p, div')->array();
                         $expected = $hml->query('//p|//div')->array();
                         \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('p, div')->size();
+                        $expected = 4;
+                        \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should support the CSS selector A + B', function () use ($hml) {
                         $actual   = $hml->query('p + p')->array();
-                        $expected = $hml->query('//p[2]', '//p[3]')->array();
+                        $expected = $hml->query('//p[3]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('p + p')->size();
+                        $expected = 1;
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should support the CSS selector A ~ B', function () use ($hml) {
-                        $actual   = $hml->query('p ~ h1')->array();
-                        $expected = $hml->query('//h1')->array();
+                        $actual   = $hml->query('h1 ~ p')->array();
+                        $expected = $hml->query('//p[2]|//p[3]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query('h1 ~ p')->size();
+                        $expected = 2;
                         \assert($actual === $expected, __($actual, $expected));
                 });
 
                 it('should support mixing CSS selectors :root #123 span, div, :root .a', function () use ($hml) {
                         $actual   = $hml->query(':root #123 span, div, :root .a')->array();
-                        $expected = $hml->query('//span', '//div', '//p')->array();
+                        $expected = $hml->query('//p/span|//div|//*[@class="a"]|//*[@class="a b"]')->array();
+                        \assert($actual === $expected, __($actual, $expected));
+
+                        $actual   = $hml->query(':root #123 span, div, :root .a')->size();
+                        $expected = 5;
                         \assert($actual === $expected, __($actual, $expected));
                 });
         });
