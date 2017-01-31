@@ -286,6 +286,11 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
+        public function getText($glue = PHP_EOL)
+        {
+                return implode($glue, $this->map(function ($i, $n) { return $n->textContent; }));
+        }
+
         public function setText($text)
         {
                 foreach ($this->nodes as $n) {

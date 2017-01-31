@@ -10,7 +10,7 @@ trait FluidAliasesTrait
         public function prepend($sibling, ...$optionals) { return $this->prependSibling($sibling, ...$optionals); }
         public function append($sibling, ...$optionals)  { return $this->appendSibling($sibling, ...$optionals); }
         public function attr($name, $value = null)       { return $this->setAttribute($name, $value); }
-        public function text($text)                      { return $this->setText($text); }
+        public function text($text = null)               { return $text ? $this->setText($text) : $this->getText(); }
         public function cdata($text)                     { return $this->setCdata($text); }
         public function comment($text)                   { return $this->setComment($text); }
         abstract public function length();
@@ -19,6 +19,7 @@ trait FluidAliasesTrait
         abstract public function prependSibling($sibling, ...$optionals);
         abstract public function appendSibling($sibling, ...$optionals);
         abstract public function setAttribute($name, $value = null);
+        abstract public function getText($glue = PHP_EOL);
         abstract public function setText($text);
         abstract public function setCdata($text);
         abstract public function setComment($text);
