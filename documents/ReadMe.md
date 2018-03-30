@@ -246,24 +246,28 @@ But you'll have the best answer trying it yourself.
 
 ## Installation
 * **Cloning the repository**:
-  ```sh
+
+```sh
 git clone https://github.com/servo-php/fluidxml.git
 ```
 
 * **Using Composer**:
-  ```sh
+
+```sh
 composer require servo/fluidxml
 ```
 
 
 ## Getting Started
 * **Cloning the repository**:
-  ```php
+
+```php
 require_once 'FluidXml.php';
 ```
 
 * **Using Composer**:
-  ```php
+
+```php
 require_once 'vendor/autoload.php';
 ```
 
