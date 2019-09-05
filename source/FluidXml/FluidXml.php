@@ -176,20 +176,11 @@ class FluidXml implements FluidInterface
 
                 return "{$header}{$html}";
         }
-
-        function toArray($strip = false)
+        
+        function exportTo($complexType, $strip = false)
         {
                 $xml = $this->xml($strip);
-                $unserializer = $this->xmlUnserializer('array');
-                $unserializer->unserialize($xml);
-
-                return $unserializer->getUnserializedData();
-        }
-
-        function toObject($strip = false)
-        {
-                $xml = $this->xml($strip);
-                $unserializer = $this->xmlUnserializer('object');
+                $unserializer = $this->xmlUnserializer($complexType);
                 $unserializer->unserialize($xml);
 
                 return $unserializer->getUnserializedData();
