@@ -2,6 +2,9 @@
 
 namespace FluidXml;
 
+// PEAR
+use XML_Unserializer;
+
 /**
  * @method array array()
  * @method FluidXml namespace(...$arguments)
@@ -172,6 +175,26 @@ class FluidXml implements FluidInterface
                 $html = FluidHelper::domdocumentToStringWithoutHeaders($this->document->dom, true);
 
                 return "{$header}{$html}";
+        }
+        
+        function exportTo($complexType, $strip = false)
+        {
+                $xml = $this->xml($strip);
+                $unserializer = $this->xmlUnserializer($complexType);
+                $unserializer->unserialize($xml);
+
+                return $unserializer->getUnserializedData();
+        }
+
+        protected function xmlUnserializer($complexType)
+        {
+                $options = array(
+                    'parseAttributes' => true,
+                    'prependAttributes' => '@',
+                    'complexType' => $complexType
+                );
+
+                return new XML_Unserializer($options);
         }
 
         public function namespaces()

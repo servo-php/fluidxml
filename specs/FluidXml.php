@@ -2318,6 +2318,106 @@ EOF;
                 });
         });
 
+        describe('.exportTo()', function () {
+                it('should return an array', function () {
+                        
+                        $xmlStr = "<animal operation=\"create\">\n"
+                                . "    <type>Herbivore</type>\n"
+                                . "    <attribute xmlns:foo=\"http://namespace.foo\">\n"
+                                . "        <foo:legs>4</foo:legs>\n"
+                                . "        <foo:head>1</foo:head>\n"
+                                . "    </attribute>\n"
+                                . "</animal>";
+                        
+                        $xml = new FluidXml();
+                        $xml->addChild($xmlStr);
+                        $arr = $xml->exportTo("array");
+                        
+                        $actual = is_array($arr);
+                        $expected = false;
+
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+                
+                it('should return an array in the correct format', function () {
+                        
+                        $xmlStr = "<animal operation=\"create\">\n"
+                                . "    <type>Herbivore</type>\n"
+                                . "    <attribute xmlns:foo=\"http://namespace.foo\">\n"
+                                . "        <foo:legs>4</foo:legs>\n"
+                                . "        <foo:head>1</foo:head>\n"
+                                . "    </attribute>\n"
+                                . "</animal>";
+                        
+                        $xml = new FluidXml();
+                        $xml->addChild($xmlStr);
+                        $actual = $xml->exportTo('array');
+                        
+                        $array = $xml->array();
+                        
+                        $expected = array (
+                                'animal' =>
+                                array (
+                                        '@xmlns:foo' => 'http://namespace.foo',
+                                        '@operation' => 'create',
+                                        'type' => 'Herbivore',
+                                        'attribute' =>
+                                        array (
+                                                '@xmlns:foo' => 'http://namespace.foo',
+                                                'foo:legs' => '4',
+                                                'foo:head' => '1',
+                                        ),
+                                ),
+                        );
+
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+                
+                it('should return an stdClass Object', function () {
+                        
+                        $xmlStr = "<animal operation=\"create\">\n"
+                                . "    <type>Herbivore</type>\n"
+                                . "    <attribute xmlns:foo=\"http://namespace.foo\">\n"
+                                . "        <foo:legs>4</foo:legs>\n"
+                                . "        <foo:head>1</foo:head>\n"
+                                . "    </attribute>\n"
+                                . "</animal>";
+                        
+                        $xml = new FluidXml();
+                        $xml->addChild($xmlStr);
+                        $object = $xml->exportTo('object');
+
+                        \assert_is_a($object, '\stdClass');
+                });
+                
+                it('should return a stdClass object in the correct format', function () {
+                        
+                        $xmlStr = "<animal operation=\"create\">\n"
+                                . "    <type>Herbivore</type>\n"
+                                . "    <attribute xmlns:foo=\"http://namespace.foo\">\n"
+                                . "        <foo:legs>4</foo:legs>\n"
+                                . "        <foo:head>1</foo:head>\n"
+                                . "    </attribute>\n"
+                                . "</animal>";
+                        
+                        $xml = new FluidXml();
+                        $xml->addChild($xmlStr);
+                        $actual = $xml->exportTo('object');
+                        
+                        $expected = new stdClass();
+                        $expected->animal = new stdClass();
+                        $expected->animal->{'@xmlns:foo'} = 'http://namespace.foo';
+                        $expected->animal->{'@operation'} = 'create';
+                        $expected->animal->type = 'Herbivore';
+                        $expected->animal->attribute = new stdClass();
+                        $expected->animal->attribute->{'@xmlns:foo'} = 'http://namespace.foo';
+                        $expected->animal->attribute->{'foo:legs'} = '4';
+                        $expected->animal->attribute->{'foo:head'} = '2';
+
+                        \assert($actual === $expected, __($actual, $expected));
+                });
+        });
+
         describe('.save()', function () {
                 it('should be fluid', function () {
                         $file = "{$this->out_dir}.test_save0.xml";
