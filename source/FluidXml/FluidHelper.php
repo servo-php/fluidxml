@@ -6,6 +6,9 @@ class FluidHelper
 {
         public static function isAnXmlString($string)
         {
+                if (is_null($string)) {
+                        $string = '';
+                }
                 // Removes any empty new line at the beginning,
                 // otherwise the first character check may fail.
                 $string = \ltrim($string);

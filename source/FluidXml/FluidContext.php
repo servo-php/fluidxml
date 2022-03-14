@@ -8,10 +8,10 @@ namespace FluidXml;
 class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 {
         use FluidAliasesTrait,
-            FluidSaveTrait,
-            NewableTrait,
-            ReservedCallTrait,          // For compatibility with PHP 5.6.
-            ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
+                FluidSaveTrait,
+                NewableTrait,
+                ReservedCallTrait,          // For compatibility with PHP 5.6.
+                ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
 
         private $document;
         private $handler;
@@ -39,7 +39,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         }
 
         // \ArrayAccess interface.
-        public function offsetSet($offset, $value)
+        public function offsetSet($offset, $value): void
         {
                 // if (\is_null($offset)) {
                 //         $this->nodes[] = $value;
@@ -50,20 +50,20 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         }
 
         // \ArrayAccess interface.
-        public function offsetExists($offset)
+        public function offsetExists($offset): bool
         {
                 return isset($this->nodes[$offset]);
         }
 
         // \ArrayAccess interface.
-        public function offsetUnset($offset)
+        public function offsetUnset($offset): void
         {
                 // unset($this->nodes[$offset]);
                 \array_splice($this->nodes, $offset, 1);
         }
 
         // \ArrayAccess interface.
-        public function offsetGet($offset)
+        public function offsetGet($offset): mixed
         {
                 if (isset($this->nodes[$offset])) {
                         return $this->nodes[$offset];
@@ -73,31 +73,31 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         }
 
         // \Iterator interface.
-        public function rewind()
+        public function rewind(): void
         {
                 $this->seek = 0;
         }
 
         // \Iterator interface.
-        public function current()
+        public function current(): mixed
         {
                 return $this->nodes[$this->seek];
         }
 
         // \Iterator interface.
-        public function key()
+        public function key(): mixed
         {
                 return $this->seek;
         }
 
         // \Iterator interface.
-        public function next()
+        public function next(): void
         {
                 ++$this->seek;
         }
 
         // \Iterator interface.
-        public function valid()
+        public function valid(): bool
         {
                 return isset($this->nodes[$this->seek]);
         }
@@ -408,9 +408,9 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         protected function resolveQuery($query)
         {
                 if ( $query === '.'
-                     || $query[0] === '/'
-                     || ( $query[0] === '.' && $query[1] === '/' )
-                     || ( $query[0] === '.' && $query[1] === '.' ) ) {
+                        || $query[0] === '/'
+                        || ( $query[0] === '.' && $query[1] === '/' )
+                        || ( $query[0] === '.' && $query[1] === '.' ) ) {
                         return $query;
                 }
 

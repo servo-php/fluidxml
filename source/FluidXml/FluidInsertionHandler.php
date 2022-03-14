@@ -198,6 +198,9 @@ class FluidInsertionHandler
                         }
                 }
 
+                if (is_null($uri)) {
+                        $uri = '';
+                }
                 // Algorithm 1:
                 $el = new \DOMElement($name, $value, $uri);
 
