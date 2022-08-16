@@ -50,7 +50,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         }
 
         // \ArrayAccess interface.
-        public function offsetExists($offset)
+        public function offsetExists($offset): bool
         {
                 return isset($this->nodes[$offset]);
         }
