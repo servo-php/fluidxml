@@ -199,7 +199,7 @@ class FluidInsertionHandler
                 }
 
                 // Algorithm 1:
-                $el = new \DOMElement($name, $value, $uri);
+                $el = new \DOMElement($name, $value, $uri ?? '');
 
                 // Algorithm 2:
                 // $el = $dom->createElement($name, $value);
