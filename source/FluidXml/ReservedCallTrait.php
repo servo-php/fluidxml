@@ -4,6 +4,9 @@ namespace FluidXml;
 
 trait ReservedCallTrait
 {
+        /**
+         * @throws \Exception
+         */
         public function __call($method, $arguments)
         {
                 $m = "{$method}_";

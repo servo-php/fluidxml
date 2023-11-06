@@ -4,16 +4,16 @@ namespace FluidXml;
 
 class FluidHelper
 {
-        public static function isAnXmlString($string)
+        public static function isAnXmlString($string): bool
         {
                 // Removes any empty new line at the beginning,
                 // otherwise the first character check may fail.
-                $string = \ltrim($string);
+                $string = \ltrim((string) $string);
 
                 return $string && $string[0] === '<';
         }
 
-        public static function exportNode(\DOMDocument $dom, \DOMNode $node, $html = false)
+        public static function exportNode(\DOMDocument $dom, \DOMNode $node, $html = false): array|bool|string|null
         {
                 // $delegate = $html ? 'saveHTML' : 'saveXML';
                 // return $dom->$delegate($node);
@@ -25,12 +25,12 @@ class FluidHelper
                 return $dom->saveXML($node);
         }
 
-        public static function domdocumentToStringWithoutHeaders(\DOMDocument $dom, $html = false)
+        public static function domdocumentToStringWithoutHeaders(\DOMDocument $dom, $html = false): bool|array|string|null
         {
                 return static::exportNode($dom, $dom->documentElement, $html);
         }
 
-        public static function domnodelistToString(\DOMNodeList $nodelist, $html = false)
+        public static function domnodelistToString(\DOMNodeList $nodelist, $html = false): string
         {
                 $nodes = [];
 
@@ -47,7 +47,7 @@ class FluidHelper
                 return static::domnodesToString($nodes, $html);
         }
 
-        public static function domnodesToString(array $nodes, $html = false)
+        public static function domnodesToString(array $nodes, $html = false): string
         {
                 $dom = $nodes[0]->ownerDocument;
                 $xml = '';
@@ -59,14 +59,14 @@ class FluidHelper
                 return \rtrim($xml);
         }
 
-        public static function simplexmlToStringWithoutHeaders(\SimpleXMLElement $element, $html = false)
+        public static function simplexmlToStringWithoutHeaders(\SimpleXMLElement $element, $html = false): bool|array|string|null
         {
                 $dom = \dom_import_simplexml($element);
 
                 return static::exportNode($dom->ownerDocument, $dom, $html);
         }
 
-        public static function domdocumentToHtml($dom, $clone = true)
+        public static function domdocumentToHtml($dom, $clone = true): array|string|null
         {
                 if ($clone) {
                         $dom = $dom->cloneNode(true);
@@ -105,12 +105,12 @@ class FluidHelper
                 $html = static::domdocumentToStringWithoutHeaders($dom);
 
                 // Let's remove the placeholder.
-                $html = \preg_replace('/\s*<\?X-NOT-VOID\?>\s*/', '', $html);
+                $html = \preg_replace('/\s*<\?X-NOT-VOID\?>\s*/', '', (string) $html);
 
                 return $html;
         }
 
-        public static function domnodeToHtml(\DOMNode $node)
+        public static function domnodeToHtml(\DOMNode $node): array|string|null
         {
                 $dom = new \DOMDocument();
                 $dom->formatOutput       = true;

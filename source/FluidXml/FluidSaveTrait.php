@@ -4,7 +4,10 @@ namespace FluidXml;
 
 trait FluidSaveTrait
 {
-        public function save($file, $strip = false)
+        /**
+         * @throws \Exception
+         */
+        public function save($file, $strip = false): static
         {
                 $status = \file_put_contents($file, $this->xml($strip));
 

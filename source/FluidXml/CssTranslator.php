@@ -4,8 +4,8 @@ namespace FluidXml;
 
 class CssTranslator
 {
-        const TOKEN = '/{([[:alpha:]]+)(\d+)}/i';
-        const MAP = [
+        final public const TOKEN = '/{([[:alpha:]]+)(\d+)}/i';
+        final public const MAP = [
                 // Empty part of #id and .class
                 [ '(?<=^|\s)      # The begining or an empty space.
                    (?=[.#\[])     # . | # | [',
@@ -126,7 +126,7 @@ class CssTranslator
 
                 foreach (self::MAP as $o) {
                         // The regexes have a common wrapper.
-                        list($search, $replace, $id, $repeat) = $o;
+                        [$search, $replace, $id, $repeat] = $o;
                         $search = "/{$search}/xi";
 
                         do {
@@ -137,7 +137,7 @@ class CssTranslator
 
                 self::translateStack($stack, $xpath);
 
-                $xpath = \trim($xpath);
+                $xpath = \trim((string) $xpath);
                 $xpath = ".//$xpath";
                 $xpath = \str_replace('|', '|.//',   $xpath);
                 $xpath = \str_replace('.///', '/', $xpath);
@@ -148,7 +148,7 @@ class CssTranslator
         protected static function tokenize($search, $replace, $id, &$xpath, &$stack, &$index)
         {
                 // The search can return 0, 1 or more fund patterns.
-                $matches_count = \preg_match_all($search, $xpath, $matches, \PREG_SET_ORDER | \PREG_OFFSET_CAPTURE);
+                $matches_count = \preg_match_all($search, (string) $xpath, $matches, \PREG_SET_ORDER | \PREG_OFFSET_CAPTURE);
 
                 // \PREG_OFFSET_CAPTURE calculates offsets starting from the begining of the string $xpath.
                 // Rewriting $xpath from left (first matches) creates a mismatch between the calculated offsets
@@ -163,9 +163,9 @@ class CssTranslator
                         // $match[>0] are the captured groups.
                         // $match[n][0] is the actual string.
                         // $match[n][1] is the position of the string.
-                        list($pattern, $pattern_pos) = $match[0];
+                        [$pattern, $pattern_pos] = $match[0];
 
-                        $xpath = \substr_replace($xpath, "{{$id}{$index}}", $pattern_pos, \strlen($pattern));
+                        $xpath = \substr_replace((string) $xpath, "{{$id}{$index}}", $pattern_pos, \strlen($pattern));
 
                         $groups_values = [];
                         for ($ii = 1; $ii <= $groups_count; ++$ii) {
@@ -181,20 +181,20 @@ class CssTranslator
         protected static function translateStack(&$stack, &$xpath)
         {
                 do {
-                        $matches_count = \preg_match_all(self::TOKEN, $xpath, $matches, \PREG_SET_ORDER);
+                        $matches_count = \preg_match_all(self::TOKEN, (string) $xpath, $matches, \PREG_SET_ORDER);
 
                         for ($i = 0; $i < $matches_count; ++$i) {
-                                list(, $type, $id) = $matches[$i];
+                                [, $type, $id] = $matches[$i];
 
                                 $id = \intval($id);
 
-                                list($replace, $groups) = $stack[$id];
+                                [$replace, $groups] = $stack[$id];
 
                                 foreach ($groups as $k => $v) {
-                                        $replace = \str_replace("\\$k", $v, $replace);
+                                        $replace = \str_replace("\\$k", $v, (string) $replace);
                                 }
 
-                                $xpath = \str_replace("{{$type}{$id}}", $replace, $xpath);
+                                $xpath = \str_replace("{{$type}{$id}}", $replace, (string) $xpath);
                         }
                 } while ($matches_count > 0);
         }

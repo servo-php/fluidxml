@@ -4,6 +4,9 @@ namespace FluidXml;
 
 trait ReservedCallStaticTrait
 {
+        /**
+         * @throws \Exception
+         */
         public static function __callStatic($method, $arguments)
         {
                 $m = "{$method}_";
