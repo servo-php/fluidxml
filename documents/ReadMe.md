@@ -48,8 +48,8 @@
 
 ## Changelog
 
-**1.20.3** (2016-07-12):
-_fixes wrong handling of null/empty node value._
+**1.3.0** (2023-11-06):
+_Support PHP 8.1+_
 
 **...**
 
