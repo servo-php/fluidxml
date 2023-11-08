@@ -183,7 +183,7 @@ $book->query('//chapters')
         });
 ```
 
-You can map nodes easily too.
+You can **map** nodes easily too.
 
 ```php
 $chaptersIds = $book->query('//chapter')->map(function ($i, $it) {

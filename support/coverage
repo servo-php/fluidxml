@@ -23,22 +23,17 @@ if test $# -eq 1; then
         reporter=$1
 fi
 
-cd sandbox
-
-peridot_arguments="-c \"../support/peridot.php\" -r $reporter -g \"*.php\" \"../specs/\""
+peridot_arguments="-c ./support/peridot.php -r $reporter -g *.php ./specs/"
 
 if php -m | grep -i 'xdebug' > /dev/null; then
         echo ' info: using Xdebug.'
-        eval "peridot $peridot_arguments"
+        set -- $peridot_arguments
+        peridot "$@"
 
 elif chkcmd 'phpdbg'; then
         echo ' info: using phpdbg.'
-        echo
-        echo ' type: run'
-        echo '       quit'
-        echo
-
-        eval "phpdbg -e \"$(which peridot)\" $peridot_arguments"
+        set -- $peridot_arguments
+        phpdbg -e -rr "$(which peridot)" "$@"
 else
         echo ' error: no profiling tool found.'
         exit 1

@@ -23,10 +23,11 @@ genapi() {
                 --source "source"               \
                 --destination "$api_dir"        \
                 --template-theme bootstrap      \
-                --template-config "sandbox/composer/apigen/theme-bootstrap/src/config.neon" \
+                --template-config "./sandbox/composer/apigen/theme-bootstrap/src/config.neon" \
                 --title "FluidXML"              \
                 --todo                          \
-                --tree
+                --tree                          \
+                --debug
 }
 
 doc_handler()
@@ -39,6 +40,8 @@ doc_handler()
         done
 }
 
-watch "source/" | dsstore_filter | doc_handler
+genapi
 
-# chkcmd 'open' && open "$api_dir/index.html"
+echo "Open $api_dir/index.html"
+
+watch "source/" | dsstore_filter | doc_handler

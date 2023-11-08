@@ -2,6 +2,7 @@
 
 cd "$(dirname "$0")"
 . "./.common.sh"
+cd ..
 
 if ! chkcmd 'curl'; then
         echo ' error: "curl" command not found.'
@@ -14,11 +15,11 @@ if test $# -eq 1; then
         travis_job_id="$1"
 fi
 
-coverage_data="$PWD/../../sandbox/code-coverage-report/code-coverage.php"
+coverage_data="$PWD/sandbox/code-coverage-report/code-coverage.php"
 coverage_file="$(dirname "$coverage_data")/code-coverage.json"
 
-./coverage php-code-coverage
+./support/coverage php-code-coverage
 
-php -f '../coveralls.php' "$coverage_data" "$travis_job_id" > "$coverage_file"
+php -f './support/coveralls.php' "$coverage_data" "$travis_job_id" > "$coverage_file"
 
 curl -v -F json_file="@$coverage_file" "https://coveralls.io/api/v1/jobs"
