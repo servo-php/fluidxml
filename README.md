@@ -259,7 +259,7 @@ But you'll have the best answer trying it yourself.
 
 
 ## Requirements
-* **FluidXML v2** (latest) requires **PHP 8.1**
+* **FluidXML v2** (latest) requires **PHP >= 8.1**
 * FluidXML v1 (legacy) requires **PHP >=5.6 <8**
 
 
