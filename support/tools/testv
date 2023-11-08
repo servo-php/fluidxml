@@ -8,17 +8,17 @@ tester="./support/tools/test"
 
 if ! chkcmd 'brew'; then
         echo ' "brew" command not found.'
-        echo ' Skipping version based testing for PHP {5.6, 7}.'
+        echo ' Skipping version based testing for PHP {8.1, 8.2}.'
 
         "$tester"
 else
-        brew unlink php56 php70 > /dev/null     \
-        && brew link php56      > /dev/null     \
-        && printf "\nTesting against PHP 5.6\n" \
+        brew unlink php@8.1 > /dev/null     \
+        && brew link php@8.1      > /dev/null     \
+        && printf "\nTesting against PHP 8.1\n" \
         && "$tester"                            \
         && clear                                \
-        && brew unlink php56    > /dev/null     \
-        && brew link php70      > /dev/null     \
-        && printf "\nTesting against PHP 7.0\n" \
+        && brew unlink php@8.1    > /dev/null     \
+        && brew link php@8.2      > /dev/null     \
+        && printf "\nTesting against PHP 8.2\n" \
         && "$tester"
 fi

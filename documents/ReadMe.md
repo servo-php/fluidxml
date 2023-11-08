@@ -48,7 +48,7 @@
 
 ## Changelog
 
-**1.3.0** (2023-11-06):
+**2.0.0** (2023-11-06):
 _Support PHP 8.1+_
 
 **...**
@@ -315,7 +315,6 @@ your immense gratitude **[♥][thankyou]**, _buy me a coffe_.
 
 
 ## Roadmap
-* [x] PHP 5.6 backport
 * [ ] Extending the documentation
 * [ ] Expanding the APIs
 

@@ -1,6 +1,6 @@
 [+]: new   [~]: changed   [-]: removed   [#]: fixed   [@]: internal
 
-1.3.0: (2023-11-06)
+2.0.0: (2023-11-06)
 bump support and syntax changes to PHP 8.1+
 
     [~] Changed:
@@ -207,7 +207,7 @@ improves the removal of nodes.
   * ->remove() can remove the results of a query and accepts multiple XPath strings.
 
 
-1.3:
+2.0:
 helps customizing the root element of a document.
 
   [~] Changed:
