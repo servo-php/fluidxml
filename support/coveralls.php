@@ -49,13 +49,13 @@ foreach ($data as $file => $c) {
                 $coverage[$i] = $val;
         }
 
-        $file = [ 'name'          => \substr($file, \strlen($root_dir) + 1),
+        $file = [ 'name'          => \substr((string) $file, \strlen($root_dir) + 1),
                   'source_digest' => \md5_file($file),
                   'coverage'      => $coverage ];
 
         $payload['source_files'][] = $file;
 }
 
-$data = \json_encode($payload);
+$data = \json_encode($payload, JSON_THROW_ON_ERROR);
 
 echo $data;

@@ -48,8 +48,8 @@
 
 ## Changelog
 
-**1.20.3** (2016-07-12):
-_fixes wrong handling of null/empty node value._
+**2.0.0** (2023-11-06):
+_Support PHP 8.1+_
 
 **...**
 
@@ -241,7 +241,7 @@ But you'll have the best answer trying it yourself.
 
 
 ## Requirements
-* PHP 5.6
+* PHP 8.1+
 
 
 ## Installation
@@ -315,7 +315,6 @@ your immense gratitude **[♥][thankyou]**, _buy me a coffe_.
 
 
 ## Roadmap
-* [x] PHP 5.6 backport
 * [ ] Extending the documentation
 * [ ] Expanding the APIs
 

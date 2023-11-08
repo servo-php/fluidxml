@@ -14,16 +14,16 @@ class FluidXml implements FluidInterface
             ReservedCallTrait,          // For compatibility with PHP 5.6.
             ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
 
-        const ROOT_NODE = 'doc';
+        final public const ROOT_NODE = 'doc';
 
-        private $defaults = [ 'root'       => self::ROOT_NODE,
+        private array $defaults = [ 'root'       => self::ROOT_NODE,
                               'version'    => '1.0',
                               'encoding'   => 'UTF-8',
                               'stylesheet' => null ];
 
-        private $document;
-        private $handler;
-        private $context;
+        private readonly \FluidXml\FluidDocument $document;
+        private readonly \FluidXml\FluidInsertionHandler $handler;
+        private ?\FluidXml\FluidContext $context = null;
         private $contextEl;
 
         public static function load($document)
@@ -66,7 +66,7 @@ class FluidXml implements FluidInterface
                      ->initRoot($options);
         }
 
-        protected function mergeOptions(&$arguments)
+        protected function mergeOptions(&$arguments): array
         {
                 $options = $this->defaults;
 
@@ -85,7 +85,7 @@ class FluidXml implements FluidInterface
                 return $options;
         }
 
-        private function newDom(&$options)
+        private function newDom(&$options): \DOMDocument
         {
                 $dom = new \DOMDocument($options['version'], $options['encoding']);
                 $dom->formatOutput       = true;
@@ -94,7 +94,7 @@ class FluidXml implements FluidInterface
                 return $dom;
         }
 
-        private function initStylesheet(&$options)
+        private function initStylesheet(&$options): static
         {
                 if (! empty($options['stylesheet'])) {
                         $attrs = 'type="text/xsl" '
@@ -114,7 +114,7 @@ class FluidXml implements FluidInterface
                 return $this;
         }
 
-        private function initRoot(&$options)
+        private function initRoot(&$options): static
         {
                 if (! empty($options['root'])) {
                         $this->appendSibling($options['root']);
@@ -123,7 +123,7 @@ class FluidXml implements FluidInterface
                 return $this;
         }
 
-        public function length()
+        public function length(): int
         {
                 return \count($this->array());
         }
@@ -136,7 +136,7 @@ class FluidXml implements FluidInterface
         // This method should be called 'array',
         // but for compatibility with PHP 5.6
         // it is shadowed by the __call() method.
-        public function array_()
+        public function array_(): array
         {
                 $el = $this->document->dom->documentElement;
 
@@ -147,9 +147,9 @@ class FluidXml implements FluidInterface
                 return [ $el ];
         }
 
-        public function __toString()
+        public function __toString(): string
         {
-                return $this->xml();
+                return (string) $this->xml();
         }
 
         public function xml($strip = false)
@@ -161,7 +161,7 @@ class FluidXml implements FluidInterface
                 return $this->document->dom->saveXML();
         }
 
-        public function html($strip = false)
+        public function html($strip = false): string
         {
                 $header = "<!DOCTYPE html>\n";
 
@@ -182,7 +182,7 @@ class FluidXml implements FluidInterface
         // This method should be called 'namespace',
         // but for compatibility with PHP 5.6
         // it is shadowed by the __call() method.
-        protected function namespace_(...$arguments)
+        protected function namespace_(...$arguments): static
         {
                 $namespaces = [];
 
@@ -241,7 +241,10 @@ class FluidXml implements FluidInterface
                 });
         }
 
-        protected function context()
+        /**
+         * @throws \Exception
+         */
+        protected function context(): ?FluidContext
         {
                 $el = $this->document->dom->documentElement;
 
@@ -261,6 +264,9 @@ class FluidXml implements FluidInterface
                 return $this->context;
         }
 
+        /**
+         * @throws \Exception
+         */
         protected function chooseContext(\Closure $fn)
         {
                 // If the user has requested ['root' => null] at construction time

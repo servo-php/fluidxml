@@ -4,17 +4,8 @@ namespace FluidXml;
 
 class FluidRepeater
 {
-        private $document;
-        private $handler;
-        private $context;
-        private $times;
-
-        public function __construct($document, $handler, $context, $times)
+        public function __construct(private $document, private $handler, private $context, private $times)
         {
-                $this->document = $document;
-                $this->handler  = $handler;
-                $this->context  = $context;
-                $this->times    = $times;
         }
 
         public function __call($method, $arguments)

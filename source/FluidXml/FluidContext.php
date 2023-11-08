@@ -11,18 +11,15 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
             FluidSaveTrait,
             NewableTrait,
             ReservedCallTrait,          // For compatibility with PHP 5.6.
-            ReservedCallStaticTrait;    // For compatibility with PHP 5.6.
+            ReservedCallStaticTrait;
+        private array $nodes = [];
+        private int $seek = 0;
 
-        private $document;
-        private $handler;
-        private $nodes = [];
-        private $seek = 0;
-
-        public function __construct($document, $handler, $context)
+        /**
+         * @throws \Exception
+         */
+        public function __construct(private $document, private $handler, $context)
         {
-                $this->document = $document;
-                $this->handler  = $handler;
-
                 if (! \is_array($context) && ! $context instanceof \Traversable) {
                         // DOMDocument, DOMElement and DOMNode are not iterable.
                         // DOMNodeList and FluidContext are iterable.
@@ -38,8 +35,12 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 }
         }
 
-        // \ArrayAccess interface.
-        public function offsetSet($offset, $value)
+
+        /**
+         * @throws \Exception
+         * \ArrayAccess interface.
+         */
+        public function offsetSet($offset, $value): void
         {
                 // if (\is_null($offset)) {
                 //         $this->nodes[] = $value;
@@ -50,64 +51,63 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         }
 
         // \ArrayAccess interface.
-        public function offsetExists($offset)
+        public function offsetExists($offset): bool
         {
                 return isset($this->nodes[$offset]);
         }
 
         // \ArrayAccess interface.
-        public function offsetUnset($offset)
+        public function offsetUnset($offset): void
         {
                 // unset($this->nodes[$offset]);
                 \array_splice($this->nodes, $offset, 1);
         }
 
         // \ArrayAccess interface.
-        public function offsetGet($offset)
+        public function offsetGet($offset): mixed
         {
-                if (isset($this->nodes[$offset])) {
-                        return $this->nodes[$offset];
-                }
-
-                return null;
+                return $this->nodes[$offset] ?? null;
         }
 
         // \Iterator interface.
-        public function rewind()
+        public function rewind(): void
         {
                 $this->seek = 0;
         }
 
         // \Iterator interface.
-        public function current()
+        public function current(): mixed
         {
                 return $this->nodes[$this->seek];
         }
 
         // \Iterator interface.
-        public function key()
+        public function key(): int
         {
                 return $this->seek;
         }
 
         // \Iterator interface.
-        public function next()
+        public function next(): void
         {
                 ++$this->seek;
         }
 
         // \Iterator interface.
-        public function valid()
+        public function valid(): bool
         {
                 return isset($this->nodes[$this->seek]);
         }
 
-        public function length()
+        public function length(): int
         {
                 return \count($this->nodes);
         }
 
-        public function query(...$query)
+        /**
+         * @throws \Exception
+         */
+        public function query(...$query): FluidContext
         {
                 if (\is_array($query[0])) {
                         $query = $query[0];
@@ -150,12 +150,12 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this->newContext($results);
         }
 
-        public function __invoke(...$query)
+        public function __invoke(...$query): FluidContext
         {
                 return $this->query(...$query);
         }
 
-        public function times($times, callable $fn = null)
+        public function times($times, callable $fn = null): FluidRepeater|static
         {
                 if ($fn === null) {
                         return new FluidRepeater($this->document, $this->handler, $this, $times);
@@ -168,7 +168,10 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function each(callable $fn)
+        /**
+         * @throws \Exception
+         */
+        public function each(callable $fn): static
         {
                 foreach ($this->nodes as $i => $n) {
                         $cx = $this->newContext($n);
@@ -179,7 +182,10 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function map(callable $fn)
+        /**
+         * @throws \Exception
+         */
+        public function map(callable $fn): array
         {
                 $result = [];
 
@@ -192,7 +198,10 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $result;
         }
 
-        public function filter(callable $fn)
+        /**
+         * @throws \Exception
+         */
+        public function filter(callable $fn): FluidContext
         {
                 $nodes = [];
 
@@ -212,9 +221,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         // addChild($child, $value?, $attributes? = [], $switchContext? = false)
         public function addChild($child, ...$optionals)
         {
-                return $this->handler->insertElement($this->nodes, $child, $optionals, function ($parent, $element) {
-                        return $parent->appendChild($element);
-                }, $this);
+                return $this->handler->insertElement($this->nodes, $child, $optionals, fn($parent, $element) => $parent->appendChild($element), $this);
         }
 
         public function prependSibling($sibling, ...$optionals)
@@ -250,7 +257,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
 
         // setAttribute($name, $value)
         // setAttribute(['name' => 'value', ...])
-        public function setAttribute($name, $value = null)
+        public function setAttribute($name, $value = null): static
         {
                 if (\is_array($name)) {
                         $attrs = $name;
@@ -266,7 +273,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                                 }
 
                                 // Algorithm 1:
-                                $n->setAttribute($k, $v);
+                                $n->setAttribute($k, $v ?? '');
 
                                 // Algorithm 2:
                                 // $n->setAttributeNode(new \DOMAttr($k, $v));
@@ -286,7 +293,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function setText($text)
+        public function setText($text): static
         {
                 foreach ($this->nodes as $n) {
                         // Algorithm 1:
@@ -307,7 +314,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function addText($text)
+        public function addText($text): static
         {
                 foreach ($this->nodes as $n) {
                         $n->appendChild(new \DOMText($text));
@@ -316,7 +323,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function setCdata($text)
+        public function setCdata($text): static
         {
                 foreach ($this->nodes as $n) {
                         $n->nodeValue = '';
@@ -326,7 +333,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function addCdata($text)
+        public function addCdata($text): static
         {
                 foreach ($this->nodes as $n) {
                         $n->appendChild(new \DOMCDATASection($text));
@@ -335,7 +342,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function setComment($text)
+        public function setComment($text): static
         {
                 foreach ($this->nodes as $n) {
                         $n->nodeValue = '';
@@ -345,7 +352,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function addComment($text)
+        public function addComment($text): static
         {
                 foreach ($this->nodes as $n) {
                         $n->appendChild(new \DOMComment($text));
@@ -354,7 +361,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return $this;
         }
 
-        public function remove(...$query)
+        public function remove(...$query): static
         {
                 // Arguments can be empty, a string or an array of strings.
 
@@ -380,32 +387,35 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
         // This method should be called 'array',
         // but for compatibility with PHP 5.6
         // it is shadowed by the __call() method.
-        public function array_()
+        public function array_(): array
         {
                 return $this->nodes;
         }
 
-        public function __toString()
+        public function __toString(): string
         {
-                return $this->xml();
+                return (string) $this->xml();
         }
 
-        public function xml($strip = false)
+        public function xml($strip = false): string
         {
                 return FluidHelper::domnodesToString($this->nodes);
         }
 
-        public function html($strip = false)
+        public function html($strip = false): string
         {
                 return FluidHelper::domnodesToString($this->nodes, true);
         }
 
-        protected function newContext(&$context)
+        /**
+         * @throws \Exception
+         */
+        protected function newContext(&$context): FluidContext
         {
                 return new FluidContext($this->document, $this->handler, $context);
         }
 
-        protected function resolveQuery($query)
+        protected function resolveQuery($query): array|string
         {
                 if ( $query === '.'
                      || $query[0] === '/'
@@ -417,7 +427,7 @@ class FluidContext implements FluidInterface, \ArrayAccess, \Iterator
                 return CssTranslator::xpath($query);
         }
 
-        protected function filterQueryResults(&$results)
+        protected function filterQueryResults(&$results): array
         {
                 $set = [];
 

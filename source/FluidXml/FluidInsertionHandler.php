@@ -4,20 +4,21 @@ namespace FluidXml;
 
 class FluidInsertionHandler
 {
-        private $document;
         private $dom;
         private $namespaces;
 
-        public function __construct($document)
+        public function __construct(private $document)
         {
-                $this->document   = $document;
                 $this->dom        = $document->dom;
                 $this->namespaces =& $document->namespaces;
         }
 
+        /**
+         * @throws \Exception
+         */
         public function insertElement(&$nodes, $element, &$optionals, $fn, $orig_context)
         {
-                list($element, $attributes, $switch_context) = $this->handleOptionals($element, $optionals);
+                [$element, $attributes, $switch_context] = $this->handleOptionals($element, $optionals);
 
                 $new_nodes = [];
 
@@ -41,12 +42,15 @@ class FluidInsertionHandler
                 return $switch_context ? $new_context : $orig_context;
         }
 
-        protected function newContext(&$context)
+        /**
+         * @throws \Exception
+         */
+        protected function newContext(&$context): FluidContext
         {
                 return new FluidContext($this->document, $this, $context);
         }
 
-        protected function handleOptionals($element, &$optionals)
+        protected function handleOptionals($element, &$optionals): array
         {
                 if (! \is_array($element)) {
                         $element = [ $element ];
@@ -75,6 +79,9 @@ class FluidInsertionHandler
         }
 
 
+        /**
+         * @throws \Exception
+         */
         protected function handleInsertion($parent, $k, $v, $fn, &$optionals)
         {
                 // This is an highly optimized method.
@@ -172,7 +179,10 @@ class FluidInsertionHandler
                 }
         }
 
-        protected function createElement($name, $value = null)
+        /**
+         * @throws \DOMException
+         */
+        protected function createElement($name, $value = null): \DOMElement
         {
                 // The DOMElement instance must be different for every node,
                 // otherwise only one element is attached to the DOM.
@@ -182,11 +192,11 @@ class FluidInsertionHandler
 
                 // The node name can contain the namespace id prefix.
                 // Example: xsl:template
-                $colon_pos = \strpos($name, ':');
+                $colon_pos = \strpos((string) $name, ':');
 
                 if ($colon_pos !== false) {
-                        $id   = \substr($name, 0, $colon_pos);
-                        $name = \substr($name, $colon_pos + 1);
+                        $id   = \substr((string) $name, 0, $colon_pos);
+                        $name = \substr((string) $name, $colon_pos + 1);
                 }
 
                 if ($id !== null) {
@@ -199,7 +209,7 @@ class FluidInsertionHandler
                 }
 
                 // Algorithm 1:
-                $el = new \DOMElement($name, $value, $uri);
+                $el = new \DOMElement($name, $value, $uri ?? '');
 
                 // Algorithm 2:
                 // $el = $dom->createElement($name, $value);
@@ -207,7 +217,7 @@ class FluidInsertionHandler
                 return $el;
         }
 
-        protected function attachNodes($parent, $nodes, $fn)
+        protected function attachNodes($parent, $nodes, $fn): array
         {
                 if (! \is_array($nodes) && ! $nodes instanceof \Traversable) {
                         $nodes = [ $nodes ];
@@ -223,7 +233,7 @@ class FluidInsertionHandler
                 return $context;
         }
 
-        protected function insertSpecialContent($parent, $k, $v)
+        protected function insertSpecialContent($parent, $k, $v): array
         {
                 // The user has passed an element text content:
                 // [ '@' => 'Element content.' ]
@@ -240,18 +250,21 @@ class FluidInsertionHandler
                 return [];
         }
 
-        protected function insertSpecialAttribute($parent, $k, $v)
+        protected function insertSpecialAttribute($parent, $k, $v): array
         {
                 // The user has passed an attribute name and an attribute value:
                 // [ '@attribute' => 'Attribute content' ]
 
-                $attr = \substr($k, 1);
+                $attr = \substr((string) $k, 1);
                 $this->newContext($parent)->setAttribute($attr, $v);
 
                 return [];
         }
 
-        protected function insertStringSimple($parent, $k, $v, $fn)
+        /**
+         * @throws \DOMException
+         */
+        protected function insertStringSimple($parent, $k, $v, $fn): array
         {
                 // The user has passed an element name and an element value:
                 // [ 'element' => 'Element content' ]
@@ -262,7 +275,10 @@ class FluidInsertionHandler
                 return [ $el ];
         }
 
-        protected function insertStringMixed($parent, $k, $v, $fn, &$optionals)
+        /**
+         * @throws \DOMException
+         */
+        protected function insertStringMixed($parent, $k, $v, $fn, &$optionals): array
         {
                 // The user has passed one of these cases:
                 // - [ 'element' => [...] ]
@@ -279,7 +295,10 @@ class FluidInsertionHandler
                 return [ $el ];
         }
 
-        protected function insertIntegerArray($parent, $k, $v, $fn, &$optionals)
+        /**
+         * @throws \Exception
+         */
+        protected function insertIntegerArray($parent, $k, $v, $fn, &$optionals): array
         {
                 // The user has passed a wrapper array:
                 // [ [...], ... ]
@@ -295,7 +314,10 @@ class FluidInsertionHandler
                 return $context;
         }
 
-        protected function insertIntegerString($parent, $k, $v, $fn)
+        /**
+         * @throws \DOMException
+         */
+        protected function insertIntegerString($parent, $k, $v, $fn): array
         {
                 // The user has passed a node name without a node value:
                 // [ 'element', ... ]
@@ -306,7 +328,7 @@ class FluidInsertionHandler
                 return [ $el ];
         }
 
-        protected function insertIntegerXml($parent, $k, $v, $fn)
+        protected function insertIntegerXml($parent, $k, $v, $fn): array
         {
                 // The user has passed an XML document instance:
                 // [ '<tag></tag>', DOMNode, SimpleXMLElement, FluidXml ]
@@ -315,7 +337,7 @@ class FluidInsertionHandler
                 $wrapper->formatOutput       = true;
                 $wrapper->preserveWhiteSpace = false;
 
-                $v = \ltrim($v);
+                $v = \ltrim((string) $v);
 
                 if ($v[1] === '?') {
                         $wrapper->loadXML($v);
@@ -335,7 +357,7 @@ class FluidInsertionHandler
                 return $this->attachNodes($parent, $nodes, $fn);
         }
 
-        protected function insertIntegerDomdocument($parent, $k, $v, $fn)
+        protected function insertIntegerDomdocument($parent, $k, $v, $fn): array
         {
                 // A DOMDocument can have multiple root nodes.
 
@@ -346,27 +368,27 @@ class FluidInsertionHandler
                 // return $this->attachNodes($parent, $v->documentElement, $fn);
         }
 
-        protected function insertIntegerDomnodelist($parent, $k, $v, $fn)
+        protected function insertIntegerDomnodelist($parent, $k, $v, $fn): array
         {
                 return $this->attachNodes($parent, $v, $fn);
         }
 
-        protected function insertIntegerDomnode($parent, $k, $v, $fn)
+        protected function insertIntegerDomnode($parent, $k, $v, $fn): array
         {
                 return $this->attachNodes($parent, $v, $fn);
         }
 
-        protected function insertIntegerSimplexml($parent, $k, $v, $fn)
+        protected function insertIntegerSimplexml($parent, $k, $v, $fn): array
         {
                 return $this->attachNodes($parent, \dom_import_simplexml($v), $fn);
         }
 
-        protected function insertIntegerFluidxml($parent, $k, $v, $fn)
+        protected function insertIntegerFluidxml($parent, $k, $v, $fn): array
         {
                 return $this->attachNodes($parent, $v->dom()->documentElement, $fn);
         }
 
-        protected function insertIntegerFluidcontext($parent, $k, $v, $fn)
+        protected function insertIntegerFluidcontext($parent, $k, $v, $fn): array
         {
                 return $this->attachNodes($parent, $v->array(), $fn);
         }

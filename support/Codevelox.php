@@ -6,13 +6,11 @@ ini_set('display_startup_errors', true);
 
 class Codevelox
 {
-        private $cycles;
-        private $tasks = [];
+        private array $tasks = [];
         private $data;
 
-        public function __construct($cycles = 100000)
+        public function __construct(private $cycles = 100000)
         {
-                $this->cycles = $cycles;
         }
 
         public function data($data)
@@ -26,7 +24,7 @@ class Codevelox
         {
                 $microtime = \microtime();
 
-                list($usec, $sec) = \explode(' ', $microtime);
+                [$usec, $sec] = \explode(' ', $microtime);
 
                 return $sec . \substr($usec, 1);
         }

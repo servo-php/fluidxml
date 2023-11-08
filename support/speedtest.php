@@ -1,6 +1,6 @@
 <?php
 
-$v = isset($argv[1]) ? $argv[1] : __DIR__ . '/../source';
+$v = $argv[1] ?? __DIR__ . '/../source';
 
 require_once 'Codevelox.php';
 require_once "$v/FluidXml.php";
@@ -9,7 +9,7 @@ $machine = new Codevelox(1000);
 
 $fluidxml = 'fluidxml';
 if (! function_exists($fluidxml)) {
-        $fluidxml = '\FluidXml\fluidxml';
+        $fluidxml = '\\' . \FluidXml\fluidxml::class;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

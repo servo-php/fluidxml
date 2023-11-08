@@ -4,14 +4,14 @@ namespace FluidXml;
 
 class FluidNamespace
 {
-        const ID   = 'id'  ;
-        const URI  = 'uri' ;
-        const MODE = 'mode';
+        final public const ID   = 'id'  ;
+        final public const URI  = 'uri' ;
+        final public const MODE = 'mode';
 
-        const MODE_IMPLICIT = 0;
-        const MODE_EXPLICIT = 1;
+        final public const MODE_IMPLICIT = 0;
+        final public const MODE_EXPLICIT = 1;
 
-        private $config = [ self::ID   => '',
+        private array $config = [ self::ID   => '',
                             self::URI  => '',
                             self::MODE => self::MODE_EXPLICIT ];
 
@@ -49,7 +49,7 @@ class FluidNamespace
                 // Relative queries are an example '../target".
                 $new_xpath = '';
 
-                $nodes = \explode('/', $xpath);
+                $nodes = \explode('/', (string) $xpath);
 
                 foreach ($nodes as $node) {
                         if (! empty($node)) {
