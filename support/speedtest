@@ -1,8 +1,8 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 cd "$(dirname "$0")"
 . "./.common.sh"
-cd ../..
+cd ..
 
 clear
 
@@ -11,7 +11,7 @@ if ! chkcmd 'git'; then
         exit 1
 fi
 
-versions='ORIG_HEAD master'
+versions='ORIG_HEAD main'
 
 if test $# -gt 0; then
         versions="$@"
@@ -31,8 +31,8 @@ ggit()
 mkdir -p "$repo_dir"
 mkdir -p "$test_dir"
 
-cp -f 'support/Codevelox.php' "$test_dir/"
-cp -f 'support/speedtest.php' "$test_dir/"
+cp -f './support/Codevelox.php' "$test_dir/"
+cp -f './support/speedtest.php' "$test_dir/"
 
 for v in $versions; do
         ggit checkout -f $v

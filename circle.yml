@@ -1,1 +1,13 @@
-support/circle.yml
+machine:
+    php:
+        version: 8.1.24
+dependencies:
+    pre:
+        - git config --global github.accesstoken 21fd5f444e024f66f292461ca7ea7243f63a200d
+    override:
+        - ./support/init
+    cache_directories:
+        - ./sandbox/composer/
+test:
+    override:
+        - ./support/test

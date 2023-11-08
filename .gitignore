@@ -1,5 +1,6 @@
-documents/api/
-private/
-sandbox/
-composer.lock
-.idea
+/.idea
+/*.code-workspace
+/composer.lock
+/doc/api/
+/private/
+/sandbox/

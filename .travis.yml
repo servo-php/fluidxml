@@ -1,1 +1,17 @@
-support/travis.yml
+language: php
+php:
+    - 8.1
+    - 8.2
+cache:
+    directories:
+        - sandbox/composer/
+install:
+    - composer self-update
+    - git config --global github.accesstoken 21fd5f444e024f66f292461ca7ea7243f63a200d
+    - ./support/init
+script:
+    - ./support/test
+after_script:
+    - ./support/coveralls "$TRAVIS_JOB_ID"
+notifications:
+  email: false

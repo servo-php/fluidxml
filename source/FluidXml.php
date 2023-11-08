@@ -29,7 +29,7 @@
  * and fluent API. It leverages XPath and the fluent programming pattern to be
  * fun and effective.
  *
- * @author Daniele Orlando <fluidxml(at)danieleorlando.com>
+ * @author Daniele Orlando <fluidxml(at)danieleorlando.io>
  *
  * @license BSD-2-Clause
  * @license https://opensource.org/licenses/BSD-2-Clause

@@ -1,18 +1,18 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 cd "$(dirname "$0")"
 . "./.common.sh"
-cd ../..
+cd ..
 
 PATH="$(pwd)/sandbox/composer/bin:$PATH"
 
 if ! chkcmd 'apigen'; then
         echo ' error: "apigen" command not found.'
-        echo ' Execute "./support/tools/init" first.'
+        echo ' Execute "./support/init" first.'
         exit 1
 fi
 
-api_dir="documents/api"
+api_dir="doc/api"
 
 if test -d "$api_dir"; then
         rm -rf "$api_dir"

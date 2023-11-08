@@ -1,8 +1,8 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 cd "$(dirname "$0")"
 . "./.common.sh"
-cd ../..
+cd ..
 
 if ! chkcmd 'composer'; then
         echo ' error: "composer" command not found.'

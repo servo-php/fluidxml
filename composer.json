@@ -1,1 +1,37 @@
-support/composer.json
+{
+    "version": "2.0.0",
+    "name": "servo/fluidxml",
+    "description": "Concise and fluent XML manipulation library",
+    "type": "library",
+    "keywords": ["xml","templating"],
+    "homepage": "https://github.com/servo-php/fluidxml",
+    "license": "BSD-2-Clause",
+    "authors": [
+        {
+            "name": "Daniele Orlando",
+            "email": "fluidxml@danieleorlando.io",
+            "homepage": "https://github.com/servo-php/fluidxml",
+            "role": "Developer"
+        }
+    ],
+    "config": {
+        "vendor-dir": "./sandbox/composer/"
+    },
+    "autoload": {
+        "files": ["./source/FluidXml/fluid.php"],
+        "psr-4": {
+            "FluidXml\\": "./source/FluidXml/"
+        }
+    },
+    "require": {
+        "php": "^8.1",
+        "ext-dom": "*",
+        "ext-simplexml": "*"
+    },
+    "require-dev": {
+        "peridot-php/peridot": "1.*",
+        "peridot-php/peridot-code-coverage-reporters": "1.*",
+        "apigen/apigen": "4.*",
+        "rector/rector": "^0.18.6"
+    }
+}

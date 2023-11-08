@@ -1,10 +1,23 @@
-[+]: new   [~]: changed   [-]: removed   [#]: fixed   [@]: internal
+[~]: Changed   [+]: Added   [-]: Removed   [#]: Fixed   [$]: Internal
 
 2.0.0: (2023-11-06)
-bump support and syntax changes to PHP 8.1+
+PHP 8.1 is the new minimum required version.
 
-    [~] Changed:
-    * PHP 8.1+ is the minimum version.
+  [~] Changed:
+  * PHP 8.1 is the minimum required version.
+
+Thanks to @nicekiwi for his awesome PR.
+
+
+1.21.0: (2017-01-31)
+Introduces the '->map()' method and the CSS 'any namespace' (*|tag) selector.
+
+  [+] Added:
+  * ->map() is part of the family.
+  * *|tag is a recognized CSS selector.
+
+Thanks to @alepeino for his great PR.
+
 
 1.20.3: (2016-07-12)
 fixes wrong handling of null/empty node value.
@@ -23,7 +36,7 @@ fixes some leaked PHP notices.
 1.20.1:
 internal cleanup.
 
-  [@] Internal:
+  [$] Internal:
   * refactoring.
 
 
@@ -35,7 +48,7 @@ growth, some notable additions like the ->filter() method to programmatically
 filter the query results and ->html() to output the document as valid HTML 5 string.
 Just because awesomenesses are never enough, ->query() supports CSS Selectors.
 
-  [+] New:
+  [+] Added:
   * ->html()                is part of the family.
   * ->filter()              is part of the family.
   * ->comment()             is part of the family.
@@ -65,7 +78,7 @@ Just because awesomenesses are never enough, ->query() supports CSS Selectors.
   * ->insertSiblingBefore() has been removed superseded by ->prependSibling().
   * ->insertSiblingAfter()  has been removed superseded by ->appendSibling().
 
-  [@] Internal:
+  [$] Internal:
   * PSR-0/4 compliance.
   * FluidXml.php is still there for people not using Composer/PSR-0/4 loaders.
   * refactoring.
@@ -74,42 +87,42 @@ Just because awesomenesses are never enough, ->query() supports CSS Selectors.
 1.13: (2016-01-24)
 introduces the '->save()' method.
 
-  [+] New:
+  [+] Added:
   * ->save() is part of the family.
 
 
 1.12.4:
 internal cleanup.
 
-  [@] Internal:
+  [$] Internal:
   * cleanup.
 
 
 1.12.3:
 refactoring improving the code design.
 
-  [@] Internal:
+  [$] Internal:
   * refactoring.
 
 
 1.12.2:
 internal refactoring and performance regression fix.
 
-  [@] Internal:
+  [$] Internal:
   * refactoring. Performances are normal.
 
 
 1.12.1:
 '->times()' and '->each()' are bound to the context. $this behaves as expected.
 
-  [@] Internal:
+  [$] Internal:
   * refactoring. Performances are worst but code is much better.
 
 
 1.12:
 introduces the '->times()' method.
 
-  [+] New:
+  [+] Added:
   * ->times() is part of the family.
 
 
@@ -127,19 +140,19 @@ text content when adding elements using an array.
 introduces the '->each()' method and the '->setCdata()'/'->cdata()' twins
 methods together with an internal refactoring.
 
-  [+] New:
+  [+] Added:
   * ->each()        is part of the family.
   * ->setCdata()    is part of the family.
   * ->cdata()       is part of the family.
 
-  [@] Internal:
+  [$] Internal:
   * refactoring.
 
 
 1.9:
 wraps classes and functions under the FluidXml namespace.
 
-  [+] New:
+  [+] Added:
   * FluidXml namespace wraps classes and functions.
 
 
@@ -186,7 +199,7 @@ lowers the minimum PHP version to PHP 5.6 (it was PHP 7).
   [~] Changed:
   * PHP 5.6 is the minimum version.
 
-  [@] Internal:
+  [$] Internal:
   * cleanup.
 
 
@@ -194,7 +207,7 @@ lowers the minimum PHP version to PHP 5.6 (it was PHP 7).
 introduces support for importing XML documents from DOMDocument, SimpleXMLElement,
 XML strings and XML files.
 
-  [+] New:
+  [+] Added:
   * fluidify()          is part of the family.
   * FluidXml::new()     is part of the family.
   * FluidXml::load()    is part of the family.
@@ -207,7 +220,7 @@ improves the removal of nodes.
   * ->remove() can remove the results of a query and accepts multiple XPath strings.
 
 
-2.0:
+1.3:
 helps customizing the root element of a document.
 
   [~] Changed:
@@ -233,7 +246,7 @@ fixes a notice error.
 1.1:
 introduces the XML namespaces support.
 
-  [+] New:
+  [+] Added:
   * ->namespace()  is part of the family.
   * ->namespaces() is part of the family.
   * FluidNamespace is part of the family.

@@ -23,8 +23,8 @@ dsstore_filter()
 {
         while read -d '' e; do
                 local dsstore=$(echo "$e" | grep -o "\.DS_Store")
-                ## We don't use the exit status, because an exit status different from 0 terminates the script.
-                ## Checking the output should be better than setting set +o errexit and then set -o errexit.
+                # We don't use the exit status, because an exit status different from 0 terminates the script.
+                # Checking the output should be better than setting set +o errexit and then set -o errexit.
                 if test "$dsstore" != '.DS_Store'; then
                         echo "$e\0"
                 fi

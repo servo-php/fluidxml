@@ -276,7 +276,7 @@ class FluidXml implements FluidInterface
                 $new_context = $fn($context);
 
                 if ($context !== $new_context) {
-                        // If the two contextes are diffent, the user has requested
+                        // If the two contexts are different, the user has requested
                         // a switch of the context and we have to return it.
                         return $new_context;
                 }

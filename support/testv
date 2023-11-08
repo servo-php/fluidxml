@@ -1,10 +1,10 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 cd "$(dirname "$0")"
 . "./.common.sh"
-cd ../..
+cd ..
 
-tester="./support/tools/test"
+tester="./support/test"
 
 if ! chkcmd 'brew'; then
         echo ' "brew" command not found.'
