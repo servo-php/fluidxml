@@ -90,6 +90,9 @@ class FluidXml implements FluidInterface
                 $dom = new \DOMDocument($options['version'], $options['encoding']);
                 $dom->formatOutput       = true;
                 $dom->preserveWhiteSpace = false;
+                if (array_key_exists('standalone', $options)) {
+                    $dom->xmlStandalone = (bool) $options['standalone'];
+                }
 
                 return $dom;
         }
